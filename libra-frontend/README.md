@@ -1,3 +1,9 @@
+## Instructions:
+
+- Run `npm install` which is going to install all the necessary node_modules and packages based on package.json
+
+- Run `npm start` as usual to run the app in development mode.
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
