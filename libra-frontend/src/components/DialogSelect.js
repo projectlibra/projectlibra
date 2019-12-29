@@ -20,12 +20,7 @@ const useStyles = makeStyles(theme => ({
 
 const DialogSelect = () => {
   const classes = useStyles();
-  const [open, setOpen] = React.useState(false);
-  const [age, setAge] = React.useState('');
-
-  const handleChange = event => {
-    setAge(Number(event.target.value) || '');
-  };
+  const [open, setOpen] = React.useState(false);  
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -37,7 +32,7 @@ const DialogSelect = () => {
 
   return (
     <div>
-      <Button onClick={handleClickOpen}>Select The Databases for Matchmaking</Button>
+      <Button onClick={handleClickOpen} style={{right: 580}}>Select The Databases for Matchmaking</Button>
       <Dialog disableBackdropClick disableEscapeKeyDown open={open} onClose={handleClose}>
         <DialogContent>
           <form className={classes.container}>

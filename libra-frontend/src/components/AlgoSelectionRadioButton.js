@@ -5,7 +5,6 @@ import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
-import FormLabel from '@material-ui/core/FormLabel';
 
 const useStyles = makeStyles({
   root: {
@@ -66,7 +65,7 @@ function StyledRadio(props) {
 
 const AlgoSelectionRadioButton = () => {
   return (
-    <FormControl component="fieldset">
+    <FormControl component="fieldset" style={{right: 580}}>
       <RadioGroup defaultValue="customizedAlgo" aria-label="matchmaking" name="customized-radios">
         <FormControlLabel value="customizedAlgo" control={<StyledRadio />} label="Run Customized Algorithm" />
         <FormControlLabel value="comparePhenotype" control={<StyledRadio />} label="Compare Phenotype" />

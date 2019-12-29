@@ -57,8 +57,8 @@ const CustomizedSelects = () => {
     setAge(event.target.value);
   };
   return (
-    <div>
-      <FormControl className={classes.margin}>
+    <div >
+      <FormControl className={classes.margin} style={{right: 600}}>
         <InputLabel htmlFor="demo-customized-select-native">Patient's Diseases</InputLabel>
         <NativeSelect
           id="demo-customized-select-native"

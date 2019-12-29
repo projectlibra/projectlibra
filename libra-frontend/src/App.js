@@ -17,7 +17,8 @@ function App() {
       <CustomizedSelects />          
       <AlgoSelectionRadioButton />
       <br></br>
-      <Button variant="contained" color="primary" disableElevation>
+      <br></br>
+      <Button style={{right: 600}} variant="contained" color="primary" disableElevation>
         Start Matching
       </Button>
       <br></br>
