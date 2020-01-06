@@ -3,7 +3,6 @@ import { BrowserRouter as Router,  Switch,  Route,  Link} from "react-router-dom
 import './App.css';
 import BuildQuery from './components/BuildQuery';
 import VCFDrop from './components/VCFDrop';
-import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 
 import ButtonAppBar from "./components/ButtonAppBar"
