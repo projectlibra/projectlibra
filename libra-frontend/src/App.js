@@ -21,9 +21,10 @@ function App() {
   
   return (
     <div className="App">
-      <ButtonAppBar />
-      <br></br>
+      
       <Router>
+        <ButtonAppBar />
+        <br></br>
         <Switch>
           {/* Insert Page routes here: */}
           {/*<Route path="/" component={}/>*/}
