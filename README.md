@@ -30,12 +30,20 @@ laboratories and research centers in Turkey.
 
   * [Abdullah Ercüment Çiçek](http://ciceklab.cs.bilkent.edu.tr/ercumentcicek/)
   * [Hamdi Dibeklioğlu](http://www.cs.bilkent.edu.tr/~dibeklioglu/)
+  
+### Innovation Expert
+
+  * [Mahmut Şamil Sağıroğlu](https://www.linkedin.com/in/mahmut-%C5%9Famil-sagiroglu-919730a4/)
 
 ### Reports
 
 [Project Specifications](https://projectlibra.dev/reports/LIBRAProjectSpecification.pdf)
 
-Analysis *in progress*
+[Analysis](https://projectlibra.dev/reports/LIBRAAnalysis.pdf)
+
+[High-Level Design](https://projectlibra.dev/reports/LIBRAHighLevelDesign.pdf)
+
+Low-Level Design *in progress*
 
 ### Contact
 
