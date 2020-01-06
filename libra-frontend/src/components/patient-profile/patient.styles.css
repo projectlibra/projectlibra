@@ -1,0 +1,94 @@
+.patientparent{
+  border-radius: 60px;
+    padding: 20px 0;
+    margin: 10px;
+    width: 100%;
+    box-shadow: 8px 5px 5px 2px #9e9c9c26;
+    letter-spacing: 1px;
+    border: 1px solid #80808024;
+    overflow: auto;
+}
+.patient {
+    border-radius: 60px;
+    padding: 20px 0;
+    margin: 10px;
+    width: 95%;
+    box-shadow: 8px 5px 5px 2px #9e9c9c26;
+    letter-spacing: 1px;
+    border: 1px solid #80808024;
+    
+  }
+  
+  /*.patient:enabled,
+  .patient:active {
+    transform: scale(1.02);
+    transition: transform 200ms ease-in-out;
+  }*/
+  
+  .patient_title {
+    text-align: left;
+    font-size: 1.6rem;
+    color: #565656;
+  }
+  .images{
+    margin-left: 10%;
+    margin-right: 10%;
+  }
+  .column {
+    float: left;
+    width: 20%;
+    padding: 5px;
+  }
+  
+  /* Clearfix (clear floats) */
+  .row::after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+  
+  .image {
+    
+    width: 100%;
+  }
+    
+  .nationalID {
+    text-align: left;
+  }
+  .nationality {
+    text-align: left;
+  }
+  .VCFfile {
+    text-align: left;
+  }
+  
+  .phenotypes {
+    list-style-type: none;
+    padding: 5px 10px;
+  }
+  
+  .phenotype {
+    padding: 5px 0;
+    line-height: 1.4rem;
+  }
+  
+  .phenotype i {
+    color: #fb466a;
+  }
+  .genotypes {
+    list-style-type: none;
+    padding: 5px 10px;
+  }
+  
+  .genotype {
+    padding: 5px 0;
+    line-height: 1.4rem;
+  }
+  
+  .genotype i {
+    color: #fb466a;
+  }
+  
+  .arrow-icon {
+    text-align: right;
+  }
