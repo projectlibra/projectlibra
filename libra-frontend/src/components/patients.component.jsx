@@ -1,7 +1,7 @@
 import React from 'react';
-import  Patient  from './components/patient-profile/patient.component';
+import  Patient  from './patient-profile/patient.component';
 import './patients.css';
-import PatientExpand from "./components/patient-profile/patientexpand.component";
+import PatientExpand from "./patient-profile/patientexpand.component";
 
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
