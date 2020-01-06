@@ -14,27 +14,27 @@ import Chip from '@material-ui/core/Chip';
 import QueryBuilder from 'react-querybuilder';
 
 const useStyles = makeStyles(theme => ({
-    formControl: {
-      margin: theme.spacing(1),
-      minWidth: 120,
-    },
-    chips: {
-        display: 'flex',
-        flexWrap: 'wrap',
-      },
-      chip: {
-        margin: 2,
-      },
-      noLabel: {
-        marginTop: theme.spacing(3),
-      },
+  formControl: {
+    margin: theme.spacing(1),
+    minWidth: 120,
+  },
+  chips: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  chip: {
+    margin: 2,
+  },
+  noLabel: {
+    marginTop: theme.spacing(3),
+  },
 
-    selectEmpty: {
-      marginTop: theme.spacing(2),
-    },
-  }));
+  selectEmpty: {
+    marginTop: theme.spacing(2),
+  },
+}));
 
-  const ITEM_HEIGHT = 48;
+const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
   PaperProps: {
@@ -65,7 +65,7 @@ const fields = [
   { name: 'is_lof', label: 'Is_lof' },
   { name: 'aaf', label: 'Aaf' }
 ];
- 
+
 function getStyles(name, personName, theme) {
   return {
     fontWeight:
@@ -77,19 +77,19 @@ function getStyles(name, personName, theme) {
 function logQuery(query) {
   console.log(query);
 }
-  
+
 export default function BasicQuery() {
-    
-    const classes = useStyles();
-    const theme = useTheme();
+
+  const classes = useStyles();
+  const theme = useTheme();
   const [db, setDb] = React.useState('');
   const [columnName, setColumnName] = React.useState([]);
 
   const inputLabel = React.useRef(null);
   const [labelWidth, setLabelWidth] = React.useState(0);
-//   React.useEffect(() => {
-//     setLabelWidth(inputLabel.current.offsetWidth);
-//   }, []);
+  //   React.useEffect(() => {
+  //     setLabelWidth(inputLabel.current.offsetWidth);
+  //   }, []);
 
   const handleDbChange = event => {
     setDb(event.target.value);
@@ -123,7 +123,7 @@ export default function BasicQuery() {
           <MenuItem value={"db3"}>mydb</MenuItem>
         </Select>
       </FormControl>
-      
+
       <FormControl className={classes.formControl}>
         <InputLabel id="select-columns">Column(s)</InputLabel>
         <Select
@@ -149,9 +149,9 @@ export default function BasicQuery() {
           ))}
         </Select>
       </FormControl>
-      
-        <QueryBuilder fontSize={70} fields={fields} onQueryChange={logQuery} />
-      
+
+      <QueryBuilder fontSize={70} fields={fields} onQueryChange={logQuery} />
+
     </div>
   );
 }

@@ -12,10 +12,10 @@ import Button from '@material-ui/core/Button';
 const useStyles = makeStyles(theme => ({
   root: {
     '& > *': {
-        margin: theme.spacing(1),
-      },
-      display: 'flex',
-      flexDirection: 'column',
+      margin: theme.spacing(1),
+    },
+    display: 'flex',
+    flexDirection: 'column',
   },
   formControl: {
     margin: theme.spacing(3),
@@ -23,7 +23,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function BuildQuery() {
-    
+
   const classes = useStyles();
   const [state, setState] = React.useState({
     qb: false,
@@ -42,21 +42,21 @@ export default function BuildQuery() {
     setState({ ...state, [name]: event.target.checked });
   };
 
-  
+
   const handleClick = () => {
     setState({
-        qb: true
+      qb: true
     })
-}
-  const { opt1, opt2, opt3, opt4, opt5, opt6, opt7, opt8, opt9} = state;
+  }
+  const { opt1, opt2, opt3, opt4, opt5, opt6, opt7, opt8, opt9 } = state;
   var basicQuery = null;
-  if ( state.qb ) {
+  if (state.qb) {
     basicQuery = (
-    <div>
-         <BasicQuery />
-    </div>
+      <div>
+        <BasicQuery />
+      </div>
     )
-}
+  }
   return (
     <div className={classes.root}>
       <FormControl component="fieldset" className={classes.formControl}>
