@@ -1,6 +1,6 @@
 import React from 'react';
 import BasicQuery from "./BasicQuery";
-import './App.css';
+// import './App.css';
 import { makeStyles } from '@material-ui/core/styles';
 import FormLabel from '@material-ui/core/FormLabel';
 import FormControl from '@material-ui/core/FormControl';
