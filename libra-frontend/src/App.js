@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router,  Switch,  Route,  Link} from "react-router-dom";
 import './App.css';
+
+import ButtonAppBar from "./components/ButtonAppBar"
 // Components
 
 import Patients from './components/patients.component';
@@ -16,6 +18,8 @@ function App() {
   
   return (
     <div className="App">
+      <ButtonAppBar />
+      <br></br>
       <Router>
         <Switch>
           {/* Insert Page routes here: */}

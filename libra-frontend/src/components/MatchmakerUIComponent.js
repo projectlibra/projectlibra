@@ -1,5 +1,5 @@
 import React from 'react';
-import ButtonAppBar from "./ButtonAppBar"
+
 import '../App.css';
 import CustomizedSelects from './CustomizedSelects';
 import DialogSelect from "./DialogSelect";
@@ -11,8 +11,7 @@ function MatchmakerUIComponent() {
   
   return (
     <div className="MatchmakerUIComponent">
-      <ButtonAppBar />
-      <br></br>
+      
       <DialogSelect />
       <CustomizedSelects />          
       <AlgoSelectionRadioButton />
