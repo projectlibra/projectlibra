@@ -2,7 +2,6 @@ import React from 'react';
 import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
 import './App.css';
 import editPatient from './pages/editPatient';
-
 // Components
 
 function App() {

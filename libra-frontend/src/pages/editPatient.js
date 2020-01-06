@@ -57,7 +57,7 @@ export default function EditPatient(){
       Add Disease
     </Button>
     <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-      <DialogTitle id="form-dialog-title">Subscribe</DialogTitle>
+      <DialogTitle id="form-dialog-title">Add Patient</DialogTitle>
       <DialogContent>
         <DialogContentText>
           Please fill the following content related to the disease:
