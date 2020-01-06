@@ -1,6 +1,7 @@
 import React from 'react';
-import  Patient  from './components/patients.component';
-import './App.css';
+import  Patient  from './components/patient-profile/patient.component';
+import './patients.css';
+import PatientExpand from "./components/patient-profile/patientexpand.component";
 
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
@@ -8,7 +9,7 @@ import AddIcon from '@material-ui/icons/Add';
 
 
 
-const App = () => {
+const Patients = () => {
 
   
   return (
@@ -40,4 +41,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Patients;
