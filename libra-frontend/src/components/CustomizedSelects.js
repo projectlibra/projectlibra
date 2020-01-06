@@ -1,12 +1,9 @@
 import React from 'react';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
 import NativeSelect from '@material-ui/core/NativeSelect';
 import InputBase from '@material-ui/core/InputBase';
-import DialogSelect from "./DialogSelect";
 
 const BootstrapInput = withStyles(theme => ({
   root: {
@@ -58,7 +55,7 @@ const CustomizedSelects = () => {
   };
   return (
     <div >
-      <FormControl className={classes.margin} style={{right: 600}}>
+      <FormControl className={classes.margin} >
         <InputLabel htmlFor="demo-customized-select-native">Patient's Diseases</InputLabel>
         <NativeSelect
           id="demo-customized-select-native"

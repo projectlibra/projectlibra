@@ -65,7 +65,7 @@ function StyledRadio(props) {
 
 const AlgoSelectionRadioButton = () => {
   return (
-    <FormControl component="fieldset" style={{right: 580}}>
+    <FormControl component="fieldset" >
       <RadioGroup defaultValue="customizedAlgo" aria-label="matchmaking" name="customized-radios">
         <FormControlLabel value="customizedAlgo" control={<StyledRadio />} label="Run Customized Algorithm" />
         <FormControlLabel value="comparePhenotype" control={<StyledRadio />} label="Compare Phenotype" />

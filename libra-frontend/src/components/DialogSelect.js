@@ -32,7 +32,7 @@ const DialogSelect = () => {
 
   return (
     <div>
-      <Button onClick={handleClickOpen} style={{right: 580}}>Select The Databases for Matchmaking</Button>
+      <Button onClick={handleClickOpen} >Select The Databases for Matchmaking</Button>
       <Dialog disableBackdropClick disableEscapeKeyDown open={open} onClose={handleClose}>
         <DialogContent>
           <form className={classes.container}>

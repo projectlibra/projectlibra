@@ -11,13 +11,12 @@ function MatchmakerUIComponent() {
   
   return (
     <div className="MatchmakerUIComponent">
-      
       <DialogSelect />
       <CustomizedSelects />          
       <AlgoSelectionRadioButton />
       <br></br>
       <br></br>
-      <Button style={{right: 600}} variant="contained" color="primary" disableElevation>
+      <Button variant="contained" color="primary" disableElevation>
         Start Matching
       </Button>
       <br></br>
