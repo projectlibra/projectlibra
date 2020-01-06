@@ -1,28 +1,19 @@
 import React from 'react';
-import ButtonAppBar from "./components/ButtonAppBar"
 import './App.css';
-import CustomizedSelects from './components/CustomizedSelects';
-import DialogSelect from "./components/DialogSelect";
-import AlgoSelectionRadioButton from "./components/AlgoSelectionRadioButton";
-import MatchmakingResultTable from "./components/MatchmakingResultTable";
-import Button from '@material-ui/core/Button';
+import MatchmakerUIComponent from './components/MatchmakerUIComponent';
+import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
 
 function App() {
   
   return (
     <div className="App">
-      <ButtonAppBar />
-      <br></br>
-      <DialogSelect />
-      <CustomizedSelects />          
-      <AlgoSelectionRadioButton />
-      <br></br>
-      <br></br>
-      <Button style={{right: 600}} variant="contained" color="primary" disableElevation>
-        Start Matching
-      </Button>
-      <br></br>
-      <MatchmakingResultTable />
+      <Router>
+        <Switch>
+          {/* Insert Page routes here: */}
+          {/*<Route path="/" component={}/>*/}
+          <Route exact path="/matchmaker" component={MatchmakerUIComponent}/>
+        </Switch>
+      </Router>
     </div>  
   );             
 }
