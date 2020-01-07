@@ -18,7 +18,7 @@ import MatchmakerUIComponent from './components/MatchmakerUIComponent';
 function App() {
   return (
     <div className="App">
-      
+
       <Router>
         <ButtonAppBar />
         <br></br>

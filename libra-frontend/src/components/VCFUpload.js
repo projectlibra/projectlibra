@@ -43,9 +43,9 @@ function SimpleDialog(props) {
                 {answers.map(answer => (
                     <ListItem button onClick={() => handleListItemClick(answer)} key={answer}>
                         <ListItemText
-        disableTypography
-                primary={<Typography type="body2" style={{ color: '#1D789F' }}>{answer}</Typography>}
-      />
+                            disableTypography
+                            primary={<Typography type="body2" style={{ color: '#1D789F' }}>{answer}</Typography>}
+                        />
                     </ListItem>
                 ))}
             </List>
