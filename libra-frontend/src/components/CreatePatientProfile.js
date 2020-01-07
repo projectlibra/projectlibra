@@ -20,6 +20,11 @@ const [fields, setFields] = useState([
 			name:'Surname',
 			text:'',
 			checked:'false'
+		},
+		{
+			name:'National ID',
+			text:'',
+			checked:'false'
 		}
 		]);
 
@@ -35,7 +40,7 @@ const [fields, setFields] = useState([
 			   }
 			   
 			    <FormControl style={{ minWidth: 120 }}>
-        		<InputLabel id="nationality-select">Naitonality</InputLabel>
+        		<InputLabel id="nationality-select">Nationality</InputLabel>
         		<Select labelId="nationality-select" >
           		{CountryRegionData.map((option, index) => (
            		 <MenuItem key={option[0]} value={option}>
