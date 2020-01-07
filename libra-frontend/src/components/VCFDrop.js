@@ -18,7 +18,7 @@ class VCFDrop extends Component{
         <div>
       <DropzoneArea 
       dropzoneText="Upload your VCF file(s)" acceptedFiles={[".vcf"]} showPreviewsInDropzone={true} showPreviews={false} showAlerts={true} useChipsForPreview={true} onChange={this.handleChange.bind(this)} />
-       <p>LIBRA runs in the background to annotate files. You may leave this page.</p>
+       <h4><i><b>Note: </b></i>LIBRA runs in the background to annotate files. You may leave this page.</h4>
        </div>
     );
   }
