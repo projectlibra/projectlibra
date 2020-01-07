@@ -15,6 +15,7 @@ import Select from '@material-ui/core/Select';
 import VCFDrop from "./VCFDrop";
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
+import { Link } from "react-router-dom";
 
 const answers = ['Yes, let\'s query!', 'No, I will query later.'];
 const useStyles = makeStyles({
@@ -40,14 +41,18 @@ function SimpleDialog(props) {
         <Dialog onClose={handleClose} aria-labelledby="simple-dialog-title" open={open}>
             <DialogTitle id="simple-dialog-title"><b>ANNOTATION DONE!</b> Would you like to query your new annotated variants NOW?</DialogTitle>
             <List>
-                {answers.map(answer => (
-                    <ListItem button onClick={() => handleListItemClick(answer)} key={answer}>
-                        <ListItemText
-                            disableTypography
-                            primary={<Typography type="body2" style={{ color: '#1D789F' }}>{answer}</Typography>}
-                        />
-                    </ListItem>
-                ))}
+                <ListItem button onClick={() => handleListItemClick(answers[0])} key={answers[0]} component={Link} to="/buildquery">
+                    <ListItemText
+                        disableTypography
+                        primary={<Typography type="body2" style={{ color: '#14BC79' }}>{answers[0]}</Typography>}
+                    />
+                </ListItem>
+                <ListItem button onClick={() => handleListItemClick(answers[1])} key={answers[1]}>
+                    <ListItemText
+                        disableTypography
+                        primary={<Typography type="body2" style={{ color: '#1D789F' }}>{answers[1]}</Typography>}
+                    />
+                </ListItem>
             </List>
         </Dialog>
     );
