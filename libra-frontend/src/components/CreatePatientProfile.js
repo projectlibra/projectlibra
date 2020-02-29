@@ -2,7 +2,11 @@ import React, {Component,useState, useContext} from "react";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import TextfieldWithPublicity from "./TextfieldWithPublicity";
-
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import { CountryRegionData } from 'react-country-region-selector-material-ui-new';
 	
 function CreatePatientProfile()  {
 
@@ -18,7 +22,7 @@ const [fields, setFields] = useState([
 			checked:'false'
 		},
 		{
-			name:'Nationality',
+			name:'National ID',
 			text:'',
 			checked:'false'
 		}
@@ -35,8 +39,16 @@ const [fields, setFields] = useState([
 			   ))
 			   }
 			   
-			   <br/>
-			   
+			    <FormControl style={{ minWidth: 120 }}>
+        		<InputLabel id="nationality-select">Nationality</InputLabel>
+        		<Select labelId="nationality-select" >
+          		{CountryRegionData.map((option, index) => (
+           		 <MenuItem key={option[0]} value={option}>
+              		{option[0]}
+            		</MenuItem>
+        			  ))}
+        		</Select>
+      			</FormControl><br />
 			   <Button variant="contained"  component="label"	>
 			   	Attach VCF file   
 			   	<input     type="file"    style={{ display: "none" }}  />

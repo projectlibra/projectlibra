@@ -10,10 +10,6 @@ html {
   border: 15px solid #286dd4;
 }
 
-body {
-  font-family: "Montserrat", sans-serif;
-}
-
 .App {
   min-height: 100vh;
   background: white;
@@ -27,7 +23,7 @@ body {
 .title {
   color: #286dd4;
   font-weight: 200;
-  font-size: 3rem;
+  font-size: 2rem;
 }
 
 .patients {

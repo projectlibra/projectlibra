@@ -4,6 +4,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import EditIcon from '@material-ui/icons/Edit';
 import { Button } from '@material-ui/core';
+import DeleteIcon from '@material-ui/icons/Delete';
 
 export default class Patient extends React.Component {
   constructor(props) {
@@ -27,15 +28,15 @@ export default class Patient extends React.Component {
     const{checked} = this.state;
     return(
       <div className="patient" >
-        <p className = "arrow-icon" ><Button title = "Edit"><EditIcon  fontSize="large" color = "action"/></Button> <Button title = "Go to MatchMaker"><ArrowForwardIcon fontSize="large" color = "action"/></Button></p>
+        <p className = "arrow-icon" ><Checkbox  onClick = {this.checkBox} defaultChecked = {checked} inputProps={{ 'aria-label': 'Checkbox A' }} />
+          <Button title = "Delete"><DeleteIcon  fontSize="large" color = "action"/></Button><Button title = "Edit"><EditIcon  fontSize="large" color = "action"/></Button> <Button title = "Go to MatchMaker"><ArrowForwardIcon fontSize="large" color = "action"/></Button></p>
         
         <h1 className="patient_title">{name} {surname} </h1>
       
         <p className="nationalID">National ID: {parseInt(nationalID)}</p>
         <p className="nationality">Nationality: {nationality}</p>
         <p className="VCFfile">VCF File Name: {VCFfile}</p>
-        
-              <Checkbox  onClick = {this.checkBox} defaultChecked = {checked} inputProps={{ 'aria-label': 'Checkbox A' }} />
+        <p className="VCFfile"> Sharing Status:
               {checked && (
                 
                 <p className="VCFfile"> Private </p>
@@ -44,6 +45,7 @@ export default class Patient extends React.Component {
               {!checked && (
                 <p className="VCFfile"> Public </p>
             )}
+            </p>
         <h2>Phenotype:</h2>
         <div className="phenotypes">
           {phenotypes.map((phenotype) => (
