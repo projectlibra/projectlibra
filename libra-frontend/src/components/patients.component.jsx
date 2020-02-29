@@ -2,10 +2,10 @@ import React from 'react';
 import  Patient  from './patient-profile/patient.component';
 import './patients.css';
 import PatientExpand from "./patient-profile/patientexpand.component";
-
+import Button from '@material-ui/core/Button';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
-
+import { Link } from "react-router-dom";
 
 
 
@@ -16,9 +16,12 @@ const Patients = () => {
     <div className="App">
       <header className="header">
         <h1 className="title">Patient Management</h1>
+         <Button component={Link} to="/createPatientProfile">
          <Fab color="primary" aria-label="add">
             <AddIcon />
         </Fab>
+         </Button>
+         
       </header>
       <div className="patients">
         <PatientExpand title = "Halil Şahiner">
