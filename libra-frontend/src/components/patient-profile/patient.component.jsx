@@ -5,6 +5,7 @@ import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import EditIcon from '@material-ui/icons/Edit';
 import { Button } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
+import { Link } from "react-router-dom";
 
 export default class Patient extends React.Component {
   constructor(props) {
@@ -29,7 +30,9 @@ export default class Patient extends React.Component {
     return(
       <div className="patient" >
         <p className = "arrow-icon" ><Checkbox  onClick = {this.checkBox} defaultChecked = {checked} inputProps={{ 'aria-label': 'Checkbox A' }} />
-          <Button title = "Delete"><DeleteIcon  fontSize="large" color = "action"/></Button><Button title = "Edit"><EditIcon  fontSize="large" color = "action"/></Button> <Button title = "Go to MatchMaker"><ArrowForwardIcon fontSize="large" color = "action"/></Button></p>
+          <Button title = "Delete"><DeleteIcon  fontSize="large" color = "action"/></Button>
+          <Button title = "Edit" component={Link} to="/editPatient" ><EditIcon  fontSize="large" color = "action"/></Button> 
+          <Button title = "Go to MatchMaker" component={Link} to="/matchmaker" ><ArrowForwardIcon fontSize="large" color = "action"/></Button></p>
         
         <h1 className="patient_title">{name} {surname} </h1>
       
