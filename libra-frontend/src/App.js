@@ -1,9 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router,  Switch,  Route,  Link} from "react-router-dom";
 import './App.css';
-import BuildQuery from './components/BuildQuery';
-import VCFDrop from './components/VCFDrop';
-import Button from '@material-ui/core/Button';
 
 import ButtonAppBar from "./components/ButtonAppBar"
 // Components
@@ -30,8 +27,6 @@ function App() {
           <Route exact path="/editPatient" component={editPatient}/>
           <Route exact path="/matchmaker" component={MatchmakerUIComponent}/>
           <Route exact path="/managePatients" component={Patients}/>
-          <Route exact path="/buildquery" component={BuildQuery}/>
-          <Route exact path="/vcfupload" component={VCFDrop}/>
     	<Route exact path="/login">
 				<Login />
 			</Route>
@@ -44,7 +39,8 @@ function App() {
         </Switch>
       </Router>
     </div>
-  );
+  );          
+
 }
 
 export default App;
