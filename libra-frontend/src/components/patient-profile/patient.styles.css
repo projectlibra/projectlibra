@@ -27,8 +27,7 @@
   
   .patient_title {
     text-align: left;
-    font-size: 1.6rem;
-    color: #565656;
+    font-size: 1.2rem;
   }
   .images{
     margin-left: 10%;
@@ -69,7 +68,7 @@
   
   .phenotype {
     padding: 5px 0;
-    line-height: 1.4rem;
+    line-height: 1.2rem;
   }
   
   .phenotype i {
@@ -82,7 +81,7 @@
   
   .genotype {
     padding: 5px 0;
-    line-height: 1.4rem;
+    line-height: 1.2rem;
   }
   
   .genotype i {
