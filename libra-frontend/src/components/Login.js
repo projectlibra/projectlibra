@@ -1,58 +1,83 @@
-import React, {Component} from "react";
-import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
-import Checkbox from "@material-ui/core/Checkbox";
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { Form, Input, Button, Spin } from 'antd';
+import Icon from '@ant-design/icons';
+import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+import * as actions from '../redux/actions/auth';
 
-class Login extends Component{
+const FormItem = Form.Item;
+const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
 
-	
-	constructor(props){
-  	 super(props);
- 	 this.state={
- 	 username:"",
-  	 password:"",
-  	 remember:false
- 	}
- 	}
- 	
 
-	render(){
-		return(
-			<div>
-				<h1> Login </h1>
-				<TextField 
-					id="name" 
-					label="Username"
-					onChange = {(event,newValue) => this.setState({username:newValue})}
-				/>
-				<br />
-				<TextField
-               		type="password"
-              		label="Password"
-               		onChange = {(event,newValue) => this.setState({password:newValue})}
-               />
-               <br />
-               <FormControlLabel
-               control = {
-               		<Checkbox
-        				value="primary"
-        				checked= {this.state.remember}
-        				onChange = {(event,newValue) => this.setState({remember:newValue})}
-               		/>
-               }
-        		label="Remember Me"
-        	    />
-               <br />
-               <Link to="/forgot"> 
-               	Forgot password?
-               </Link>
-               <br />
-               <Button variant="contained">Login</Button>
-			</div>
-		);
-	}
+class NormalLoginForm extends React.Component {
+  onFinish = (values) => {
+		//e.preventDefault();
+		console.log("Hello")
+    
+		this.props.onAuth(values.userName, values.password);
+		this.props.history.push('/');
+    
+  }
+
+  render() {
+    let errorMessage = null;
+    if (this.props.error) {
+        errorMessage = (
+            <p>{this.props.error.message}</p>
+        );
+    }
+
+    return (
+        <div>
+            {errorMessage}
+            {
+                this.props.loading ?
+
+                <Spin indicator={antIcon} />
+
+                :
+
+                <Form onFinish={this.onFinish} className="login-form">
+
+                    <Form.Item name='userName' rules = {[{ required: true, message: 'Please input your username!' }]} >
+                    
+                      <Input prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="Username" />
+                    
+                    </Form.Item>
+
+                    <Form.Item name='password' rules={ [{ required: true, message: 'Please input your Password!' }]}>
+                        <Input prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />} type="password" placeholder="Password" />
+                    </Form.Item>
+
+                    <Form.Item>
+                    <Button type="primary" htmlType="submit" style={{marginRight: '10px'}}>
+                        Login
+                    </Button>
+                    Or 
+                    <NavLink 
+                        style={{marginRight: '10px'}} 
+                        to='/signup/'> signup
+                    </NavLink>
+                    </Form.Item>
+                </Form>
+            }
+      </div>
+    );
+  }
 }
 
-export default Login;
+//NormalLoginForm = Form.create({})(NormalLoginForm);
+const mapStateToProps = (state) => {
+    return {
+        loading: state.loading,
+        error: state.error
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+        onAuth: (username, password) => dispatch(actions.authLogin(username, password)) 
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(NormalLoginForm);
