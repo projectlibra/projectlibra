@@ -30,6 +30,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'vcf_db',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -93,7 +95,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'libra_db',
         'USER': 'postgres',
-        'PASSWORD': 'MESA2611',
+        'PASSWORD': '1',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
