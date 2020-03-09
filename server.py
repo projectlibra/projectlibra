@@ -1,6 +1,7 @@
 import asyncio
 import websockets
 import json
+from cyvcf2 import VCF
 
 connected = set()
 
@@ -10,6 +11,21 @@ async def handler(websocket, path):
     print("Received: ", msg)
     if msg == 'SEND_PREVIEW':
       f_name = await websocket.recv()
+
+      vcf = VCF("./libra-backend/libra_backend/media/post_vcf/" + f_name)
+      variants = []
+      cnt = 0
+      for variant in vcf:   
+          v = {}
+          v['chr'] = variant.CHROM
+          v['pos'] = variant.POS
+          v['ref'] = variant.REF
+          v['alt'] = variant.ALT
+          v['dbSnp'] = variant.INFO.get('DB')
+          v['freq'] = variant.INFO.get('AF')
+          variants.append(v)
+          cnt+=1
+
       f = open("./libra-backend/libra_backend/media/post_vcf/" + f_name)
       content = f.read()
       print(content)
@@ -17,6 +33,7 @@ async def handler(websocket, path):
       msg = {}
       msg['command'] = "receive_preview"
       msg['preview'] = content
+      msg['vcf_data'] = variants
       print(json.dumps(msg))
     await websocket.send(json.dumps(msg))
 
