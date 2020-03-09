@@ -10,7 +10,7 @@ import ListItem from '@material-ui/core/ListItem';
 
 
 
-export default class HboSearchBar extends React.Component {
+export default class HpoSearchBar extends React.Component {
 
     constructor(props, context) {
         super(props, context);
