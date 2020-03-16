@@ -19,19 +19,19 @@ import WebSocketInstance from './websocket';
 
 class App extends React.Component{
 
-  /*componentDidMount(){
+  componentDidMount(){
     WebSocketInstance.connect();
-  }*/
+  }
 
   constructor(props) {
       super(props);
       this.state = {}
-      /*
+      
       this.waitForSocketConnection(() => {
-        WebSocketInstance.sendMessage("{abc: abc}");
-      });*/
+        //WebSocketInstance.sendMessage("{abc: abc}");
+      });
   }
-/*
+
   waitForSocketConnection(callback) {
       const component = this;
       setTimeout(
@@ -45,7 +45,7 @@ class App extends React.Component{
               component.waitForSocketConnection(callback);
           }
       }, 100);
-  }*/
+  }
 
   render() {
     return (

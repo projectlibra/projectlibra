@@ -53,7 +53,7 @@ class WebSocketService {
   sendMessage(data) {
     console.log(data)
     try {
-      this.socketRef.send(JSON.stringify({ ...data }));
+      this.socketRef.send(data);
     }
     catch(err) {
       console.log(err.message);

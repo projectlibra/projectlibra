@@ -38,7 +38,7 @@ class VCFDrop extends Component {
     return (
       <div>
         <DropzoneArea
-          dropzoneText="Upload your VCF file(s)" acceptedFiles={[".vcf"]} showPreviewsInDropzone={true} showPreviews={false} showAlerts={true} useChipsForPreview={true} onDrop={this.handleVCFUpload.bind(this)} onChange={this.handleChange.bind(this)} />
+          dropzoneText="Upload your VCF file(s)" acceptedFiles={[".vcf", ".gz"]} showPreviewsInDropzone={true} showPreviews={false} showAlerts={true} useChipsForPreview={true} onDrop={this.handleVCFUpload.bind(this)} onChange={this.handleChange.bind(this)} />
       </div>
     );
   }
