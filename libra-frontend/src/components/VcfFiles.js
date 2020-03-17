@@ -17,7 +17,10 @@ class VcfFiles extends Component {
       table_data: [],
       show_data: []
     };
-    this.path = "ws://localhost:8765/";
+    
+    
+    
+    /*this.path = "ws://localhost:8765/";
     this.socketRef = new WebSocket(this.path);
 
     this.socketRef.onopen = () => {
@@ -61,10 +64,14 @@ class VcfFiles extends Component {
     };
     this.socketRef.onclose = () => {
       console.log("WebSocket closed let's reopen");
-    };
+    };*/
   }
 
   componentDidMount() {
+    this.setState({
+      ws: this.props.ws,
+      ws_data: this.props.ws_data
+    });
     let url = 'http://localhost:8000/api/posts/';
     axios.get(url)
       .then(res => {
@@ -76,6 +83,47 @@ class VcfFiles extends Component {
       })
       .catch(err => console.log(err))
   }
+
+  
+  componentDidUpdate(prevProps) {
+    if(this.props.ws_data != prevProps.ws_data) {
+      this.loadData();
+    }
+  }
+
+  loadData = () => {
+      const msg = this.props.ws_data;
+      console.log(msg);
+      console.log(msg.length);
+      console.log(msg.vcf_data.length);
+      if(msg.command === "receive_preview") {
+        this.setState({
+          preview: msg.preview,
+          vcf_data: msg.vcf_data
+        })
+        let arr = [];
+        let snp_cnt = 0;
+        console.log("VCF DATA:");
+        console.log(this.props.ws_data.vcf_data);
+        for (const key of Object.keys(msg.vcf_data)) {
+          console.log(key, msg.vcf_data[key]);
+          console.log(msg.vcf_data[key].dbSnp);
+          if ( msg.vcf_data[key].dbSnp === true) {
+            snp_cnt +=1
+          }
+        }
+        arr.push(["DB", "count"])
+        arr.push(['dbSnp', snp_cnt])
+        arr.push(['novel', Object.keys(msg.vcf_data).length - snp_cnt])
+        console.log(arr)
+        this.setState({
+          table_data: arr
+        })
+        console.log("Hereeeee")
+        console.log(this.state.table_data)
+      }
+      //console.log(this.state.vcf_data[0])
+  };
 
   
   chartEvents = [
@@ -97,8 +145,10 @@ class VcfFiles extends Component {
     console.log(file[0].filename)
     let data = "abc"
     try {
-      this.socketRef.send("SEND_PREVIEW");
-      this.socketRef.send(file[0].filename)
+      //this.socketRef.send("SEND_PREVIEW");
+      //this.socketRef.send(file[0].filename)
+      this.props.ws.send("SEND_PREVIEW");
+      this.props.ws.send(file[0].filename)
     }
     catch(err) {
       console.log(err.message);

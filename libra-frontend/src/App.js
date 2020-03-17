@@ -19,19 +19,74 @@ import WebSocketInstance from './websocket';
 
 class App extends React.Component{
 
-  componentDidMount(){
-    WebSocketInstance.connect();
-  }
+  
 
   constructor(props) {
       super(props);
-      this.state = {}
+      this.state = {
+        ws: null
+      };
       
+      /*
       this.waitForSocketConnection(() => {
         //WebSocketInstance.sendMessage("{abc: abc}");
-      });
+      });*/
   }
 
+  componentDidMount(){
+    this.connect();
+  }
+
+  timeout = 250;
+
+  connect = () => {
+    const ws = new WebSocket("ws://localhost:8765");
+    const that = this;
+    let connectInterval;
+
+    ws.onopen = () => {
+      console.log("Connected to websocket!");
+      this.setState({ws: ws});
+      that.timeout = 250;
+      clearTimeout(connectInterval);
+    };
+
+    ws.onclose = (e) => {
+      console.log(
+          `Socket is closed. Reconnect will be attempted in ${Math.min(
+              10000 / 1000,
+              (that.timeout + that.timeout) / 1000
+          )} second.`,
+          e.reason
+      );
+
+      that.timeout = that.timeout + that.timeout; //increment retry interval
+      connectInterval = setTimeout(this.check, Math.min(10000, that.timeout));
+    };
+
+    ws.onerror = err => {
+      console.error(
+          "Socket encountered error: ",
+          err.message,
+          "Closing socket"
+      );
+
+      ws.close();
+    };
+
+    ws.onmessage = evt => {
+      // listen to data sent from the websocket server
+      const msg = JSON.parse(evt.data)
+      this.setState({ws_data: msg})
+      console.log(msg)
+    };
+
+  };
+
+  check = () => {
+    const { ws } = this.state;
+    if (!ws || ws.readyState == WebSocket.CLOSED) this.connect(); //check if websocket instance is closed, if so call `connect` function.
+  };
   waitForSocketConnection(callback) {
       const component = this;
       setTimeout(
@@ -66,8 +121,12 @@ class App extends React.Component{
             <Route exact path="/signup" component={SignUp} />
             <Route exact path="/forgot" component={Forgot} />
             <Route exact path="/createPatientProfile" component={CreatePatientProfile} />
-            <Route exact path="/list-files" component={VcfFiles} />
+            
             <Route exact path="/" component={Homepage} />
+
+            {/*correct way to Route with props*/ }
+            <Route exact path="/list-files" 
+            render={(props) => <VcfFiles {...props} ws={this.state.ws} ws_data={this.state.ws_data}  />} />
           </Switch>
         </Router>
       </div>
