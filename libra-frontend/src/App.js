@@ -40,7 +40,7 @@ class App extends React.Component{
   timeout = 250;
 
   connect = () => {
-    const ws = new WebSocket("ws://localhost:8765");
+    const ws = new WebSocket("ws://139.179.21.17:8881");
     const that = this;
     let connectInterval;
 
@@ -49,6 +49,7 @@ class App extends React.Component{
       this.setState({ws: ws});
       that.timeout = 250;
       clearTimeout(connectInterval);
+      
     };
 
     ws.onclose = (e) => {
@@ -126,7 +127,7 @@ class App extends React.Component{
 
             {/*correct way to Route with props*/ }
             <Route exact path="/list-files" 
-            render={(props) => <VcfFiles {...props} ws={this.state.ws} ws_data={this.state.ws_data}  />} />
+            render={ (props) =><VcfFiles {...props} ws={this.state.ws} ws_data={this.state.ws_data}  />} />
           </Switch>
         </Router>
       </div>

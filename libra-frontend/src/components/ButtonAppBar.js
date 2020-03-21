@@ -8,6 +8,11 @@ import IconButton from '@material-ui/core/IconButton';
 import HomeIcon from '@material-ui/icons/Home';
 import { Link } from "react-router-dom";
 
+import {connect} from "react-redux";
+import {logout} from "../redux/actions/auth";
+
+import { withRouter } from "react-router";
+
 const useStyles = makeStyles(theme => ({
   root: {
     flexGrow: 1,
@@ -20,9 +25,12 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const ButtonAppBar = () => {
+const ButtonAppBar = (props) => {
   const classes = useStyles();
-
+  const onFinish = () => {
+    props.onLogOut();
+    props.history.push('/');
+  }
   return (
     <div className={classes.root}>
       <AppBar position="static">
@@ -40,11 +48,17 @@ const ButtonAppBar = () => {
           <Button color="inherit" component={Link} to="/editPatient">Edit Patient</Button>
           <Button color="inherit" component={Link} to="/managePatients">Manage Patients</Button>
           <Button color="inherit" component={Link} to="/matchmaker">Matchmaker</Button>
-          <Button color="inherit">Sign Out</Button>
+          <Button color="inherit" onClick={onFinish}>Sign Out</Button>
         </Toolbar>
       </AppBar>
     </div>
   );
 }
 
-export default ButtonAppBar;
+const mapDispatchToProps = dispatch => {
+  return {
+      onLogOut: () => dispatch(logout()) 
+  }
+}
+
+export default withRouter(connect(null, mapDispatchToProps)(ButtonAppBar));

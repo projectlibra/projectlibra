@@ -4,6 +4,7 @@
 *.vcf
 *.pyc
 /libra-backend/env/*
+/libra-backendv2/product.py
 # dependencies
 /node_modules
 /.pnp
