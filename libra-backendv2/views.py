@@ -1,11 +1,11 @@
-from app import app, db, ma, bcrypt
+from .app import app, db, ma, bcrypt
 from flask import Flask, request, jsonify, make_response
 import uuid
 import jwt
 import datetime
 from functools import wraps
 #from models import User, Project, projects_schema, project_schema, user_schema
-from models import *
+from .models import *
 
 PREFIX = 'Bearer'
 
@@ -44,6 +44,11 @@ def register_user():
 
   new_user = User(public_id = str(uuid.uuid4()), username=data['username'], email=data['email'], password=pw_hash, admin=False)
   db.session.add(new_user)
+  db.session.commit()
+  
+  # add default project to user.
+  default_project = Project(name="Default", user_id=new_user.id)
+  db.session.add(default_project)
   db.session.commit()
 
   return jsonify({"message": "Registration complete!"})

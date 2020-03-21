@@ -1,4 +1,4 @@
-from app import app, db, ma, bcrypt
+from .app import app, db, ma, bcrypt
 
 # User Model
 class User(db.Model):
@@ -18,7 +18,7 @@ user_schema = UserSchema()
 
 class Project(db.Model):
   id = db.Column(db.Integer, primary_key=True)
-  name = db.Column(db.String(50), unique=True)
+  name = db.Column(db.String(50))
   user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class ProjectSchema(ma.Schema):

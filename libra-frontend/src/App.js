@@ -14,7 +14,7 @@ import CreatePatientProfile from './components/CreatePatientProfile'
 import MatchmakerUIComponent from './components/MatchmakerUIComponent';
 import Homepage from './components/Homepage';
 import VcfFiles from './components/VcfFiles';
-
+import Projects from './pages/projects'
 import WebSocketInstance from './websocket';
 
 class App extends React.Component{
@@ -122,7 +122,7 @@ class App extends React.Component{
             <Route exact path="/signup" component={SignUp} />
             <Route exact path="/forgot" component={Forgot} />
             <Route exact path="/createPatientProfile" component={CreatePatientProfile} />
-            
+            <Route exact path="/projects" component={Projects} />
             <Route exact path="/" component={Homepage} />
 
             {/*correct way to Route with props*/ }

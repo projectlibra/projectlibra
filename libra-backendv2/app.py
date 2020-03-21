@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
+from flask_migrate import Migrate
 import os
 import uuid
 
@@ -25,9 +26,12 @@ ma = Marshmallow(app)
 # Init BCrypt
 bcrypt = Bcrypt(app)
 
+# Init Migrate
+migrate = Migrate(app, db)
+
 CORS(app)
 
-from views import *
+from .views import *
 
 # Run server
 if __name__ == '__main__':
