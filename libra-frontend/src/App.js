@@ -105,14 +105,15 @@ class App extends React.Component{
 
   render() {
     return (
-      <div className="App">
+      <div className="App" >
         <Router>
           <ButtonAppBar />
           <br></br>
-          <Switch>
+          <div style={{paddingLeft: '20px', paddingRight: '20px'}}>
+          <Switch >
             {/* Insert Page routes here: */}
             {/*<Route path="/" component={}/>*/}
-  
+            
             <Route exact path="/editPatient" component={editPatient} />
             <Route exact path="/matchmaker" component={MatchmakerUIComponent} />
             <Route exact path="/managePatients" component={Patients} />
@@ -129,6 +130,7 @@ class App extends React.Component{
             <Route exact path="/list-files" 
             render={ (props) =><VcfFiles {...props} ws={this.state.ws} ws_data={this.state.ws_data}  />} />
           </Switch>
+          </div>
         </Router>
       </div>
     );   
