@@ -14,6 +14,8 @@ def token_required(f):
   def decorated(*args, **kwargs):
     token = None
 
+    print(request.headers)
+    print(request)
     if 'Authorization' in request.headers:
       bearer, _ , token = request.headers['Authorization'].partition(' ')
       if bearer != PREFIX:
@@ -41,13 +43,13 @@ def register_user():
     return jsonify({"error": "passwords do not match!"}), 400
   
   pw_hash = bcrypt.generate_password_hash(data['password1'])
-
+  pw_hash = pw_hash.decode('utf-8')
   new_user = User(public_id = str(uuid.uuid4()), username=data['username'], email=data['email'], password=pw_hash, admin=False)
   db.session.add(new_user)
   db.session.commit()
   
   # add default project to user.
-  default_project = Project(name="Default", user_id=new_user.id)
+  default_project = Project(name="Default", desc="Default project for quick operations.", user_id=new_user.id)
   db.session.add(default_project)
   db.session.commit()
 
@@ -78,8 +80,9 @@ def login():
 @token_required
 def add_project(current_user):
   name = request.json['name']
+  desc = request.json['desc']
   user_id = current_user.id
-  project = Project(name=name, user_id=user_id)
+  project = Project(name=name, desc=desc, user_id=user_id)
   db.session.add(project)
   db.session.commit()
 
@@ -88,7 +91,7 @@ def add_project(current_user):
 @app.route('/project', methods=['GET'])
 @token_required
 def get_projects(current_user):
-  all_projects = Project.query.all()
+  all_projects = Project.query.filter_by(user_id=current_user.id)
   result = projects_schema.dump(all_projects)
   return jsonify(result)
 

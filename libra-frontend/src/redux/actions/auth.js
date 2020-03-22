@@ -8,6 +8,9 @@ export const authStart = () => {
 }
 
 export const authSuccess = token => {
+    console.log("In Success:")
+    axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    console.log(axios.defaults.headers.common['Authorization'])
     return {
         type: actionTypes.AUTH_SUCCESS,
         token: token
@@ -24,6 +27,7 @@ export const authFail = error => {
 export const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('expirationDate');
+    axios.defaults.headers.common['Authorization'] = '';
     return {
         type: actionTypes.AUTH_LOGOUT
     };

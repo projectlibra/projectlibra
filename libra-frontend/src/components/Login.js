@@ -31,11 +31,11 @@ class NormalLoginForm extends React.Component {
         <div>
             {errorMessage}
             {
-                this.props.loading ?
+                /*this.props.loading ?
 
                 <Spin indicator={antIcon} />
 
-                :
+                :*/
 
                 <Form onFinish={this.onFinish} className="login-form">
 

@@ -19,11 +19,12 @@ user_schema = UserSchema()
 class Project(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.String(50))
+  desc = db.Column(db.Text())
   user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class ProjectSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'name')
+    fields = ('id', 'name', 'desc')
 
 project_schema = ProjectSchema()
 projects_schema = ProjectSchema(many=True)

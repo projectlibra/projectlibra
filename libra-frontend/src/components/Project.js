@@ -5,10 +5,8 @@ const Project = (props) => {
 
   return (
     <div>
-      <Card title= {props.name} extra={<a href="#">More</a>} style={{ width: 300 }}>
-        <p>Card content</p>
-        <p>Card content</p>
-        <p>Card content</p>
+      <Card title= {props.name} extra={<a href="#">More</a>} style={{ width: 300, marginRight: '20px', marginBottom: '10px' }}>
+        <p>{props.desc}</p>
       </Card>
     </div>
     
