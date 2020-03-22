@@ -45,13 +45,14 @@ const RegistrationForm = (props) =>  {
   
 
     return (
+      <div style={{textAlign: 'center'}}>
       <Form
-      {...formItemLayout}
-      form={form}
-      name="register"
-      onFinish={onFinish}
-      scrollToFirstError
-    >
+        {...formItemLayout}
+        form={form}
+        name="register"
+        onFinish={onFinish}
+        scrollToFirstError
+      >
         
         <Form.Item
         name="userName"
@@ -132,6 +133,7 @@ const RegistrationForm = (props) =>  {
         </Form.Item>
 
       </Form>
+      </div>
     );
   
 }

@@ -8,6 +8,12 @@ import IconButton from '@material-ui/core/IconButton';
 import HomeIcon from '@material-ui/icons/Home';
 import { Link } from "react-router-dom";
 
+import {connect} from "react-redux";
+import {logout} from "../redux/actions/auth";
+
+import { withRouter } from "react-router";
+
+
 const useStyles = makeStyles(theme => ({
   root: {
     flexGrow: 1,
@@ -20,19 +26,24 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const ButtonAppBar = () => {
+const ButtonAppBar = (props) => {
   const classes = useStyles();
+  const onFinish = () => {
+    props.onLogOut();
+    props.history.push('/');
+  }
 
-  return (
-    <div className={classes.root}>
+  if(props.token) {
+    return (<div className={classes.root}>
       <AppBar position="static">
         <Toolbar>
           <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" component={Link} to="/">
             <HomeIcon />
           </IconButton>
-          <Typography variant="h6" className={classes.title}>
-            LIBRA
+          <Typography color="inherit" variant="h6" className={classes.title}>
+            LIBRA - Welcome {props.username}
           </Typography>
+          {/*
           <Button color="inherit" component={Link} to="/login">Login</Button>
           <Button color="inherit" component={Link} to="/vcfupload">VCF UPLOAD</Button>
           <Button color="inherit" component={Link} to="/buildquery">Query Builder</Button>
@@ -40,11 +51,53 @@ const ButtonAppBar = () => {
           <Button color="inherit" component={Link} to="/editPatient">Edit Patient</Button>
           <Button color="inherit" component={Link} to="/managePatients">Manage Patients</Button>
           <Button color="inherit" component={Link} to="/matchmaker">Matchmaker</Button>
-          <Button color="inherit">Sign Out</Button>
+          */}
+          <Button color="inherit" component={Link} to="/projects">My Projects</Button>
+          <Button color="inherit" onClick={onFinish}>Sign Out</Button>
         </Toolbar>
       </AppBar>
-    </div>
-  );
+    </div>)
+  }
+  else {
+    return (
+      <div className={classes.root}>
+        <AppBar position="static">
+          <Toolbar>
+            <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" component={Link} to="/">
+              <HomeIcon />
+            </IconButton>
+            <Typography color="inherit" variant="h6" className={classes.title}>
+              LIBRA 
+            </Typography>
+            {/*
+            <Button color="inherit" component={Link} to="/login">Login</Button>
+            <Button color="inherit" component={Link} to="/vcfupload">VCF UPLOAD</Button>
+            <Button color="inherit" component={Link} to="/buildquery">Query Builder</Button>
+            <Button color="inherit" component={Link} to="/createPatientProfile">Create Patient</Button>
+            <Button color="inherit" component={Link} to="/editPatient">Edit Patient</Button>
+            <Button color="inherit" component={Link} to="/managePatients">Manage Patients</Button>
+            <Button color="inherit" component={Link} to="/matchmaker">Matchmaker</Button>
+            */}
+            <Button color="inherit" component={Link} to="/login">Login</Button>
+          </Toolbar>
+        </AppBar>
+      </div>
+    );
+  }
+  
 }
 
-export default ButtonAppBar;
+const mapStateToProps = (state) => {
+  return {
+    username: state.username,
+    token: localStorage.getItem('token') 
+  }
+}
+const mapDispatchToProps = dispatch => {
+  return {
+      onLogOut: () => dispatch(logout()) 
+  }
+}
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ButtonAppBar));
+

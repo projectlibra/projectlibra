@@ -14,8 +14,9 @@ import CreatePatientProfile from './components/CreatePatientProfile'
 import MatchmakerUIComponent from './components/MatchmakerUIComponent';
 import Homepage from './components/Homepage';
 import VcfFiles from './components/VcfFiles';
-
+import Projects from './pages/projects'
 import WebSocketInstance from './websocket';
+import DZUploader from './components/DZUploader';
 
 class App extends React.Component{
 
@@ -40,7 +41,7 @@ class App extends React.Component{
   timeout = 250;
 
   connect = () => {
-    const ws = new WebSocket("ws://localhost:8765");
+    const ws = new WebSocket("ws://139.179.21.17:8881");
     const that = this;
     let connectInterval;
 
@@ -49,6 +50,7 @@ class App extends React.Component{
       this.setState({ws: ws});
       that.timeout = 250;
       clearTimeout(connectInterval);
+      
     };
 
     ws.onclose = (e) => {
@@ -104,14 +106,15 @@ class App extends React.Component{
 
   render() {
     return (
-      <div className="App">
+      <div className="App" >
         <Router>
           <ButtonAppBar />
           <br></br>
-          <Switch>
+          <div style={{paddingLeft: '20px', paddingRight: '20px'}}>
+          <Switch >
             {/* Insert Page routes here: */}
             {/*<Route path="/" component={}/>*/}
-  
+            <Route exact path="/drop" component={DZUploader} />
             <Route exact path="/editPatient" component={editPatient} />
             <Route exact path="/matchmaker" component={MatchmakerUIComponent} />
             <Route exact path="/managePatients" component={Patients} />
@@ -121,13 +124,14 @@ class App extends React.Component{
             <Route exact path="/signup" component={SignUp} />
             <Route exact path="/forgot" component={Forgot} />
             <Route exact path="/createPatientProfile" component={CreatePatientProfile} />
-            
+            <Route exact path="/projects" component={Projects} />
             <Route exact path="/" component={Homepage} />
 
             {/*correct way to Route with props*/ }
             <Route exact path="/list-files" 
-            render={(props) => <VcfFiles {...props} ws={this.state.ws} ws_data={this.state.ws_data}  />} />
+            render={ (props) =><VcfFiles {...props} ws={this.state.ws} ws_data={this.state.ws_data}  />} />
           </Switch>
+          </div>
         </Router>
       </div>
     );   
