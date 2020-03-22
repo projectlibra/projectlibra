@@ -119,6 +119,10 @@ export default function VCFUpload() {
         setOpen(true);
     };
 
+    const newHandleClickOpen = () => {
+        
+    };
+
     const handleClose = value => {
         setOpen(false);
         setSelectedValue(value);
@@ -146,6 +150,7 @@ export default function VCFUpload() {
             <h3>3) One Last Step:</h3>
             <Button width="25%" height="25%" variant="contained" color="primary" onClick={handleClickOpen}>ANNOTATE VCF FILES</Button>
             <Button width="25%" height="25%" variant="contained" color="secondary" >CANCEL PROCEDURE</Button>
+            <Button component={Link} to='/list-files' > LIST FILES</Button>
             <h4><i><b>Note: </b></i>LIBRA runs in the background to annotate files. You may leave this page.</h4>
             <SimpleDialog selectedValue={selectedValue} open={open} onClose={handleClose} />
         </div>

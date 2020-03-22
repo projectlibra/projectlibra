@@ -1,7 +1,14 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
+*.tbi
+*.gz
+*.vcf
 *.pyc
 /libra-backend/env/*
+/libra-backendv2/product.py
+/libra-backendv2/bin/*
+/libra-backendv2/include/*
+/libra-backendv2/lib/*
+/libra-backendv2/pyvenv.cfg
 # dependencies
 /node_modules
 /.pnp
