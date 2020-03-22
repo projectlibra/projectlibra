@@ -16,6 +16,7 @@ import Homepage from './components/Homepage';
 import VcfFiles from './components/VcfFiles';
 import Projects from './pages/projects'
 import WebSocketInstance from './websocket';
+import DZUploader from './components/DZUploader';
 
 class App extends React.Component{
 
@@ -113,7 +114,7 @@ class App extends React.Component{
           <Switch >
             {/* Insert Page routes here: */}
             {/*<Route path="/" component={}/>*/}
-            
+            <Route exact path="/drop" component={DZUploader} />
             <Route exact path="/editPatient" component={editPatient} />
             <Route exact path="/matchmaker" component={MatchmakerUIComponent} />
             <Route exact path="/managePatients" component={Patients} />
