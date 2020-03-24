@@ -56,10 +56,12 @@ class VCFs(db.Model):
   qual = db.Column(db.String(50))
   filter = db.Column(db.String(100))
   info = db.Column(db.String(100))
-  sample = db.Column(db.String(100))
+  sample_id = db.Column(db.String(100))
+  sample_data = db.Column(db.String(100))
 
 class VCFsSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'filename', 'chrom', 'pos', 'variant_id', 'ref', 'alt', 'qual', 'filter', 'info', 'sample')
+    fields = ('id', 'filename', 'chrom', 'pos', 'variant_id', 'ref',
+              'alt', 'qual', 'filter', 'info', 'sample_id', 'sample_data')
 
 vcfs_schema = VCFsSchema()

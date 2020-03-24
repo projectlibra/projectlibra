@@ -144,9 +144,11 @@ def fileUpload(current_user):
         # print (record)
         for sample in record.samples:
             # print (sample)
+            # sample_data = str(sample.data)[9:-1] because pyvcf has "CallData()" wrapping it
             new_vcf = VCFs(filename=filename, project_id=project_id, user_id=user_id, chrom=str(record.CHROM),
               pos=record.POS, variant_id=record.ID, ref=record.REF, alt=str(record.ALT), qual=record.QUAL,
-              filter=str(record.FILTER), info=str(record.INFO), sample = str(sample))
+              filter=str(record.FILTER), info=str(record.INFO), sample_id = str(sample.sample),
+              sample_data = str(sample.data)[9:-1])
             db.session.add(new_vcf)
             db.session.commit()
 
