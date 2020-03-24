@@ -42,3 +42,24 @@ class FileSchema(ma.Schema):
 
 file_schema = FileSchema()
 files_schema = FileSchema(many=True)
+class VCFs(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  filename = db.Column(db.String(50))
+  project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+  chrom = db.Column(db.Integer)
+  pos = db.Column(db.Integer)
+  # need to fix the following column types into more appropriate ones
+  variant_id = db.Column(db.String(50))
+  ref = db.Column(db.String(50))
+  alt = db.Column(db.String(50))
+  qual = db.Column(db.String(50))
+  filter = db.Column(db.String(100))
+  info = db.Column(db.String(100))
+  sample = db.Column(db.String(100))
+
+class VCFsSchema(ma.Schema):
+  class Meta:
+    fields = ('id', 'filename', 'chrom', 'pos', 'variant_id', 'ref', 'alt', 'qual', 'filter', 'info', 'sample')
+
+vcfs_schema = VCFsSchema()

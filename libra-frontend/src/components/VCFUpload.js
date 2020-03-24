@@ -13,9 +13,11 @@ import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import VCFDrop from "./VCFDrop";
+import BasicVCFUpload from './BasicVCFUpload';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { Link } from "react-router-dom";
+import axios from 'axios';
 
 const answers = ['Yes, let\'s query!', 'No, I will query later.'];
 const useStyles = makeStyles({
@@ -146,7 +148,10 @@ export default function VCFUpload() {
             </FormControl>
             {newVCFdb}
             <h3>2) Choose the new variant files:</h3>
+            <BasicVCFUpload project_id="2"/>
+            <h1>DEPRECATED UPLOAD BELOW \/ </h1>
             <VCFDrop />
+            <h1>DEPRECATED UPLOAD ABOVE /\ </h1>
             <h3>3) One Last Step:</h3>
             <Button width="25%" height="25%" variant="contained" color="primary" onClick={handleClickOpen}>ANNOTATE VCF FILES</Button>
             <Button width="25%" height="25%" variant="contained" color="secondary" >CANCEL PROCEDURE</Button>
