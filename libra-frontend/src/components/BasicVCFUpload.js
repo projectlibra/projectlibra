@@ -47,10 +47,7 @@ class BasicVCFUpload extends React.Component {
       // 'Content-Type': 'application/x-www-form-urlencoded',
     }
     }).then((response) => {
-      /*response.json().then((body) => {
-        this.setState({ imageURL: `http://localhost:5000/${body.file}` });
-      });*/
-      console.log(response);
+      // console.log(response);
       this.setState({ uploadStatus: "VCF Uploaded Successfully" });
     });
   }
