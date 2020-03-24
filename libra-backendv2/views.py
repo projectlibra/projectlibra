@@ -9,6 +9,7 @@ from functools import wraps
 #from models import User, Project, projects_schema, project_schema, user_schema
 from .models import *
 from flask_cors import cross_origin
+from sqlalchemy.orm import load_only
 import os
 import json
 import vcf
@@ -179,3 +180,29 @@ def get_files(current_user, id):
   files = File.query.filter_by(id=id)
   
   return files_schema.jsonify(files) 
+
+
+@app.route('/vcf_table/<id>', methods=['GET'])
+@token_required
+def get_vcf_table(current_user, id):
+  columns = [column.key for column in VCFs.__table__.columns]
+  print(columns)
+  result = VCFs.query.filter_by(user_id=current_user.id, project_id=id).options(load_only(*columns[4:])).all()
+  table_data = []
+  for vcf in result:
+    row_data = []
+    for col in columns[4:]:
+      row_data.append(vcf.__dict__[col])
+    table_data.append(row_data)
+
+  print(table_data)
+    
+
+  print(columns[4:])
+
+  resp = {
+    'columns': columns[4:],
+    'table_data:': table_data
+  }
+
+  return jsonify(resp), 200
