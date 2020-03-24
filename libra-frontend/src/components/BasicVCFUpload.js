@@ -39,7 +39,7 @@ class BasicVCFUpload extends React.Component {
     //       }
     //     }
     //   });
-    fetch('http://localhost:5000/upload', {
+    fetch('http://localhost:5000/vcf_upload', {
       method: 'POST',
       body: data,
       headers: {

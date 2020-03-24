@@ -7,13 +7,15 @@ export const authStart = () => {
     }
 }
 
-export const authSuccess = token => {
+export const authSuccess = (token, username) => {
     console.log("In Success:")
+    console.log(username)
     axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
     console.log(axios.defaults.headers.common['Authorization'])
     return {
         type: actionTypes.AUTH_SUCCESS,
-        token: token
+        token: token,
+        username: username
     }
 }
 
@@ -29,7 +31,8 @@ export const logout = () => {
     localStorage.removeItem('expirationDate');
     axios.defaults.headers.common['Authorization'] = '';
     return {
-        type: actionTypes.AUTH_LOGOUT
+        type: actionTypes.AUTH_LOGOUT,
+        username: null
     };
 }
 
@@ -100,7 +103,7 @@ export const authLogin = (username, password) => {
             const expirationDate = new Date(new Date().getTime() + 3600 * 1000);
             localStorage.setItem('token', token);
             localStorage.setItem('expirationDate', expirationDate);
-            dispatch(authSuccess(token));
+            dispatch(authSuccess(token, username));
             dispatch(checkAuthTimeout(3600));
         })
         .catch(err => {
