@@ -204,7 +204,7 @@ def get_vcf_table(current_user, id):
 
   resp = {
     'columns': columns[4:],
-    'table_data:': table_data
+    'table_data': table_data
   }
 
-  return jsonify(resp), 200
+  return resp, 200

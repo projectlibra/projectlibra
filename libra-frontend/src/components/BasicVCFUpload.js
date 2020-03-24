@@ -6,7 +6,7 @@ class BasicVCFUpload extends React.Component {
     super(props);
 
     this.state = {
-      imageURL: '',
+      uploadStatus: '',
     };
 
     this.handleUploadImage = this.handleUploadImage.bind(this);
@@ -47,9 +47,11 @@ class BasicVCFUpload extends React.Component {
       // 'Content-Type': 'application/x-www-form-urlencoded',
     }
     }).then((response) => {
-      response.json().then((body) => {
+      /*response.json().then((body) => {
         this.setState({ imageURL: `http://localhost:5000/${body.file}` });
-      });
+      });*/
+      console.log(response);
+      this.setState({ uploadStatus: "VCF Uploaded Successfully" });
     });
   }
 
@@ -62,6 +64,7 @@ class BasicVCFUpload extends React.Component {
         <div>
           <button>Upload VCF to database</button>
         </div>
+        <h3>{this.state.uploadStatus}</h3>
       </form>
     );
   }
