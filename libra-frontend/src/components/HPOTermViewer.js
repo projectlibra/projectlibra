@@ -1,48 +1,50 @@
 import React, {useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
 
-export const HPOTermViewer = props => {
+class HPOTermViewer extends React.Component {
 
-	useEffect(() => {		
-		fetchDataHPO(hpoid);
-	}, []);
+	constructor(props){
+		super(props);
+		this.fetchDataHPO(props.hpoid);
+	}
 	
-	const [name, setName] = React.useState('');
-	const [defi, setDefi] = React.useState('');
-	const [parents,setParents] = React.useState([]);
-	const [children, setChildren] = React.useState([]);
-	const [hpoid,setHpoid] = React.useState(props.hpoid);
 	
-	const fetchDataHPO = async( hpoid ) => {
+	async fetchDataHPO  ( hpoid )  {
 		const data = await fetch('https://hpo.jax.org/api/hpo/term/'.concat(hpoid));
 		const infos = await data.json();
-		setName(infos.details.name);
-		setDefi(infos.details.definition);
-		setParents(infos.relations.parents);
-		setChildren(infos.relations.children);
+		this.props.setName(infos.details.name);
+		this.props.setDefi(infos.details.definition);
+		this.props.setParents(infos.relations.parents);
+		this.props.setChildren(infos.relations.children);
 	};
 	
 	
-	
+	handleClick(ontologyId){
+		this.props.hpoSetter(ontologyId);
+		this.fetchDataHPO(this.props.hpoid);
+		this.forceUpdate();
+	}
 		
+	render(){
+	
 	return(
 		<div>
-			
+		
 			<p>
-			Name : {name}
+			Name : {this.props.name}
 			</p>
 			
 			<p> 
-			Definition : {defi}
+			Definition : {this.props.defi}
 			</p>
 			
 			<p>
-			Parent(s) : <ul>{parents.map(parent => (
+			Parent(s) : <ul>{this.props.parents.map(parent => (
 							<li>
 							{
 							 <Button color="primary" onClick={() => {
-							 	setHpoid(parent.ontologyId);
-							 	fetchDataHPO(hpoid);}}>
+							 	this.handleClick(parent.ontologyId);
+							 	}}>
 							 	{parent.name}
 							 </Button>
 							}
@@ -53,12 +55,12 @@ export const HPOTermViewer = props => {
 			</p>
 			
 			<p>
-			Children : <ul>{children.map(child => (
+			Children : <ul>{this.props.children.map(child => (
 							<li>
 							{
 							  <Button color="primary" onClick={() => {
-							 	setHpoid(child.ontologyId);
-							 	fetchDataHPO(hpoid);}}>
+							 	this.handleClick(child.ontologyId);
+							 	}}>
 							 	{child.name}
 							 </Button>
 							}
@@ -68,8 +70,16 @@ export const HPOTermViewer = props => {
 					}</ul>
 			</p>
 			
+			
+			
+			<p>
+			As game {this.props.hpoid}
+			</p>
+			
 		</div>
 	);
+	
+	}
 
 }
 
