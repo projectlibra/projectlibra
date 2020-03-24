@@ -119,30 +119,37 @@ def delete_project(current_user, id):
 @token_required
 def fileUpload(current_user):
     #save file to file system
-    target=os.path.join(app.config['UPLOAD_FOLDER'],'test_vcfs')
-    if not os.path.isdir(target):
-        os.mkdir(target)
+    project_id = int(request.form['project_id'])
+    #target=os.path.join(app.config['UPLOAD_FOLDER'],'test_vcfs')
+    dir_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id), str(project_id))
+    #if not os.path.isdir(target):
+    #    os.mkdir(target)
+    os.makedirs(dir_path, exist_ok=True)
     file = request.files['file']
     filename = secure_filename(file.filename)
-    destination="/".join([target, filename])
-    file.save(destination)
+    file_path = os.path.join(dir_path, filename)
+    file.save(file_path)
+
+    # save file to db
+    file_db = File(name=file.filename, path=file_path, project_id=project_id)
+    db.session.add(file_db)
+    db.session.commit()
 
     #parse vcf using pyvcf and upload to database
-    vcf_reader = vcf.Reader(open('./test_vcfs/' + filename, 'r'))
+    vcf_reader = vcf.Reader(open(file_path, 'r'))
     user_id = current_user.id
-    project_id = int(request.form['project_id'])
+    
     for record in vcf_reader:
         # print (record)
         for sample in record.samples:
             # print (sample)
-            new_vcf = VCFs(filename=filename, project_id=project_id, user_id=user_id, chrom=int(record.CHROM),
+            new_vcf = VCFs(filename=filename, project_id=project_id, user_id=user_id, chrom=str(record.CHROM),
               pos=record.POS, variant_id=record.ID, ref=record.REF, alt=str(record.ALT), qual=record.QUAL,
               filter=str(record.FILTER), info=str(record.INFO), sample = str(sample))
             db.session.add(new_vcf)
             db.session.commit()
 
-    response="Whatever you wish to return"
-    return response
+    return make_response('File Upload Successful!', 200)
 
 @app.route('/upload/<id>', methods=['POST'])
 @token_required

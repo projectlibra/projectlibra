@@ -47,7 +47,7 @@ class VCFs(db.Model):
   filename = db.Column(db.String(50))
   project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
   user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-  chrom = db.Column(db.Integer)
+  chrom = db.Column(db.String(5))
   pos = db.Column(db.Integer)
   # need to fix the following column types into more appropriate ones
   variant_id = db.Column(db.String(50))

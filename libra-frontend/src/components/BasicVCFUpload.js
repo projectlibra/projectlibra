@@ -57,7 +57,7 @@ class BasicVCFUpload extends React.Component {
     return (
       <form onSubmit={this.handleUploadImage}>
         <div>
-          <input ref={(ref) => { this.uploadInput = ref; }} type="file" />
+          <input ref={(ref) => { this.uploadInput = ref; }} type="file" accept=".gz, .vcf" />
         </div>
         <div>
           <button>Upload VCF to database</button>

@@ -11,10 +11,6 @@ import uuid
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-UPLOAD_FOLDER = '.'
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
 # DB
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db2.sqlite')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:1@localhost:5432/libra'
