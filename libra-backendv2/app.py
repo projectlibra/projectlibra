@@ -17,6 +17,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:1@localhost:5432/li
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config['SECRET_KEY'] = "mysecret"
+app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'uploads')
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Init DB
 db = SQLAlchemy(app)
@@ -31,7 +33,7 @@ bcrypt = Bcrypt(app)
 migrate = Migrate(app, db)
 
 CORS(app, expose_headers='Authorization')
-
+#app.config['CORS_HEADERS'] = 'Content-Type'
 from .views import *
 
 # Run server

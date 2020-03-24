@@ -21,6 +21,7 @@ class Project(db.Model):
   name = db.Column(db.String(50))
   desc = db.Column(db.Text())
   user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+  files = db.relationship('File', backref='project')
 
 class ProjectSchema(ma.Schema):
   class Meta:
@@ -28,3 +29,16 @@ class ProjectSchema(ma.Schema):
 
 project_schema = ProjectSchema()
 projects_schema = ProjectSchema(many=True)
+
+class File(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  name = db.Column(db.String(200))
+  path = db.Column(db.String(300))
+  project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+
+class FileSchema(ma.Schema):
+  class Meta:
+    fields = ('id', 'name', 'path')
+
+file_schema = FileSchema()
+files_schema = FileSchema(many=True)
