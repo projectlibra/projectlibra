@@ -1,11 +1,16 @@
 from .app import app, db, ma, bcrypt
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, flash, redirect, url_for, session
 import uuid
 import jwt
 import datetime
 from functools import wraps
 #from models import User, Project, projects_schema, project_schema, user_schema
 from .models import *
+from werkzeug.utils import secure_filename
+from flask_cors import cross_origin
+import os
+import json
+import vcf
 
 PREFIX = 'Bearer'
 
@@ -109,3 +114,31 @@ def delete_project(current_user, id):
   db.session.commit()
   return project_schema.jsonify(project)
 
+@app.route('/upload', methods=['POST'])
+@token_required
+def fileUpload(current_user):
+    #save file to file system
+    target=os.path.join(app.config['UPLOAD_FOLDER'],'test_vcfs')
+    if not os.path.isdir(target):
+        os.mkdir(target)
+    file = request.files['file']
+    filename = secure_filename(file.filename)
+    destination="/".join([target, filename])
+    file.save(destination)
+
+    #parse vcf using pyvcf and upload to database
+    vcf_reader = vcf.Reader(open('./test_vcfs/' + filename, 'r'))
+    user_id = current_user.id
+    project_id = int(request.form['project_id'])
+    for record in vcf_reader:
+        # print (record)
+        for sample in record.samples:
+            # print (sample)
+            new_vcf = VCFs(filename=filename, project_id=project_id, user_id=user_id, chrom=int(record.CHROM),
+              pos=record.POS, variant_id=record.ID, ref=record.REF, alt=str(record.ALT), qual=record.QUAL,
+              filter=str(record.FILTER), info=str(record.INFO), sample = str(sample))
+            db.session.add(new_vcf)
+            db.session.commit()
+
+    response="Whatever you wish to return"
+    return response
