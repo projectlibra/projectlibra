@@ -5,7 +5,6 @@ import BuildQuery from './components/BuildQuery';
 import VCFUpload from './components/VCFUpload';
 import ButtonAppBar from "./components/ButtonAppBar"
 // Components
-import Patients from './components/patients.component';
 import editPatient from './pages/editPatient';
 import Login from './components/Login'
 import SignUp from './components/SignUp'
@@ -17,6 +16,7 @@ import VcfFiles from './components/VcfFiles';
 import Projects from './pages/projects'
 import WebSocketInstance from './websocket';
 import DZUploader from './components/DZUploader';
+import PatientProfiles from './components/PatientProfiles';
 
 class App extends React.Component{
 
@@ -117,13 +117,13 @@ class App extends React.Component{
             <Route exact path="/drop" component={DZUploader} />
             <Route exact path="/editPatient" component={editPatient} />
             <Route exact path="/matchmaker" component={MatchmakerUIComponent} />
-            <Route exact path="/managePatients" component={Patients} />
             <Route exact path="/buildquery" component={BuildQuery} />
             <Route exact path="/vcfupload" component={VCFUpload} />
             <Route exact path="/login" component={Login} />
             <Route exact path="/signup" component={SignUp} />
             <Route exact path="/forgot" component={Forgot} />
             <Route exact path="/createPatientProfile" component={CreatePatientProfile} />
+            <Route exact path="/patients" component={PatientProfiles} />
             <Route exact path="/projects" component={Projects} />
             <Route exact path="/" component={Homepage} />
 

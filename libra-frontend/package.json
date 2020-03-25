@@ -20,6 +20,7 @@
     "material-ui-icons": "^1.0.0-beta.36",
     "mui-datatables": "^2.14.0",
     "react": "^16.12.0",
+    "react-autocomplete": "^1.8.1",
     "react-country-region-selector-material-ui-new": "^1.5.2",
     "react-dom": "^16.12.0",
     "react-draft-wysiwyg": "^1.14.4",
