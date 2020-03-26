@@ -18,6 +18,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:MESA2611@localhost:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config['SECRET_KEY'] = "mysecret"
+app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'uploads')
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Init DB
 db = SQLAlchemy(app)
@@ -32,10 +34,12 @@ bcrypt = Bcrypt(app)
 migrate = Migrate(app, db)
 
 CORS(app, expose_headers='Authorization')
-
+#app.config['CORS_HEADERS'] = 'Content-Type'
 from .views import *
 
 # Run server
 if __name__ == '__main__':
   app.run(debug=True)
+  # app.secret_key = os.urandom(24)
+  # app.run(debug=True,host="0.0.0.0",use_reloader=False)
 

@@ -1,13 +1,18 @@
 from .app import app, db, ma, bcrypt, basedir
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, flash, redirect, url_for, session
 from werkzeug.utils import secure_filename
+from flask_cors import cross_origin
 import uuid
 import jwt
 import datetime
 from functools import wraps
 #from models import User, Project, projects_schema, project_schema, user_schema
 from .models import *
+from flask_cors import cross_origin
+from sqlalchemy.orm import load_only
 import os
+import json
+import vcf
 
 PREFIX = 'Bearer'
 
@@ -111,49 +116,128 @@ def delete_project(current_user, id):
   db.session.commit()
   return project_schema.jsonify(project)
 
-
-@app.route('/upload', methods=['POST'])
-def upload():
+@app.route('/vcf_upload', methods=['POST'])
+@token_required
+def fileUpload(current_user):
+    #save file to file system
+    project_id = int(request.form['project_id'])
+    #target=os.path.join(app.config['UPLOAD_FOLDER'],'test_vcfs')
+    dir_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id), str(project_id))
+    #if not os.path.isdir(target):
+    #    os.mkdir(target)
+    os.makedirs(dir_path, exist_ok=True)
     file = request.files['file']
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(dir_path, filename)
+    file.save(file_path)
 
-    print(file.filename)
-    print("HEre: ", os.path.join(basedir, secure_filename(file.filename)))
-    print(basedir)
+    # save file to db
+    file_db = File(name=file.filename, path=file_path, project_id=project_id)
+    db.session.add(file_db)
+    db.session.commit()
+
+    #parse vcf using pyvcf and upload to database
+    vcf_reader = vcf.Reader(open(file_path, 'r'))
+    user_id = current_user.id
+    
+    for record in vcf_reader:
+        # print (record)
+        for sample in record.samples:
+            # print (sample)
+            # sample_data = str(sample.data)[9:-1] because pyvcf has "CallData()" wrapping it
+            new_vcf = VCFs(filename=filename, project_id=project_id, user_id=user_id, chrom=str(record.CHROM),
+              pos=record.POS, variant_id=record.ID, ref=record.REF, alt=str(record.ALT), qual=record.QUAL,
+              filter=str(record.FILTER), info=str(record.INFO), sample_id = str(sample.sample),
+              sample_data = str(sample.data)[9:-1])
+            db.session.add(new_vcf)
+            db.session.commit()
+
+    return make_response('File Upload Successful!', 200)
+
+@app.route('/upload/<id>', methods=['POST'])
+@token_required
+def upload(current_user, id):
+    """print("HERE")
+    print(request)
+    print(request.headers)
+    data = request.form.get('file')
+    print(data)
     print(request.form)
-    save_path = os.path.join(basedir, secure_filename(file.filename))
-    current_chunk = int(request.form['dzchunkindex'])
-    print(save_path)
+    print(request.data)
+    print(request.files)"""
+    f = request.files['file']
+    dir_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id), str(id))
+    os.makedirs(dir_path, exist_ok=True)
+    f_path = os.path.join(dir_path, secure_filename(f.filename)) 
+    f.save(f_path)
+    file_db = File(name=f.filename, path=f_path, project_id=id)
+    db.session.add(file_db)
+    db.session.commit()
+    
+    return make_response('File Upload Successful!', 200)
 
-    # If the file already exists it's ok if we are appending to it,
-    # but not if it's new file that would overwrite the existing one
-    if os.path.exists(save_path) and current_chunk == 0:
-        # 400 and 500s will tell dropzone that an error occurred and show an error
-        return make_response(('File already exists', 400))
+@app.route('/files/<id>', methods=['GET'])
+@token_required
+def get_files(current_user, id):
+  files = File.query.filter_by(id=id)
+  
+  return files_schema.jsonify(files) 
 
-    try:
-        with open(save_path, 'ab') as f:
-            f.seek(int(request.form['dzchunkbyteoffset']))
-            f.write(file.stream.read())
-    except OSError:
-        # log.exception will include the traceback so we can see what's wrong 
-        log.exception('Could not write to file')
-        return make_response(("Not sure why,"
-                              " but we couldn't write the file to disk", 500))
 
-    total_chunks = int(request.form['dztotalchunkcount'])
+@app.route('/vcf_table/<id>', methods=['GET'])
+@token_required
+def get_vcf_table(current_user, id):
+  columns = [column.key for column in VCFs.__table__.columns]
+  print(columns)
+  result = VCFs.query.filter_by(user_id=current_user.id, project_id=id).options(load_only(*columns[4:])).all()
+  table_data = []
+  for vcf in result:
+    row_data = []
+    for col in columns[4:]:
+      row_data.append(vcf.__dict__[col])
+    table_data.append(row_data)
 
-    if current_chunk + 1 == total_chunks:
-        # This was the last chunk, the file should be complete and the size we expect
-        if os.path.getsize(save_path) != int(request.form['dztotalfilesize']):
-            log.error(f"File {file.filename} was completed, "
-                      f"but has a size mismatch."
-                      f"Was {os.path.getsize(save_path)} but we"
-                      f" expected {request.form['dztotalfilesize']} ")
-            return make_response(('Size mismatch', 500))
-        else:
-            log.info(f'File {file.filename} has been uploaded successfully')
-    else:
-        log.debug(f'Chunk {current_chunk + 1} of {total_chunks} '
-                  f'for file {file.filename} complete')
+  print(table_data)
+    
 
-    return make_response(("Chunk upload successful", 200))
+  print(columns[4:])
+
+  resp = {
+    'columns': columns[4:],
+    'table_data': table_data
+  }
+
+  return resp, 200
+
+
+@app.route('/createPatientProfile', methods=['POST'])
+@token_required
+def create_patient(current_user):
+  firstname = request.json['firstname']
+  surname= request.json['surname']
+  user_id = current_user.id
+  hpo_tag_ids = request.json['hpo_tag_ids']
+  hpo_tag_names = request.json['hpo_tag_names']
+  hpo_tag_names_str = ""+str(hpo_tag_names[0])
+  hpo_tag_ids_str = ""+str(hpo_tag_ids[0])
+  for i in range(1,len(hpo_tag_ids)):
+    hpo_tag_names_str = hpo_tag_names_str +", " + str(hpo_tag_names[i])
+    hpo_tag_ids_str = hpo_tag_ids_str +", " + str(hpo_tag_ids[i])
+ 
+  patient = Patient(firstname=firstname, surname=surname, user_id=user_id,  hpo_tag_names=hpo_tag_names_str, hpo_tag_ids=hpo_tag_ids_str, resolve_state=False)
+  db.session.add(patient)
+  db.session.commit()
+
+  for i in range(len(hpo_tag_ids)):
+    hpo_tag = HPOTag(hpo_tag_id=hpo_tag_ids[i], hpo_tag_name=hpo_tag_names[i], patient_id=patient.id, resolve_state=False)
+    db.session.add(hpo_tag)
+    db.session.commit()
+  
+  return patient_schema.jsonify(patient)
+
+@app.route('/patientprofile', methods=['GET'])
+@token_required
+def get_patients(current_user):
+  all_patients = Patient.query.filter_by(user_id=current_user.id)
+  result = patients_schema.dump(all_patients)
+  return jsonify(result)

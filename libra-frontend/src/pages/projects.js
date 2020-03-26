@@ -93,7 +93,7 @@ class Projects extends Component{
       projects.map(project => {
         return (
           <div key={project.id}>
-            <Project name={project.name} desc={project.desc}/>
+            <Project name={project.name} desc={project.desc} id={project.id} project={project}/>
           </div>
         )
       })

@@ -53,6 +53,7 @@ const ButtonAppBar = (props) => {
           <Button color="inherit" component={Link} to="/matchmaker">Matchmaker</Button>
           */}
           <Button color="inherit" component={Link} to="/projects">My Projects</Button>
+          <Button color="inherit" component={Link} to="/patients">My Patients</Button>
           <Button color="inherit" onClick={onFinish}>Sign Out</Button>
         </Toolbar>
       </AppBar>
