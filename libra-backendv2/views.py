@@ -208,3 +208,36 @@ def get_vcf_table(current_user, id):
   }
 
   return resp, 200
+
+
+@app.route('/createPatientProfile', methods=['POST'])
+@token_required
+def create_patient(current_user):
+  firstname = request.json['firstname']
+  surname= request.json['surname']
+  user_id = current_user.id
+  hpo_tag_ids = request.json['hpo_tag_ids']
+  hpo_tag_names = request.json['hpo_tag_names']
+  hpo_tag_names_str = ""+str(hpo_tag_names[0])
+  hpo_tag_ids_str = ""+str(hpo_tag_ids[0])
+  for i in range(1,len(hpo_tag_ids)):
+    hpo_tag_names_str = hpo_tag_names_str +", " + str(hpo_tag_names[i])
+    hpo_tag_ids_str = hpo_tag_ids_str +", " + str(hpo_tag_ids[i])
+ 
+  patient = Patient(firstname=firstname, surname=surname, user_id=user_id,  hpo_tag_names=hpo_tag_names_str, hpo_tag_ids=hpo_tag_ids_str, resolve_state=False)
+  db.session.add(patient)
+  db.session.commit()
+
+  for i in range(len(hpo_tag_ids)):
+    hpo_tag = HPOTag(hpo_tag_id=hpo_tag_ids[i], hpo_tag_name=hpo_tag_names[i], patient_id=patient.id, resolve_state=False)
+    db.session.add(hpo_tag)
+    db.session.commit()
+  
+  return patient_schema.jsonify(patient)
+
+@app.route('/patientprofile', methods=['GET'])
+@token_required
+def get_patients(current_user):
+  all_patients = Patient.query.filter_by(user_id=current_user.id)
+  result = patients_schema.dump(all_patients)
+  return jsonify(result)

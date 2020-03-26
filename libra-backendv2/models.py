@@ -65,3 +65,34 @@ class VCFsSchema(ma.Schema):
               'alt', 'qual', 'filter', 'info', 'sample_id', 'sample_data')
 
 vcfs_schema = VCFsSchema()
+
+class Patient(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  firstname = db.Column(db.String(50))
+  surname = db.Column(db.String(50))
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+  hpo_tag = db.relationship('HPOTag', backref='patient')
+  hpo_tag_names = db.Column(db.Text())
+  hpo_tag_ids = db.Column(db.Text())
+  resolve_state = db.Column(db.Boolean, default=False, nullable=False)
+
+class PatientSchema(ma.Schema):
+  class Meta:
+    fields = ('id','firstname', 'surname','hpo_tag_names', 'hpo_tag_ids')
+
+patient_schema = PatientSchema()
+patients_schema = PatientSchema(many=True)
+
+class HPOTag(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  hpo_tag_id = db.Column(db.String(50))
+  hpo_tag_name = db.Column(db.String(50))
+  patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
+  resolve_state = db.Column(db.Boolean, default=False, nullable=False)
+
+class HPOSchema(ma.Schema):
+  class Meta:
+    fields = ('id','hpo_tag_name','hpo_tag_id','resolve_state')
+
+HPO_schema = HPOSchema()
+HPOs_schema = HPOSchema(many=True)
