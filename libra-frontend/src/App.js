@@ -15,6 +15,9 @@ import Homepage from './components/Homepage';
 import VcfFiles from './components/VcfFiles';
 import Projects from './pages/projects'
 import WebSocketInstance from './websocket';
+import Upload from './components/upload/Upload';
+import ProjectDetail from './components/ProjectDetail';
+import Sider from './components/ProjectDetailContainer';
 import DZUploader from './components/DZUploader';
 import PatientProfiles from './components/PatientProfiles';
 
@@ -35,7 +38,7 @@ class App extends React.Component{
   }
 
   componentDidMount(){
-    this.connect();
+    //this.connect();
   }
 
   timeout = 250;
@@ -109,12 +112,14 @@ class App extends React.Component{
       <div className="App" >
         <Router>
           <ButtonAppBar />
+          
+          
           <br></br>
           <div style={{paddingLeft: '20px', paddingRight: '20px'}}>
           <Switch >
             {/* Insert Page routes here: */}
             {/*<Route path="/" component={}/>*/}
-            <Route exact path="/drop" component={DZUploader} />
+            <Route exact path="/drop" component={Sider} />
             <Route exact path="/editPatient" component={editPatient} />
             <Route exact path="/matchmaker" component={MatchmakerUIComponent} />
             <Route exact path="/buildquery" component={BuildQuery} />
@@ -125,6 +130,7 @@ class App extends React.Component{
             <Route exact path="/createPatientProfile" component={CreatePatientProfile} />
             <Route exact path="/patients" component={PatientProfiles} />
             <Route exact path="/projects" component={Projects} />
+            <Route exact path="/projects/:id" component={ProjectDetail} />
             <Route exact path="/" component={Homepage} />
 
             {/*correct way to Route with props*/ }
