@@ -20,6 +20,7 @@ import ProjectDetail from './components/ProjectDetail';
 import Sider from './components/ProjectDetailContainer';
 import DZUploader from './components/DZUploader';
 import PatientProfiles from './components/PatientProfiles';
+import HPO from './components/HPO';
 
 class App extends React.Component{
 
@@ -131,6 +132,7 @@ class App extends React.Component{
             <Route exact path="/patients" component={PatientProfiles} />
             <Route exact path="/projects" component={Projects} />
             <Route exact path="/projects/:id" component={ProjectDetail} />
+            <Route exact path="/HPO/:id" component={HPO} />
             <Route exact path="/" component={Homepage} />
 
             {/*correct way to Route with props*/ }
