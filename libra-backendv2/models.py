@@ -43,7 +43,7 @@ class FileSchema(ma.Schema):
 file_schema = FileSchema()
 files_schema = FileSchema(many=True)
 class VCFs(db.Model):
-  id = db.Column(db.Integer, primary_key=True)
+  vcf_id = db.Column(db.Integer, primary_key=True)
   filename = db.Column(db.String(50))
   project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
   user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -58,10 +58,11 @@ class VCFs(db.Model):
   info = db.Column(db.String(100))
   #sample_id = db.Column(db.String(100))
   #sample_data = db.Column(db.String(100))
+  samples = db.relationship('Sample', backref='vcfs')
 
 class VCFsSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'filename', 'chrom', 'pos', 'variant_id', 'ref',
+    fields = ('vcf_id', 'filename', 'chrom', 'pos', 'variant_id', 'ref',
               'alt', 'qual', 'filter', 'info')
     #fields = ('id', 'filename', 'chrom', 'pos', 'variant_id', 'ref',
     #          'alt', 'qual', 'filter', 'info', 'sample_id', 'sample_data')
@@ -79,13 +80,13 @@ class VCFsSampleSchema(ma.Schema):
 vcfssample_schema = VCFsSampleSchema()'''
 
 class Sample(db.Model):
-  id = db.Column(db.String(100), primary_key=True)
-  record_id = db.Column(db.Integer, db.ForeignKey('vc_fs.id'), primary_key=True)
+  sample_id = db.Column(db.String(100), primary_key=True)
+  vcf_id = db.Column(db.Integer, db.ForeignKey('vc_fs.vcf_id'), primary_key=True)
   sample_data = db.Column(db.String(100))
 
 class SampleSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'sample_data')
+    fields = ('sample_id', 'vcf_id', 'sample_data')
 
 sample_schema = SampleSchema()
 
