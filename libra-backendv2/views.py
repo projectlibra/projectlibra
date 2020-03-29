@@ -197,15 +197,39 @@ def get_files(current_user, id):
 @token_required
 def get_vcf_table(current_user, id):
   columns = [column.key for column in VCFs.__table__.columns]
+  columns2 = [column.key for column in Sample.__table__.columns]
+  columns = columns + list(set(columns2) - set(columns))
+  #for column in VCFs.__table__.columns
+    #if column.key not in columns
+    #  columns.append(column.key)
   print(columns)
-  result = VCFs.query.filter_by(user_id=current_user.id, project_id=id).options(load_only(*columns[4:])).all()
-  table_data = []
+  #result = VCFs.query.filter_by(user_id=current_user.id, project_id=id).options(load_only(*columns[4:])).all()
+  result = db.session.query(VCFs, Sample).outerjoin(Sample, VCFs.vcf_id == Sample.vcf_id).all()
+  #print(result)
+  print(result)
+  '''table_data = []
   for vcf in result:
     row_data = []
     for col in columns[4:]:
       row_data.append(vcf.__dict__[col])
+    table_data.append(row_data)'''
+
+  table_data = []
+  for vcf in result:
+    row_data = []
+    row_data.append(vcf[0].chrom)
+    row_data.append(vcf[0].pos)
+    row_data.append(vcf[0].variant_id)
+    row_data.append(vcf[0].ref)
+    row_data.append(vcf[0].alt)
+    row_data.append(vcf[0].qual)
+    row_data.append(vcf[0].filter)
+    row_data.append(vcf[0].info)
+    row_data.append(vcf[1].sample_id)
+    row_data.append(vcf[1].sample_data)
     table_data.append(row_data)
 
+  #print(table_data)
   print(table_data)
     
 
