@@ -56,33 +56,36 @@ class VCFs(db.Model):
   qual = db.Column(db.String(50))
   filter = db.Column(db.String(100))
   info = db.Column(db.String(100))
-  sample_id = db.Column(db.String(100))
-  sample_data = db.Column(db.String(100))
+  #sample_id = db.Column(db.String(100))
+  #sample_data = db.Column(db.String(100))
 
 class VCFsSchema(ma.Schema):
   class Meta:
     fields = ('id', 'filename', 'chrom', 'pos', 'variant_id', 'ref',
-              'alt', 'qual', 'filter', 'info', 'sample_id', 'sample_data')
+              'alt', 'qual', 'filter', 'info')
+    #fields = ('id', 'filename', 'chrom', 'pos', 'variant_id', 'ref',
+    #          'alt', 'qual', 'filter', 'info', 'sample_id', 'sample_data')
 
 vcfs_schema = VCFsSchema()
 
-class VCFsSample(db.Model):
-  id = db.Column(db.Integer, db.ForeignKey('vc_fs.id'), primary_key=True)
-  sample_id = db.Column(db.String(100), db.ForeignKey('sample.sample_id'), primary_key=True)
+'''class VCFsSample(db.Model):
+  vcf_id = db.Column(db.Integer, db.ForeignKey('vc_fs.id'), primary_key=True)
+  sample_id = db.Column(db.String(100), db.ForeignKey('sample.id'), primary_key=True)
 
 class VCFsSampleSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'sample_id')
+    fields = ('vcf_id', 'sample_id')
 
-vcfssample_schema = VCFsSampleSchema()
+vcfssample_schema = VCFsSampleSchema()'''
 
 class Sample(db.Model):
-  sample_id = db.Column(db.String(100), primary_key=True)
+  id = db.Column(db.String(100), primary_key=True)
+  record_id = db.Column(db.Integer, db.ForeignKey('vc_fs.id'), primary_key=True)
   sample_data = db.Column(db.String(100))
 
 class SampleSchema(ma.Schema):
   class Meta:
-    fields = ('sample_id', 'sample_data')
+    fields = ('id', 'sample_data')
 
 sample_schema = SampleSchema()
 

@@ -116,6 +116,7 @@ def delete_project(current_user, id):
   db.session.commit()
   return project_schema.jsonify(project)
 
+#
 @app.route('/vcf_upload', methods=['POST'])
 @token_required
 def fileUpload(current_user):
@@ -142,14 +143,22 @@ def fileUpload(current_user):
     
     for record in vcf_reader:
         # print (record)
+         new_vcf = VCFs(filename=filename, project_id=project_id, user_id=user_id, chrom=str(record.CHROM),
+              pos=record.POS, variant_id=record.ID, ref=record.REF, alt=str(record.ALT), qual=record.QUAL,
+              filter=str(record.FILTER), info=str(record.INFO))
+             db.session.add(new_vcf)
+             db.session.commit()
         for sample in record.samples:
             # print (sample)
             # sample_data = str(sample.data)[9:-1] because pyvcf has "CallData()" wrapping it
-            new_vcf = VCFs(filename=filename, project_id=project_id, user_id=user_id, chrom=str(record.CHROM),
-              pos=record.POS, variant_id=record.ID, ref=record.REF, alt=str(record.ALT), qual=record.QUAL,
-              filter=str(record.FILTER), info=str(record.INFO), sample_id = str(sample.sample),
-              sample_data = str(sample.data)[9:-1])
-            db.session.add(new_vcf)
+            # new_vcf = VCFs(filename=filename, project_id=project_id, user_id=user_id, chrom=str(record.CHROM),
+            #  pos=record.POS, variant_id=record.ID, ref=record.REF, alt=str(record.ALT), qual=record.QUAL,
+            #  filter=str(record.FILTER), info=str(record.INFO), sample_id = str(sample.sample),
+            #  sample_data = str(sample.data)[9:-1])
+            # db.session.add(new_vcf)
+            # db.session.commit()
+            new_sample = Sample(sample_id = str(sample.sample), vcf_id = (new_vcf.vcf_id), sample_data = str(sample.data)[9:-1])
+            db.session.add(new_sample)
             db.session.commit()
 
     return make_response('File Upload Successful!', 200)
@@ -183,7 +192,7 @@ def get_files(current_user, id):
   
   return files_schema.jsonify(files) 
 
-
+#
 @app.route('/vcf_table/<id>', methods=['GET'])
 @token_required
 def get_vcf_table(current_user, id):
