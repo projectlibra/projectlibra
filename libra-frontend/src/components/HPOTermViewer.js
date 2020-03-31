@@ -5,6 +5,13 @@ class HPOTermViewer extends React.Component {
 
 	constructor(props){
 		super(props);
+		this.state = {
+			id: this.props.hpoid,
+			name: '',
+			def: '',
+			parents: [],
+			children: []
+		}
 		this.fetchDataHPO(props.hpoid);
 	}
 	
@@ -12,6 +19,13 @@ class HPOTermViewer extends React.Component {
 	async fetchDataHPO  ( hpoid )  {
 		const data = await fetch('https://hpo.jax.org/api/hpo/term/'.concat(hpoid));
 		const infos = await data.json();
+		this.setState({
+			id: hpoid,
+			name: infos.details.name,
+			definition: infos.details.definition,
+			parents: infos.relations.parents,
+			children: infos.relations.children
+		});
 		this.props.setName(infos.details.name);
 		this.props.setDefi(infos.details.definition);
 		this.props.setParents(infos.relations.parents);
@@ -20,9 +34,9 @@ class HPOTermViewer extends React.Component {
 	
 	
 	handleClick(ontologyId){
-		this.props.hpoSetter(ontologyId);
-		this.fetchDataHPO(this.props.hpoid);
-		this.forceUpdate();
+		//this.props.hpoSetter(ontologyId);
+		this.fetchDataHPO(ontologyId);
+		//this.forceUpdate();
 	}
 		
 	render(){
@@ -31,16 +45,16 @@ class HPOTermViewer extends React.Component {
 		<div>
 		
 			<p>
-			Name : {this.props.name}
+			Name : {this.state.name}
 			</p>
 			
 			<p> 
-			Definition : {this.props.defi}
+			Definition : {this.state.definition}
 			</p>
 			
 			<p>
-			Parent(s) : <ul>{this.props.parents.map(parent => (
-							<li>
+			Parent(s) : <ul>{this.state.parents.map(parent => (
+							<li key={parent.ontologyId}>
 							{
 							 <Button color="primary" onClick={() => {
 							 	this.handleClick(parent.ontologyId);
@@ -55,8 +69,8 @@ class HPOTermViewer extends React.Component {
 			</p>
 			
 			<p>
-			Children : <ul>{this.props.children.map(child => (
-							<li>
+			Children : <ul>{this.state.children.map(child => (
+							<li key={child.ontologyId}>
 							{
 							  <Button color="primary" onClick={() => {
 							 	this.handleClick(child.ontologyId);
@@ -73,7 +87,7 @@ class HPOTermViewer extends React.Component {
 			
 			
 			<p>
-			As game {this.props.hpoid}
+			As game {this.state.hpoid}
 			</p>
 			
 		</div>

@@ -126,6 +126,7 @@ def fileUpload(current_user):
     #if not os.path.isdir(target):
     #    os.mkdir(target)
     os.makedirs(dir_path, exist_ok=True)
+    print(request.files)
     file = request.files['file']
     filename = secure_filename(file.filename)
     file_path = os.path.join(dir_path, filename)
