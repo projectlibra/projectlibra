@@ -15,7 +15,6 @@ import Homepage from './components/Homepage';
 import VcfFiles from './components/VcfFiles';
 import Projects from './pages/projects'
 import WebSocketInstance from './websocket';
-import Upload from './components/upload/Upload';
 import ProjectDetail from './components/ProjectDetail';
 import Sider from './components/ProjectDetailContainer';
 import DZUploader from './components/DZUploader';
@@ -132,6 +131,7 @@ class App extends React.Component{
             <Route exact path="/patients" component={PatientProfiles} />
             <Route exact path="/projects" component={Projects} />
             <Route exact path="/projects/:id" component={ProjectDetail} />
+            <Route exact path="/HPO/:id" component={HPO} />
             <Route exact path="/" component={Homepage} />
             <Route exact path="/hpo/:id" component={HPO} />
             {/*correct way to Route with props*/ }

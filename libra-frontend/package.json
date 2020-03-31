@@ -30,7 +30,7 @@
     "react-querybuilder": "^3.0.2",
     "react-redux": "^7.1.3",
     "react-router-dom": "^5.1.2",
-    "react-scripts": "3.3.0",
+    "react-scripts": "^3.4.0",
     "redux": "^4.0.4",
     "redux-thunk": "^2.3.0",
     "ts-react-json-table": "^0.1.2",
