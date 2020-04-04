@@ -15,12 +15,13 @@ import Homepage from './components/Homepage';
 import VcfFiles from './components/VcfFiles';
 import Projects from './pages/projects'
 import WebSocketInstance from './websocket';
-import Upload from './components/upload/Upload';
+import Upload from './components/BasicVCFUpload';
 import ProjectDetail from './components/ProjectDetail';
 import Sider from './components/ProjectDetailContainer';
 import DZUploader from './components/DZUploader';
 import PatientProfiles from './components/PatientProfiles';
 import HPO from './components/HPO';
+import MatchMaker from './components/MatchMaker'
 
 class App extends React.Component{
 
@@ -122,7 +123,7 @@ class App extends React.Component{
             {/*<Route path="/" component={}/>*/}
             <Route exact path="/drop" component={Sider} />
             <Route exact path="/editPatient" component={editPatient} />
-            <Route exact path="/matchmaker" component={MatchmakerUIComponent} />
+            <Route exact path="/matchmaker/:id" component={MatchMaker} />
             <Route exact path="/buildquery" component={BuildQuery} />
             <Route exact path="/vcfupload" component={VCFUpload} />
             <Route exact path="/login" component={Login} />

@@ -9,6 +9,7 @@
 /libra-backendv2/include/*
 /libra-backendv2/lib/*
 /libra-backendv2/pyvenv.cfg
+/libra-backendv2/env
 /libra-backendv2/migrations/*
 # dependencies
 /node_modules
