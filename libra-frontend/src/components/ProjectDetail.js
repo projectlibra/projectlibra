@@ -5,7 +5,7 @@ import Project from '../components/Project';
 import axios from 'axios';
 import BasicVCFUpload from './BasicVCFUpload';
 import Sider from './ProjectDetailContainer';
-
+import Upload from './upload/Upload';
 import MUIDataTable from "mui-datatables";
 import HorizontalScroller from 'react-horizontal-scroll-container';
 import { EditorState, convertToRaw } from 'draft-js';
@@ -179,7 +179,7 @@ class Projects extends Component{
     ) : (
         <div></div>
     )*/
-    const fileUploader = (<BasicVCFUpload project_id={project_id} />)
+    const fileUploader = (<Upload project_id={project_id} />)
     
     const fileUploadButton = open ? (
         <Button onClick={this.toggleDialog}>Close File Uploader</Button>

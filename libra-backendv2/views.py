@@ -118,6 +118,7 @@ def delete_project(current_user, id):
   db.session.commit()
   return project_schema.jsonify(project)
 
+#
 @app.route('/vcf_upload', methods=['POST'])
 @token_required
 def fileUpload(current_user):
@@ -128,6 +129,7 @@ def fileUpload(current_user):
     #if not os.path.isdir(target):
     #    os.mkdir(target)
     os.makedirs(dir_path, exist_ok=True)
+    print(request.files)
     file = request.files['file']
     filename = secure_filename(file.filename)
     file_path = os.path.join(dir_path, filename)
@@ -144,15 +146,23 @@ def fileUpload(current_user):
     
     for record in vcf_reader:
         # print (record)
-        for sample in record.samples:
-            # print (sample)
-            # sample_data = str(sample.data)[9:-1] because pyvcf has "CallData()" wrapping it
-            new_vcf = VCFs(filename=filename, project_id=project_id, user_id=user_id, chrom=str(record.CHROM),
+      new_vcf = VCFs(filename=filename, project_id=project_id, user_id=user_id, chrom=str(record.CHROM),
               pos=record.POS, variant_id=record.ID, ref=record.REF, alt=str(record.ALT), qual=record.QUAL,
-              filter=str(record.FILTER), info=str(record.INFO), sample_id = str(sample.sample),
-              sample_data = str(sample.data)[9:-1])
-            db.session.add(new_vcf)
-            db.session.commit()
+              filter=str(record.FILTER), info=str(record.INFO))
+      db.session.add(new_vcf)
+      db.session.commit()
+      for sample in record.samples:
+          # print (sample)
+          # sample_data = str(sample.data)[9:-1] because pyvcf has "CallData()" wrapping it
+          # new_vcf = VCFs(filename=filename, project_id=project_id, user_id=user_id, chrom=str(record.CHROM),
+          #  pos=record.POS, variant_id=record.ID, ref=record.REF, alt=str(record.ALT), qual=record.QUAL,
+          #  filter=str(record.FILTER), info=str(record.INFO), sample_id = str(sample.sample),
+          #  sample_data = str(sample.data)[9:-1])
+          # db.session.add(new_vcf)
+          # db.session.commit()
+          new_sample = Sample(sample_id = str(sample.sample), vcf_id = (new_vcf.vcf_id), sample_data = str(sample.data)[9:-1])
+          db.session.add(new_sample)
+          db.session.commit()
 
     return make_response('File Upload Successful!', 200)
 
@@ -185,20 +195,44 @@ def get_files(current_user, id):
   
   return files_schema.jsonify(files) 
 
-
+#
 @app.route('/vcf_table/<id>', methods=['GET'])
 @token_required
 def get_vcf_table(current_user, id):
   columns = [column.key for column in VCFs.__table__.columns]
+  columns2 = [column.key for column in Sample.__table__.columns]
+  columns = columns + list(set(columns2) - set(columns))
+  #for column in VCFs.__table__.columns
+    #if column.key not in columns
+    #  columns.append(column.key)
   print(columns)
-  result = VCFs.query.filter_by(user_id=current_user.id, project_id=id).options(load_only(*columns[4:])).all()
-  table_data = []
+  #result = VCFs.query.filter_by(user_id=current_user.id, project_id=id).options(load_only(*columns[4:])).all()
+  result = db.session.query(VCFs, Sample).outerjoin(Sample, VCFs.vcf_id == Sample.vcf_id).all()
+  #print(result)
+  print(result)
+  '''table_data = []
   for vcf in result:
     row_data = []
     for col in columns[4:]:
       row_data.append(vcf.__dict__[col])
+    table_data.append(row_data)'''
+
+  table_data = []
+  for vcf in result:
+    row_data = []
+    row_data.append(vcf[0].chrom)
+    row_data.append(vcf[0].pos)
+    row_data.append(vcf[0].variant_id)
+    row_data.append(vcf[0].ref)
+    row_data.append(vcf[0].alt)
+    row_data.append(vcf[0].qual)
+    row_data.append(vcf[0].filter)
+    row_data.append(vcf[0].info)
+    row_data.append(vcf[1].sample_id)
+    row_data.append(vcf[1].sample_data)
     table_data.append(row_data)
 
+  #print(table_data)
   print(table_data)
     
 
