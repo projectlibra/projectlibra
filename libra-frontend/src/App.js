@@ -20,6 +20,7 @@ import Sider from './components/ProjectDetailContainer';
 import DZUploader from './components/DZUploader';
 import PatientProfiles from './components/PatientProfiles';
 import HPO from './components/HPO';
+import Upload from './components/upload/Upload';
 
 class App extends React.Component{
 

@@ -26,10 +26,10 @@ class HPOTermViewer extends React.Component {
 			parents: infos.relations.parents,
 			children: infos.relations.children
 		});
-		this.props.setName(infos.details.name);
+		/*this.props.setName(infos.details.name);
 		this.props.setDefi(infos.details.definition);
 		this.props.setParents(infos.relations.parents);
-		this.props.setChildren(infos.relations.children);
+		this.props.setChildren(infos.relations.children);*/
 	};
 	
 	
