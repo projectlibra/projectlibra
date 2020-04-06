@@ -10,6 +10,8 @@ from functools import wraps
 from .models import *
 from flask_cors import cross_origin
 from sqlalchemy.orm import load_only
+from sqlalchemy import select
+from sqlalchemy.sql import and_, or_, not_
 import os
 import json
 import vcf
@@ -247,18 +249,59 @@ def get_vcf_table(current_user, id):
 @app.route('/createPatientProfile', methods=['POST'])
 @token_required
 def create_patient(current_user):
-  firstname = request.json['firstname']
-  surname= request.json['surname']
+  name = request.json['name']
+  diagnosis = request.json['diagnosis']
+  patient_contact = current_user.email
   user_id = current_user.id
   hpo_tag_ids = request.json['hpo_tag_ids']
   hpo_tag_names = request.json['hpo_tag_names']
-  hpo_tag_names_str = ""+str(hpo_tag_names[0])
-  hpo_tag_ids_str = ""+str(hpo_tag_ids[0])
-  for i in range(1,len(hpo_tag_ids)):
-    hpo_tag_names_str = hpo_tag_names_str +", " + str(hpo_tag_names[i])
-    hpo_tag_ids_str = hpo_tag_ids_str +", " + str(hpo_tag_ids[i])
+  hpo_tag_names_str = ""
+  hpo_tag_ids_str = ""
+  for i in range(len(hpo_tag_ids)):
+    hpo_tag_names_str = hpo_tag_names_str + str(hpo_tag_names[i])
+    hpo_tag_ids_str = hpo_tag_ids_str + str(hpo_tag_ids[i])
+    if i != len(hpo_tag_ids)-1:
+      hpo_tag_names_str = hpo_tag_names_str +", "
+      hpo_tag_ids_str = hpo_tag_ids_str +", " 
  
-  patient = Patient(firstname=firstname, surname=surname, user_id=user_id,  hpo_tag_names=hpo_tag_names_str, hpo_tag_ids=hpo_tag_ids_str, resolve_state=False)
+  patient = Patient(name=name, diagnosis=diagnosis, patient_contact=patient_contact,
+                    user_id=user_id, hpo_tag_names=hpo_tag_names_str, hpo_tag_ids=hpo_tag_ids_str, resolve_state=False)
+
+  db.session.add(patient)
+  db.session.commit()
+
+  for i in range(len(hpo_tag_ids)):
+    hpo_tag = HPOTag(hpo_tag_id=hpo_tag_ids[i], hpo_tag_name=hpo_tag_names[i], patient_id=patient.id, resolve_state=False)
+    db.session.add(hpo_tag)
+    db.session.commit()
+  
+  return patient_schema.jsonify(patient)
+
+@app.route('/editPatientProfile/<patient_id>', methods=['POST'])
+@token_required
+def edit_patient(current_user, patient_id):
+  db.session.query(HPOTag).filter(HPOTag.patient_id == patient_id).delete()
+  db.session.query(Patient).filter(Patient.id == patient_id).delete()
+  db.session.commit()
+
+  name = request.json['name']
+  diagnosis = request.json['diagnosis']
+  patient_contact = current_user.email
+  user_id = current_user.id
+  hpo_tag_ids = request.json['hpo_tag_ids']
+  hpo_tag_names = request.json['hpo_tag_names']
+  hpo_tag_names_str = ""
+  hpo_tag_ids_str = ""
+  for i in range(len(hpo_tag_ids)):
+    hpo_tag_names_str = hpo_tag_names_str + str(hpo_tag_names[i])
+    hpo_tag_ids_str = hpo_tag_ids_str + str(hpo_tag_ids[i])
+    if i != len(hpo_tag_ids)-1:
+      hpo_tag_names_str = hpo_tag_names_str +", "
+      hpo_tag_ids_str = hpo_tag_ids_str +", " 
+ 
+  patient = Patient(name=name, diagnosis=diagnosis, patient_contact=patient_contact,
+                    user_id=user_id, hpo_tag_names=hpo_tag_names_str, hpo_tag_ids=hpo_tag_ids_str, resolve_state=False)
+
   db.session.add(patient)
   db.session.commit()
 
@@ -274,4 +317,22 @@ def create_patient(current_user):
 def get_patients(current_user):
   all_patients = Patient.query.filter_by(user_id=current_user.id)
   result = patients_schema.dump(all_patients)
+  return jsonify(result)
+
+@app.route('/gethpotags/<patient_id>', methods=['GET'])
+@token_required
+def get_patient(current_user, patient_id):
+  hpo_tags = HPOTag.query.filter(HPOTag.patient_id == patient_id)
+  result = HPOs_schema.dump(hpo_tags)
+  return jsonify(result)
+
+
+@app.route('/matchmakerresults/<cur_hpo_id>', methods=['GET'])
+@token_required
+def get_matchmaker_results(current_user, cur_hpo_id):
+  
+  matched_patitents = Patient.query.join(HPOTag)\
+                                  .add_columns(Patient.id, Patient.patient_contact, Patient.diagnosis, Patient.hpo_tag_names)\
+                                  .filter(HPOTag.hpo_tag_id == cur_hpo_id)
+  result = patients_schema.dump(matched_patitents)
   return jsonify(result)
