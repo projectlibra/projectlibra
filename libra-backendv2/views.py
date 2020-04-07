@@ -1,4 +1,4 @@
-from .app import app, db, ma, bcrypt, basedir
+from .app import app, db, ma, bcrypt, basedir, db_engine, hpo
 from flask import Flask, request, jsonify, make_response, flash, redirect, url_for, session
 from werkzeug.utils import secure_filename
 from flask_cors import cross_origin
@@ -15,6 +15,7 @@ from sqlalchemy.sql import and_, or_, not_
 import os
 import json
 import vcf
+import fastsemsim
 
 PREFIX = 'Bearer'
 
@@ -319,9 +320,16 @@ def get_patients(current_user):
   result = patients_schema.dump(all_patients)
   return jsonify(result)
 
+@app.route('/patientprofile/<patient_id>', methods=['GET'])
+@token_required
+def get_patient_by_id(current_user, patient_id):
+  patient = Patient.query.filter_by(id=patient_id).first()
+  result = patient_schema.dump(patient)
+  return jsonify(result)
+
 @app.route('/gethpotags/<patient_id>', methods=['GET'])
 @token_required
-def get_patient(current_user, patient_id):
+def get_hpo_tags(current_user, patient_id):
   hpo_tags = HPOTag.query.filter(HPOTag.patient_id == patient_id)
   result = HPOs_schema.dump(hpo_tags)
   return jsonify(result)
@@ -336,3 +344,43 @@ def get_matchmaker_results(current_user, cur_hpo_id):
                                   .filter(HPOTag.hpo_tag_id == cur_hpo_id)
   result = patients_schema.dump(matched_patitents)
   return jsonify(result)
+
+def query_db(query, args=(), one=False):
+    cur = db.execute(query, args)
+    rv = cur.fetchall()
+    cur.close()
+    return (rv[0] if rv else None) if one else rv
+
+@app.route('/matchmakerhpo/<patient_id>', methods=['GET'])
+@token_required
+def get_matchmaker_hpo(current_user, patient_id):
+  patient_file = open('patient', 'w')
+  for patient in db_engine.execute('select id, hpo_tag_ids from patient'):
+    patient_to_write = str(patient)
+    patient_to_write = (patient_to_write[1:len(patient_to_write)-1]).replace('\'', '').replace('\'', '')
+    patient_file.write(patient_to_write+'\n')
+  patient_file.close()
+  ac_params = {}
+  ac_params['filter'] = {}
+  ac_params['multiple'] = True
+  ac_params['term first'] = False
+  ac_params['separator'] = ", "
+  ac = fastsemsim.load_ac(ontology=hpo, source_file='patient', file_type='plain',params=ac_params)
+
+  # Parameters for the SS
+  semsim_type='obj'
+  semsim_measure='Cosine'
+  mixing_strategy='BMA'
+
+  # Initializing semantic similarity
+  ss = fastsemsim.init_semsim(ontology = hpo, ac = ac, semsim_type = semsim_type, semsim_measure = semsim_measure, mixing_strategy = mixing_strategy)
+  result = []
+  for patient in ac.obj_set:
+    if patient != patient_id:
+      patient_element = {"patient_id": str(patient), 
+                        "similarity": ss.SemSim(patient_id, patient)}
+      result.append(patient_element)
+      print(ss.SemSim(patient_id, patient))
+  sorted_results = sorted(result, key=lambda k: k['similarity'], reverse=True)
+  return jsonify(sorted_results)
+  

@@ -1,11 +1,13 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import create_engine
 from flask_marshmallow import Marshmallow
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_migrate import Migrate
 import os
 import uuid
+import fastsemsim
 
 # Init app
 app = Flask(__name__)
@@ -23,6 +25,9 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # Init DB
 db = SQLAlchemy(app)
 
+# Init DB Engine
+db_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+
 # Init Marsh
 ma = Marshmallow(app)
 
@@ -31,6 +36,9 @@ bcrypt = Bcrypt(app)
 
 # Init Migrate
 migrate = Migrate(app, db)
+
+# Init Ontology
+hpo = fastsemsim.load_ontology( ontology_type='Ontology', source_file='./ontology_metric/hp.obo',file_type='obo')
 
 CORS(app, expose_headers='Authorization')
 #app.config['CORS_HEADERS'] = 'Content-Type'
