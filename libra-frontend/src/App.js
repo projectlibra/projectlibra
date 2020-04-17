@@ -15,11 +15,13 @@ import Homepage from './components/Homepage';
 import VcfFiles from './components/VcfFiles';
 import Projects from './pages/projects'
 import WebSocketInstance from './websocket';
+import Upload from './components/BasicVCFUpload';
 import ProjectDetail from './components/ProjectDetail';
 import Sider from './components/ProjectDetailContainer';
 import DZUploader from './components/DZUploader';
 import PatientProfiles from './components/PatientProfiles';
 import HPO from './components/HPO';
+import MatchMaker from './components/MatchMaker'
 
 class App extends React.Component{
 
@@ -119,9 +121,9 @@ class App extends React.Component{
           <Switch >
             {/* Insert Page routes here: */}
             {/*<Route path="/" component={}/>*/}
-            <Route exact path="/drop" component={Sider} />
+            <Route exact path="/drop" component={Upload} />
             <Route exact path="/editPatient" component={editPatient} />
-            <Route exact path="/matchmaker" component={MatchmakerUIComponent} />
+            <Route exact path="/matchmaker/:id" component={MatchMaker} />
             <Route exact path="/buildquery" component={BuildQuery} />
             <Route exact path="/vcfupload" component={VCFUpload} />
             <Route exact path="/login" component={Login} />
@@ -133,7 +135,7 @@ class App extends React.Component{
             <Route exact path="/projects/:id" component={ProjectDetail} />
             <Route exact path="/HPO/:id" component={HPO} />
             <Route exact path="/" component={Homepage} />
-
+            <Route exact path="/hpo/:id" component={HPO} />
             {/*correct way to Route with props*/ }
             <Route exact path="/list-files" 
             render={ (props) =><VcfFiles {...props} ws={this.state.ws} ws_data={this.state.ws_data}  />} />

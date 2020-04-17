@@ -31,7 +31,9 @@ class PatientProfiles extends Component{
     constructor(props) {
         super(props);
         this.state = {
-            open: false,
+            create_open: false,
+            edit_open: false,
+            edit_patient: {},
             patients: [],
             value: "",
             currentIDs: [],
@@ -69,7 +71,7 @@ class PatientProfiles extends Component{
         xhr.onload = () => {
             let status = xhr.status;
 
-            if (status == 200) {
+            if (status === 200) {
 
                 // Update the state with the remote data and that's it !
                 _this.setState({
@@ -155,12 +157,25 @@ class PatientProfiles extends Component{
     	return item.id
     }
 
-    openDialog = () => {
-        this.setState({open: true});
+    openCreateDialog = () => {
+        this.setState({create_open: true});
     }
-    closeDialog = () => {
+    closeCreateDialog = () => {
         this.cleanTags();
-        this.setState({open: false});
+        this.setState({create_open: false});
+    }
+    openEditDialog = param => e => {
+        this.state.edit_patient = {
+            patient_id: param.patient_id,
+            name: param.name,
+            diagnosis: param.diagnosis,
+            hpo_tag_names: param.hpo_tag_names
+        }
+        this.setState({edit_open: true});
+    }
+    closeEditDialog = () => {
+        this.cleanTags();
+        this.setState({edit_open: false});
     }
     cleanTags = () =>{
         this.setState({value: ""});
@@ -186,7 +201,7 @@ class PatientProfiles extends Component{
             if(err.response) {
             console.log(axios.defaults.headers.common)
             console.log(err.response.data)
-            if(err.response.status == 401) {
+            if(err.response.status === 401) {
                 this.props.history.push('/');
             }
             }
@@ -203,8 +218,8 @@ class PatientProfiles extends Component{
 
     submitDialog = () => {
         axios.post('http://localhost:5000/createPatientProfile',{
-        firstname: this.state.firstname,
-        surname: this.state.surname,
+        name: this.state.name,
+        diagnosis: this.state.diagnosis,
         hpo_tag_ids: this.state.currentIDs,
         hpo_tag_names: this.state.currentValues
         },{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
@@ -221,21 +236,56 @@ class PatientProfiles extends Component{
             if(err.response) {
             console.log(axios.defaults.headers.common)
             console.log(err.response.data)
-            if(err.response.status == 401) {
+            if(err.response.status === 401) {
                 this.props.history.push('/');
             }
             }
         });
         this.cleanTags();
+        this.closeCreateDialog();
+    }
+    editDialog=() => {
+        axios.post(`http://localhost:5000/editPatientProfile/${this.state.edit_patient.patient_id}`,{
+        name: this.state.name,
+        diagnosis: this.state.diagnosis,
+        hpo_tag_ids: this.state.currentIDs,
+        hpo_tag_names: this.state.currentValues
+        },{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+        .then(res => {
+            console.log("Here:");
+            console.log(res.data);
+            this.setState({
+            edit_open: false
+            });
+            this.fetchPatients();
+        })
+        .catch(err =>  {
+            if(err.response) {
+            console.log(axios.defaults.headers.common)
+            console.log(err.response.data)
+            if(err.response.status === 401) {
+                this.props.history.push('/');
+            }
+            }
+        });
+        this.cleanTags();
+        this.closeCreateDialog();
     }
     
     render() {
         const {patients} = this.state
         const patientList = patients.length ? (
         patients.map(patient => {
+            const edit_patient = {
+                patient_id: patient.id,
+                name: patient.name,
+                diagnosis: patient.diagnosis,
+                hpo_tag_names: patient.hpo_tag_names
+            }
             return (
             <div key={patient.id}>
-                <PatientProfile patient_id={patient.id} firstname={patient.firstname} surname={patient.surname} hpo_tag_names={patient.hpo_tag_names} hpo_tag_ids={patient.hpo_tag_ids}/>
+                <PatientProfile patient_id={patient.id} name={patient.name} diagnosis={patient.diagnosis} hpo_tag_names={patient.hpo_tag_names} hpo_tag_ids={patient.hpo_tag_ids}/>
+                <Button onClick={this.openEditDialog(edit_patient)}>Edit Patient</Button>
             </div>
             )
         })
@@ -246,7 +296,7 @@ class PatientProfiles extends Component{
         )
         return (
         <div>
-            <Button onClick={this.openDialog}>Create New Patient</Button>
+            <Button onClick={this.openCreateDialog}>Create New Patient</Button>
             <Divider orientation="left" style={{ color: '#333', fontWeight: 'normal' }}>
             Your Patients
             </Divider>
@@ -255,7 +305,7 @@ class PatientProfiles extends Component{
             {patientList}
             </div>
 
-            <Dialog open={this.state.open}  fullWidth={true} aria-labelledby="form-dialog-title">
+            <Dialog open={this.state.create_open}  fullWidth={true} aria-labelledby="form-dialog-title">
             <DialogTitle id="form-dialog-title">Create New Patient</DialogTitle>
             <DialogContent>
                 <DialogContentText>
@@ -264,15 +314,15 @@ class PatientProfiles extends Component{
                 <TextField
                 autoFocus
                 margin="dense"
-                id="firstname"
-                label="First Name"
+                id="name"
+                label="Patient Name"
                 fullWidth
                 onChange={this.handleChange}
                 />
                 <TextField
                 margin="dense"
-                id="surname"
-                label="Surname"
+                id="diagnosis"
+                label="Diagnosis"
                 fullWidth
                 multiline
                 onChange={this.handleChange}
@@ -293,8 +343,8 @@ class PatientProfiles extends Component{
 							value={this.state.value}
 							onChange={this.onChange}
 							onSelect={this.onSelect}
-							inputProps={{ style: menuStyle }}
-							inputProps={{ placeholder: 'HPO Tags' }}
+							inputProps={{ style: menuStyle },{ placeholder: 'HPO Tags' }}
+							
                 />
                 
             </DialogContent>
@@ -302,7 +352,7 @@ class PatientProfiles extends Component{
                 <Button onClick={this.cleanTags} color="primary">
                 Clean Tags
                 </Button>
-                <Button onClick={this.closeDialog} color="primary">
+                <Button onClick={this.closeCreateDialog} color="primary">
                 Cancel
                 </Button>
                 <Button onClick={this.submitDialog} color="primary">
@@ -310,6 +360,67 @@ class PatientProfiles extends Component{
                 </Button>
             </DialogActions>
             </Dialog>
+            <Dialog open={this.state.edit_open}  fullWidth={true} aria-labelledby="form-dialog-title">
+            <DialogTitle id="form-dialog-title">Edit Patient</DialogTitle>
+            <DialogContent>
+                <DialogContentText>
+                    Please fill the following content related to the patient:
+                </DialogContentText>
+                <TextField
+                autoFocus
+                margin="dense"
+                id="name"
+                label={this.state.edit_patient.name}
+                fullWidth
+                onChange={this.handleChange}
+                />
+                <TextField
+                margin="dense"
+                id="diagnosis"
+                label={this.state.edit_patient.diagnosis}
+                fullWidth
+                multiline
+                onChange={this.handleChange}
+                />
+                
+                <List  component="nav" >
+                    Previous Phenotypes:
+                    <ListItem  >
+                        {this.state.edit_patient.hpo_tag_names}
+                    </ListItem>	
+                    Selected Phenotypes:
+                    {this.state.currentValues.map( value => 
+                    <ListItem  >
+                        {value}
+                    </ListItem>																			               
+                )}
+                </List >
+                <Autocomplete
+							multiple
+							getItemValue={this.getItemValue}
+							items={this.state.autocompleteData}
+							renderItem={this.renderItem}
+							value={this.state.value}
+							onChange={this.onChange}
+							onSelect={this.onSelect}
+							inputProps={{ style: menuStyle },{ placeholder: 'HPO Tags' }}
+							
+                />
+                
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={this.cleanTags} color="primary">
+                Clean Tags
+                </Button>
+                <Button onClick={this.closeEditDialog} color="primary">
+                Cancel
+                </Button>
+                <Button onClick={this.editDialog} color="primary">
+                Edit
+                </Button>
+            </DialogActions>
+            </Dialog>
+            
         </div>
         )
     }

@@ -92,8 +92,9 @@ sample_schema = SampleSchema()
 
 class Patient(db.Model):
   id = db.Column(db.Integer, primary_key=True)
-  firstname = db.Column(db.String(50))
-  surname = db.Column(db.String(50))
+  name = db.Column(db.String(50))
+  diagnosis = db.Column(db.Text())
+  patient_contact = db.Column(db.String(80))
   user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
   hpo_tag = db.relationship('HPOTag', backref='patient')
   hpo_tag_names = db.Column(db.Text())
@@ -102,7 +103,7 @@ class Patient(db.Model):
 
 class PatientSchema(ma.Schema):
   class Meta:
-    fields = ('id','firstname', 'surname','hpo_tag_names', 'hpo_tag_ids')
+    fields = ('id','name','patient_contact','diagnosis','hpo_tag_names', 'hpo_tag_ids')
 
 patient_schema = PatientSchema()
 patients_schema = PatientSchema(many=True)
