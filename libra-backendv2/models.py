@@ -69,7 +69,7 @@ class VCFsSchema(ma.Schema):
 
 vcfs_schema = VCFsSchema()
 
-'''class VCFsSample(db.Model):
+'''class VCFsSamzzple(db.Model):
   vcf_id = db.Column(db.Integer, db.ForeignKey('vc_fs.id'), primary_key=True)
   sample_id = db.Column(db.String(100), db.ForeignKey('sample.id'), primary_key=True)
 
