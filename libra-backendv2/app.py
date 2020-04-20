@@ -38,7 +38,7 @@ bcrypt = Bcrypt(app)
 migrate = Migrate(app, db)
 
 # Init Ontology
-hpo = fastsemsim.load_ontology( ontology_type='Ontology', source_file='./ontology_metric/hp.obo',file_type='obo')
+hpo = fastsemsim.load_ontology( ontology_type='Ontology', source_file='./ontologyMetric/hp.obo',file_type='obo')
 
 CORS(app, expose_headers='Authorization')
 #app.config['CORS_HEADERS'] = 'Content-Type'
