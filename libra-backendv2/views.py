@@ -141,16 +141,20 @@ def fileUpload(current_user):
     db.session.commit()
 
     #parse vcf using pyvcf and upload to database
-    vcf_reader = vcf.Reader(open(file_path, 'r'))
+    #vcf_reader = vcf.Reader(open(file_path, 'r'))
+    vcf_reader = vcf.Reader(filename=file_path)
     user_id = current_user.id
-    
+    print("FILE OPEN")
+    cnt= 0
     for record in vcf_reader:
         # print (record)
+      cnt+=1
+      print(cnt)
       new_vcf = VCFs(filename=filename, project_id=project_id, user_id=user_id, chrom=str(record.CHROM),
-              pos=record.POS, variant_id=record.ID, ref=record.REF, alt=str(record.ALT), qual=record.QUAL,
+              pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL,
               filter=str(record.FILTER), info=str(record.INFO))
       db.session.add(new_vcf)
-      db.session.commit()
+      
       for sample in record.samples:
           # print (sample)
           # sample_data = str(sample.data)[9:-1] because pyvcf has "CallData()" wrapping it
@@ -162,7 +166,7 @@ def fileUpload(current_user):
           # db.session.commit()
           new_sample = Sample(sample_id = str(sample.sample), vcf_id = (new_vcf.vcf_id), sample_data = str(sample.data)[9:-1])
           db.session.add(new_sample)
-          db.session.commit()
+    db.session.commit()
 
     return make_response('File Upload Successful!', 200)
 
@@ -206,10 +210,12 @@ def get_vcf_table(current_user, id):
     #if column.key not in columns
     #  columns.append(column.key)
   print(columns)
+  
   #result = VCFs.query.filter_by(user_id=current_user.id, project_id=id).options(load_only(*columns[4:])).all()
-  result = db.session.query(VCFs, Sample).outerjoin(Sample, VCFs.vcf_id == Sample.vcf_id).all()
+  #result = db.session.query(VCFs, Sample).outerjoin(Sample, VCFs.vcf_id == Sample.vcf_id).all()
+  result = db.session.query(VCFs, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, VCFs.vcf_id == Sample.vcf_id).all()
   #print(result)
-  print(result)
+  print(len(result))
   '''table_data = []
   for vcf in result:
     row_data = []
@@ -218,29 +224,41 @@ def get_vcf_table(current_user, id):
     table_data.append(row_data)'''
 
   table_data = []
+  cnt_dbsnp = 0
+  cnt_all = 0
+  cnt_1k = 0
   for vcf in result:
     row_data = []
     row_data.append(vcf[0].chrom)
     row_data.append(vcf[0].pos)
-    row_data.append(vcf[0].variant_id)
+    cnt_all+=1
+    if vcf[0].variant_id is None:
+      row_data.append(vcf[0].variant_id)
+    else:
+      cnt_dbsnp +=1
+      row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[0].variant_id + '" target="_blank">' + vcf[0].variant_id +  '</a>')
     row_data.append(vcf[0].ref)
     row_data.append(vcf[0].alt)
     row_data.append(vcf[0].qual)
     row_data.append(vcf[0].filter)
+    if "VT" in vcf[0].info:
+      cnt_1k+=1
     row_data.append(vcf[0].info)
-    row_data.append(vcf[1].sample_id)
-    row_data.append(vcf[1].sample_data)
+    #row_data.append(vcf[1].sample_id)
+    #row_data.append(vcf[1].sample_data)
     table_data.append(row_data)
 
   #print(table_data)
-  print(table_data)
+  print(len(table_data))
     
 
-  print(columns[4:])
+  print("Columns:", columns[4:len(columns)-2])
 
   resp = {
-    'columns': columns[4:],
-    'table_data': table_data
+    'columns': columns[4:len(columns)-2],
+    'table_data': table_data,
+    'pie_data' : [['db', 'count'], ['dbSNP', cnt_dbsnp], ['Novel', cnt_all - cnt_dbsnp]],
+    'pie1k_data' : [['db', 'count'], ['1KG', cnt_1k], ['Novel', cnt_all - cnt_1k]] 
   }
 
   return resp, 200

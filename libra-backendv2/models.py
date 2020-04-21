@@ -55,7 +55,7 @@ class VCFs(db.Model):
   alt = db.Column(db.String(50))
   qual = db.Column(db.String(50))
   filter = db.Column(db.String(100))
-  info = db.Column(db.String(100))
+  info = db.Column(db.Text())
   #sample_id = db.Column(db.String(100))
   #sample_data = db.Column(db.String(100))
   samples = db.relationship('Sample', backref='vcfs')

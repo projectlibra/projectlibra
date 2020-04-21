@@ -12,6 +12,7 @@ import { EditorState, convertToRaw } from 'draft-js';
 import { Editor } from 'react-draft-wysiwyg';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import EditorConvertToHTML from './MyEditor';
+import {Chart} from 'react-google-charts';
 
 const style = {display: 'flex', flexWrap: 'wrap'}
 
@@ -24,6 +25,7 @@ class Projects extends Component{
       no_files: false,
       columns: [],
       table_data: [],
+      pie_data: [],
       selected_key: 1,
       editorState: EditorState.createEmpty()
     }
@@ -82,7 +84,9 @@ class Projects extends Component{
         
         this.setState({
             columns: res.data.columns,
-            table_data: res.data.table_data
+            table_data: res.data.table_data,
+            pie_data: res.data.pie_data,
+            pie1k_data: res.data.pie1k_data
         }, () => {
             console.log("Finished")
             console.log(res.data.table_data)
@@ -138,7 +142,7 @@ class Projects extends Component{
   }
   
   render() {
-    const {files, no_files, open, project_id, columns, table_data} = this.state;
+    const {files, no_files, open, project_id, columns, table_data, pie_data, pie1k_data} = this.state;
     console.log("Render:")
     console.log(columns)
     console.log(table_data)
@@ -187,6 +191,33 @@ class Projects extends Component{
 
 
     const vcfTable = columns.length  ? (
+          <div>
+          <Chart
+          width={'500px'}
+          height={'300px'}
+          chartType="PieChart"
+          loader={<div>Loading Chart</div>}
+          data={pie_data}
+          options={{
+            title: 'dbSNP Variant Distribution',
+          }}
+          rootProps={{ 'data-testid': '1' }}
+          chartEvents={this.chartEvents}
+          style = {{float: 'left'}}
+        />
+        <Chart
+          width={'500px'}
+          height={'300px'}
+          chartType="PieChart"
+          loader={<div>Loading Chart</div>}
+          data={pie1k_data}
+          options={{
+            title: '1KG Variant Distribution',
+          }}
+          rootProps={{ 'data-testid': '1' }}
+          chartEvents={this.chartEvents}
+          style = {{float: 'right'}}
+        />
         <div style={{display: 'table', tableLayout:'fixed', width:'100%'}}>
                     <MUIDataTable
                     title={"VCF Table"}
@@ -194,6 +225,7 @@ class Projects extends Component{
                     columns={columns}
                     options={options}
                     />
+        </div>
         </div>
     ): (
         <div><h3>Loading Table...</h3></div>

@@ -15,7 +15,7 @@ import Homepage from './components/Homepage';
 import VcfFiles from './components/VcfFiles';
 import Projects from './pages/projects'
 import WebSocketInstance from './websocket';
-import Upload from './components/BasicVCFUpload';
+//import Upload from './components/BasicVCFUpload';
 import ProjectDetail from './components/ProjectDetail';
 import Sider from './components/ProjectDetailContainer';
 import DZUploader from './components/DZUploader';
