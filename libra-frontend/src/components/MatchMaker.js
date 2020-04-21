@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { Button, Divider, List, Checkbox } from 'antd';
+import { Button, Divider, List, Checkbox, Typography } from 'antd';
 import axios from 'axios';
 import Autocomplete from 'react-autocomplete';
 import Table from '@material-ui/core/Table';
@@ -27,13 +27,17 @@ class MatchMaker extends Component{
     constructor(props) {
         super(props);
         this.state = {
-            patients: [],
+            fetchedPatientsByHPOID: [],
+            fetchedPatientsByHPOMetric: [],
             currentValues: [],
             unselectedValues: [],
             unselectedIDs: [],
             buttonList: [],
             currentIDs: [],
-            autocompleteData: []
+            autocompleteData: [],
+            hpoMetricResults:[],
+            currentPatient: [],
+            refresher: []
         };
         // Bind `this` context to functions of the class
         this.onChange = this.onChange.bind(this);
@@ -42,8 +46,9 @@ class MatchMaker extends Component{
         this.renderItem = this.renderItem.bind(this);
         this.retrieveDataAsynchronously = this.retrieveDataAsynchronously.bind(this);
         this.onHPOTagChecked = this.onHPOTagChecked.bind(this);
-        this.onMatchMakerRunButtonClicked = this.onMatchMakerRunButtonClicked.bind(this);
-        this.fetch_patients = this.fetch_patients.bind(this);
+        this.onManualMatchMakerClicked = this.onManualMatchMakerClicked.bind(this);
+        this.onHPOMatchMakerClicked = this.onHPOMatchMakerClicked.bind(this);
+        this.fetch_patients_by_hpo = this.fetch_patients_by_hpo.bind(this);
     }
     
     /**
@@ -153,16 +158,14 @@ class MatchMaker extends Component{
     	return item.id
     }
 
-    fetch_patients(cur_hpo_id) {
+    fetch_patients_by_hpo(cur_hpo_id) {
         axios.get(`http://localhost:5000/matchmakerresults/${cur_hpo_id}`,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
         .then(res => {
-            console.log("Here1:");
-            console.log(res.data);
-            var newPatientList = this.state.patients;
+            var newPatientList = this.state.fetchedPatientsByHPOID;
             res.data.forEach(element => {
-                console.log(this.state.patients);
+                console.log(this.state.fetchedPatientsByHPOID);
                 var doesExist = false;
-                this.state.patients.forEach(patient => {
+                this.state.fetchedPatientsByHPOID.forEach(patient => {
                     if (patient.id == element.id)
                     doesExist = true;
                 })
@@ -170,8 +173,53 @@ class MatchMaker extends Component{
                     newPatientList.push(element)
             });
             this.setState({
-                patients: newPatientList
+                fetchedPatientsByHPOID: newPatientList
             });
+        })
+        .catch(err =>  {
+            if(err.response) {
+            console.log(axios.defaults.headers.common)
+            console.log(err.response.data)
+            if(err.response.status === 401) {
+                this.props.history.push('/');
+            }
+            }
+        })
+    }
+
+    
+
+    fetch_patient_hpo_metric(patient_id){
+        axios.get(`http://localhost:5000/patientprofile/${patient_id}`,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+        .then(res => {
+            this.state.fetchedPatientsByHPOMetric.push(res.data)
+            this.setState({
+                refresher: []
+            })
+        })
+        .catch(err =>  {
+            if(err.response) {
+            console.log(axios.defaults.headers.common)
+            console.log(err.response.data)
+            if(err.response.status === 401) {
+                this.props.history.push('/');
+            }
+            }
+        })
+    }
+
+    
+
+    fetch_hpo_patients(currentPatientID){
+        axios.get(`http://localhost:5000/matchmakerhpo/${currentPatientID}`,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+        .then(res => {
+            console.log(res.data);
+            this.setState({
+                hpoMetricResults: res.data
+            })
+            res.data.forEach(element => {
+                this.fetch_patient_hpo_metric(element.patient_id)
+            })
         })
         .catch(err =>  {
             if(err.response) {
@@ -186,9 +234,7 @@ class MatchMaker extends Component{
 
     componentDidMount() {
         const {id} = this.props.match.params;
-        this.setState({
-            patient_id: id
-        });
+        
         var mountedPatientHPOtags = [];
         axios.get(`http://localhost:5000/gethpotags/${id}`,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
         .then(res => {
@@ -216,8 +262,21 @@ class MatchMaker extends Component{
             }
             }
         })
-        
-        
+        axios.get(`http://localhost:5000/patientprofile/${id}`,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+        .then(res => {
+            this.setState({
+                currentPatient: res.data
+            })
+        })
+        .catch(err =>  {
+            if(err.response) {
+            console.log(axios.defaults.headers.common)
+            console.log(err.response.data)
+            if(err.response.status === 401) {
+                this.props.history.push('/');
+            }
+            }
+        })
     }
     onHPOTagChecked(e){
         console.log(e.target.name)
@@ -244,27 +303,35 @@ class MatchMaker extends Component{
         }
         
     }
-    onMatchMakerRunButtonClicked(){
+    onManualMatchMakerClicked(){
         this.setState({
-            patients : []
+            fetchedPatientsByHPOID : []
         })
         if(typeof this.state.currentIDs !== 'undefined'){
             this.state.currentIDs.forEach(element => {
-                this.fetch_patients(element)
+                this.fetch_patients_by_hpo(element)
             });
         }
     }
+    onHPOMatchMakerClicked(){
+        this.setState({
+            fetchedPatientsByHPOMetric : []
+        })
+        this.fetch_hpo_patients(this.state.currentPatient.id);
+    }
 
     render() {
-        const {patient_id} = this.state
         const classes = {
             table: {
               minWidth: 650,
             },
           }
-        const {patients} = this.state
+        const { Title } = Typography;
+        const {fetchedPatientsByHPOID, fetchedPatientsByHPOMetric, hpoMetricResults, currentPatient} = this.state
         return (
             <div>
+                <Title level={3}>MatchMaker For Patient: {currentPatient.name}</Title>
+                <Divider orientation="left" style={{ color: '#333', fontWeight: 'normal' }}></Divider>
                <div style={{width: "100%", overflow: "hidden"}}>
                     <div style={{width: "600px", height: "250px", float: "left"}}> 
                     <Autocomplete
@@ -291,9 +358,10 @@ class MatchMaker extends Component{
                         />
                     </div>
                 </div>
-                <Button type="primary" onClick={this.onMatchMakerRunButtonClicked}>Run MatchMaker</Button>
+                <Button type="primary" onClick={this.onManualMatchMakerClicked}>Run Manual MatchMaker</Button>
+                
                 <Divider orientation="left" style={{ color: '#333', fontWeight: 'normal' }}>
-                    Matched Patients
+                    Manual MatchMaker Results
                 </Divider>
                 <TableContainer component={Paper}>
                     <Table className={classes.table} size="small" aria-label="a dense table">
@@ -305,13 +373,47 @@ class MatchMaker extends Component{
                         </TableRow>
                         </TableHead>
                         <TableBody>
-                        {patients.map((patient) => (
+                        {fetchedPatientsByHPOID.map(patient => (
                             <TableRow>
                             <TableCell component="th" scope="row">
                                 {patient.patient_contact}
                             </TableCell>
                             <TableCell align="right">{patient.diagnosis}</TableCell>
                             <TableCell align="right">{patient.hpo_tag_names}</TableCell>
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <Divider orientation="left" style={{ color: '#333', fontWeight: 'normal' }}>
+                    
+                </Divider>
+                <Button type="primary" onClick={this.onHPOMatchMakerClicked}>Run HPO MatchMaker</Button>
+                <Divider orientation="left" style={{ color: '#333', fontWeight: 'normal' }}>
+                    HPO MatchMaker Results
+                </Divider>
+
+                <TableContainer component={Paper}>
+                    <Table className={classes.table} size="small" aria-label="a dense table">
+                        <TableHead>
+                        <TableRow>
+                            <TableCell>Patient Contact</TableCell>
+                            <TableCell align="right">Diagnosis</TableCell>
+                            <TableCell align="right">Phenotypes</TableCell>
+                            <TableCell align="right">HPO Similarty Percentage</TableCell>
+                        </TableRow>
+                        </TableHead>
+                        <TableBody>
+                        {fetchedPatientsByHPOMetric.map(patient => (
+                            <TableRow>
+                            <TableCell component="th" scope="row">
+                                {patient.patient_contact}
+                            </TableCell>
+                            <TableCell align="right">{patient.diagnosis}</TableCell>
+                            <TableCell align="right">{patient.hpo_tag_names}</TableCell>
+                            <TableCell align="right">{hpoMetricResults.filter(function(v) {
+                                return v.patient_id == patient.id;
+                            })[0].similarity}</TableCell>
                             </TableRow>
                         ))}
                         </TableBody>
