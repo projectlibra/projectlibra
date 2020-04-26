@@ -13,6 +13,7 @@
 /libra-backendv2/env
 /libra-backendv2/ontologyMetric/*
 /libra-backendv2/migrations/*
+/libra-backendv2/metricFiles
 
 # dependencies
 /node_modules
