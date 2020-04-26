@@ -22,7 +22,9 @@ import DZUploader from './components/DZUploader';
 import PatientProfiles from './components/PatientProfiles';
 import HPO from './components/HPO';
 import Upload from './components/upload/Upload';
-import MatchMaker from './components/MatchMaker'
+import MatchMaker from './components/MatchMaker';
+import FilterList from './components/filters/FilterList';
+
 
 class App extends React.Component{
 
@@ -119,9 +121,10 @@ class App extends React.Component{
           
           <br></br>
           <div style={{paddingLeft: '20px', paddingRight: '20px'}}>
-          <Switch >
+          <Switch>
             {/* Insert Page routes here: */}
             {/*<Route path="/" component={}/>*/}
+            <Route exact path="/test" component={FilterList}/> {/*delete later*/}
             <Route exact path="/drop" component={Upload} />
             <Route exact path="/editPatient" component={editPatient} />
             <Route exact path="/matchmaker/:id" component={MatchMaker} />
@@ -140,7 +143,7 @@ class App extends React.Component{
             {/*correct way to Route with props*/ }
             <Route exact path="/list-files" 
             render={ (props) =><VcfFiles {...props} ws={this.state.ws} ws_data={this.state.ws_data}  />} />
-          </Switch>
+          </ Switch>
           </div>
         </Router>
       </div>

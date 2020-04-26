@@ -15,7 +15,8 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 # DB
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db2.sqlite')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:1@localhost:5432/libra' #Actual configuration
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:1@localhost:5432/libra' #Actual configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:MESA2611@localhost:5432/libra'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config['SECRET_KEY'] = "mysecret"
