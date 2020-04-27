@@ -7,6 +7,9 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ScenarioFilter from './ScenarioFilter';
 import FrequencyFilter from './FrequencyFilter';
 import ImpactFilter from './ImpactFilter';
+import ClearIcon from '@material-ui/icons/Clear';
+import IconButton from '@material-ui/core/IconButton';
+import Container from '@material-ui/core/Container';
 
 class FilterList extends Component {
     constructor(props) {
@@ -16,11 +19,11 @@ class FilterList extends Component {
     render() {
         return(
             <div>
-                <FilterPanel filterType="scenario" />
+                <FilterPanel filterType="scenario" summary="Summary"/>
 
-                <FilterPanel filterType="frequency"/>
+                <FilterPanel filterType="frequency" summary=""/>
 
-                <FilterPanel filterType="impact"/>
+                <FilterPanel filterType="impact" summary=""/>
             </div>
         );        
     }
@@ -30,7 +33,7 @@ class FilterPanel extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {filterType: props.filterType};
+        this.state = {filterType: props.filterType, summary: props.summary};
     }
 
     renderTitle(param) {
@@ -57,20 +60,44 @@ class FilterPanel extends Component {
         }
     } 
 
+    test() {
+        console.log("test");
+    }
+
+    renderSummary() {
+        if (this.state.summary !== "") {
+            return(
+                <div>
+                    <Typography display="inline">{this.state.summary }</Typography>
+                    <IconButton aria-label="clear" onClick={()=>this.test()}> 
+                        <ClearIcon fontSize="small" /> 
+                    </IconButton>
+                </div>
+            );            
+        }
+    }
+
     render() {
         return(
-            <ExpansionPanel>
-                <ExpansionPanelSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls={this.state.filterType}
-                    id={this.state.filterType}
-                >
-                    <Typography >{this.renderTitle(this.state.filterType)}</Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
-                    {this.renderSwitch(this.state.filterType)}
-                </ExpansionPanelDetails>
-            </ExpansionPanel>
+            <div>
+                <ExpansionPanel>                
+                    <ExpansionPanelSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls={this.state.filterType}
+                        id={this.state.filterType}
+                    >
+                        <Typography style={{whiteSpace: 'pre-line'}}>
+                            {this.renderTitle(this.state.filterType)}                             
+                        </Typography>                 
+                    </ExpansionPanelSummary>
+                    
+                    <ExpansionPanelDetails>
+                        {this.renderSwitch(this.state.filterType)}
+                    </ExpansionPanelDetails>                
+                </ExpansionPanel>
+                {this.renderSummary()}
+            </div>
+            
         );
     }
 }
