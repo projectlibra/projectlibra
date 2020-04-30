@@ -19,11 +19,11 @@ class FilterList extends Component {
     render() {
         return(
             <div>
-                <FilterPanel filterType="scenario" summary="Summary"/>
+                <FilterPanel filterType="scenario" />
 
-                <FilterPanel filterType="frequency" summary=""/>
+                <FilterPanel filterType="frequency" />
 
-                <FilterPanel filterType="impact" summary=""/>
+                <FilterPanel filterType="impact" />
             </div>
         );        
     }
@@ -33,7 +33,13 @@ class FilterPanel extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {filterType: props.filterType, summary: props.summary};
+        this.state = {filterType: props.filterType, summary: "", stateBustingKey: 0};
+        
+        this.handleFilterChange = this.handleFilterChange.bind(this);
+    }
+
+    handleFilterChange(summary) {
+        this.setState({summary: summary})
     }
 
     renderTitle(param) {
@@ -52,16 +58,17 @@ class FilterPanel extends Component {
     renderSwitch(param) {
         switch(param) {
             case 'impact':
-                return <ImpactFilter />;
+                return <ImpactFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
             case 'frequency':
-                return <FrequencyFilter />;
+                return <FrequencyFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
             case 'scenario':
-                return <ScenarioFilter />;
+                return <ScenarioFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
         }
     } 
 
-    test() {
-        console.log("test");
+    onClickClear() {        
+        this.setState({summary: ""});
+        this.setState({ stateBustingKey: this.state.stateBustingKey + 1 });
     }
 
     renderSummary() {
@@ -69,7 +76,7 @@ class FilterPanel extends Component {
             return(
                 <div>
                     <Typography display="inline">{this.state.summary }</Typography>
-                    <IconButton aria-label="clear" onClick={()=>this.test()}> 
+                    <IconButton aria-label="clear" onClick={()=>this.onClickClear()}> 
                         <ClearIcon fontSize="small" /> 
                     </IconButton>
                 </div>

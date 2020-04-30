@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { FilterList } from './FilterList';
+import FilterList from './FilterList';
 
 class FilterTest extends Component {
     constructor(props) {
