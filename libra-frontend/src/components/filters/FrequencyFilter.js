@@ -18,23 +18,25 @@ class FrequencyFilter extends Component {
     onChangeDbsnp(event) {
         this.setState({dbsnp: event.target.value});
 
-        if (event.target.value !== "any") {            
-            this.props.handleFilterChange(event.target.value);
-            console.log(event.target.value);
-        } else {
-            this.props.handleFilterChange("");
-        }       
+        //if (event.target.value !== "any") {            
+        this.props.handleFrequencyFilterChange([event.target.value, this.state._1kgenome]);
+        console.log([event.target.value, this.state._1kgenome]);
+            //console.log(event.target.value);
+        //} else {
+        //    this.props.handleFilterChange("");
+        //}       
     }
 
     onChange1k(event) {
         this.setState({_1kgenome: event.target.value});
 
-        if (event.target.value !== "any") {            
-            this.props.handleFilterChange(event.target.value);
-            console.log(event.target.value);
-        } else {
-            this.props.handleFilterChange("");
-        } 
+        //if (event.target.value !== "any") {            
+        this.props.handleFrequencyFilterChange([this.state.dbsnp, event.target.value]);
+        console.log([this.state.dbsnp, event.target.value]);
+            //console.log(event.target.value);
+        //} else {
+        //    this.props.handleFilterChange("");
+        //} 
     }
 
     render() {

@@ -10,6 +10,10 @@ import ImpactFilter from './ImpactFilter';
 import ClearIcon from '@material-ui/icons/Clear';
 import IconButton from '@material-ui/core/IconButton';
 import Container from '@material-ui/core/Container';
+import Grid from '@material-ui/core/Grid';
+import Button from '@material-ui/core/Button';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
 
 class FilterList extends Component {
     constructor(props) {
@@ -19,11 +23,16 @@ class FilterList extends Component {
     render() {
         return(
             <div>
-                <FilterPanel filterType="scenario" />
+                <Container component="main" maxWidth="xs">
+                    <FilterPanel filterType="scenario" />
 
-                <FilterPanel filterType="frequency" />
+                    <FilterPanel filterType="frequency" />
 
-                <FilterPanel filterType="impact" />
+                    <FilterPanel filterType="impact" />
+                    <Grid item xs>
+                        <Button>Apply Filter</Button>
+                    </Grid>                    
+                </Container>
             </div>
         );        
     }
@@ -33,17 +42,22 @@ class FilterPanel extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {filterType: props.filterType, summary: "", stateBustingKey: 0};
+        this.state = {filterType: props.filterType, summary: "", stateBustingKey: 0, summary2: []};
         
         this.handleFilterChange = this.handleFilterChange.bind(this);
+        this.handleFrequencyFilterChange = this.handleFrequencyFilterChange.bind(this);
     }
 
     handleFilterChange(summary) {
         this.setState({summary: summary})
     }
 
-    renderTitle(param) {
-        switch(param) {
+    handleFrequencyFilterChange(summary2) {
+        this.setState({summary2: summary2})
+    }
+
+    renderTitle() {
+        switch(this.state.filterType) {
             case 'impact':
                 return "Impact";
             case 'frequency':
@@ -55,12 +69,12 @@ class FilterPanel extends Component {
         }
     } 
 
-    renderSwitch(param) {
-        switch(param) {
+    renderSwitch() {
+        switch(this.state.filterType) {
             case 'impact':
                 return <ImpactFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
             case 'frequency':
-                return <FrequencyFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
+                return <FrequencyFilter handleFrequencyFilterChange={this.handleFrequencyFilterChange} key={this.state.stateBustingKey}/>;
             case 'scenario':
                 return <ScenarioFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
         }
@@ -71,17 +85,22 @@ class FilterPanel extends Component {
         this.setState({ stateBustingKey: this.state.stateBustingKey + 1 });
     }
 
+    onClickClear2() {        
+        this.setState({summary2: []});
+        this.setState({ stateBustingKey: this.state.stateBustingKey + 1 });
+    }
+
     renderSummary() {
-        if (this.state.summary !== "") {
+        if (this.state.filterType !== "frequency" && this.state.summary !== "") {
             return(
-                <div>
+                <ListItem > 
                     <Typography display="inline">{this.state.summary }</Typography>
                     <IconButton aria-label="clear" onClick={()=>this.onClickClear()}> 
                         <ClearIcon fontSize="small" /> 
                     </IconButton>
-                </div>
+                </ListItem>
             );            
-        }
+        } 
     }
 
     render() {
@@ -94,15 +113,30 @@ class FilterPanel extends Component {
                         id={this.state.filterType}
                     >
                         <Typography style={{whiteSpace: 'pre-line'}}>
-                            {this.renderTitle(this.state.filterType)}                             
+                            {this.renderTitle()}                             
                         </Typography>                 
                     </ExpansionPanelSummary>
                     
                     <ExpansionPanelDetails>
-                        {this.renderSwitch(this.state.filterType)}
+                        {this.renderSwitch()}
                     </ExpansionPanelDetails>                
                 </ExpansionPanel>
-                {this.renderSummary()}
+                <List component="nav" aria-label="main mailbox folders" dense={true}>
+                    {this.renderSummary()}
+                    {
+                        this.state.summary2.map(function(element, i) {
+                            if (element !== "any")
+                                return(                            
+                                    <ListItem key={i}>     
+                                        <Typography display="inline">{element}</Typography>
+                                        <IconButton aria-label="clear" onClick={()=>this.onClickClear2()}> 
+                                            <ClearIcon fontSize="small" /> 
+                                        </IconButton>
+                                    </ListItem>
+                                )  
+                        }.bind(this))
+                    }
+                </List>                
             </div>
             
         );
