@@ -5,6 +5,7 @@ import axios from 'axios';
 import WebSocketInstance from '../websocket';
 import {Chart} from 'react-google-charts';
 import JsonTable from 'ts-react-json-table';
+import host from '../host';
 
 
 class VcfFiles extends Component {

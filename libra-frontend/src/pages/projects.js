@@ -9,6 +9,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import TextField from '@material-ui/core/TextField';
 import axios from 'axios';
+import host from '../host';
 
 const style = {display: 'flex', flexWrap: 'wrap'}
 
@@ -35,7 +36,7 @@ class Projects extends Component{
   }
 
   fetchProjects = () => {
-    axios.get('http://localhost:5000/project',{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+    axios.get(host + '/project',{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
       .then(res => {
         console.log("Here:");
         console.log(res.data);
@@ -62,7 +63,7 @@ class Projects extends Component{
   }
 
   submitDialog = () => {
-    axios.post('http://localhost:5000/project',{
+    axios.post(host + '/project',{
       name: this.state.name,
       desc: this.state.desc
     },{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
