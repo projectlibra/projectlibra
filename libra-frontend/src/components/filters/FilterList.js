@@ -128,7 +128,7 @@ class FilterPanel extends Component {
 
     onClickClear2() {        
         this.setState({summary2: []});
-        this.props.onInputChange([], this.state.filterType);
+        this.props.onInputChange({filterDbsnp: "any", filter1k: "any"}, this.state.filterType);
         this.setState({ stateBustingKey: this.state.stateBustingKey + 1 });
     }
 
