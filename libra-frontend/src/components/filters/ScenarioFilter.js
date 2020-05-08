@@ -33,7 +33,8 @@ class ScenarioFilter extends Component {
                 <RadioGroup aria-label="genotype" name="genotype" value={this.state.genotype} onChange={this.handleChange} >
                     <FormControlLabel value="none" control={<Radio />} label="none" />
                     <FormControlLabel value="dominant" control={<Radio />} label="dominant" />
-                    <FormControlLabel value="recessive" control={<Radio />} label="de novo" />
+                    <FormControlLabel value="recessive" control={<Radio />} label="recessive" />
+                    <FormControlLabel value="de novo" control={<Radio />} label="de novo" />
                     <FormControlLabel value="compund het" control={<Radio />} label="compund het" />
                     <FormControlLabel value="x linked" control={<Radio />} label="x linked" />
                 </RadioGroup>

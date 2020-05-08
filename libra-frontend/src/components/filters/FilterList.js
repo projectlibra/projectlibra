@@ -18,19 +18,42 @@ import ListItem from '@material-ui/core/ListItem';
 class FilterList extends Component {
     constructor(props) {
         super(props);
+
+        this.state = {scenarioInput: "", frequencyInput: {filterDbsnp: "any", filter1k: "any"}, impactInput: []};
+
+        this.onInputChange = this.onInputChange.bind(this);
+        this.test = this.test.bind(this);
+    }
+
+    onInputChange(input, filterType) {
+        switch(filterType) {
+            case 'scenario':
+                this.setState({scenarioInput: input});
+                return;
+            case 'frequency':
+                this.setState({frequencyInput: input});
+                return;
+            case 'impact':
+                this.setState({impactInput: input});
+                return;
+        }
+    }
+
+    test() {
+        console.log(this.state);
     }
 
     render() {
         return(
             <div>
                 <Container component="main" maxWidth="xs">
-                    <FilterPanel filterType="scenario" />
+                    <FilterPanel filterType="scenario" onInputChange={this.onInputChange}/>
 
-                    <FilterPanel filterType="frequency" />
+                    <FilterPanel filterType="frequency" onInputChange={this.onInputChange}/>
 
-                    <FilterPanel filterType="impact" />
+                    <FilterPanel filterType="impact" onInputChange={this.onInputChange}/>
                     <Grid item xs>
-                        <Button>Apply Filter</Button>
+                        <Button onClick={() => this.test()}>Apply Filter</Button>
                     </Grid>                    
                 </Container>
             </div>
@@ -50,6 +73,16 @@ class FilterPanel extends Component {
 
     handleFilterChange(summary) {
         this.setState({summary: summary})
+        if (this.state.filterType === "scenario") {
+            this.props.onInputChange(summary, this.state.filterType);
+        } 
+        if (this.state.filterType === "impact") {
+            var impactInput = summary.split(" ");
+            impactInput = impactInput.filter(e => e !== '');
+            impactInput = impactInput.map(function(x){ return x.toUpperCase() })
+            console.log("Impact input is " + impactInput + " size is " + impactInput.length);
+            this.props.onInputChange(impactInput, this.state.filterType);
+        }
     }
 
     handleFrequencyFilterChange(summary2) {
@@ -65,7 +98,7 @@ class FilterPanel extends Component {
             case 'scenario':
                 return "Scenario";
             default:
-                return "Filter Type not defined."
+                return "Filter Type not defined.";
         }
     } 
 
@@ -125,7 +158,7 @@ class FilterPanel extends Component {
                     {this.renderSummary()}
                     {
                         this.state.summary2.map(function(element, i) {
-                            if (element !== "any")
+                            if (!element.includes("any"))
                                 return(                            
                                     <ListItem key={i}>     
                                         <Typography display="inline">{element}</Typography>
@@ -135,7 +168,7 @@ class FilterPanel extends Component {
                                     </ListItem>
                                 )  
                         }.bind(this))
-                    }
+                     }
                 </List>                
             </div>
             

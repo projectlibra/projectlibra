@@ -19,11 +19,11 @@ class FrequencyFilter extends Component {
         this.setState({dbsnp: event.target.value});
 
         //if (event.target.value !== "any") {            
-        this.props.handleFrequencyFilterChange([event.target.value, this.state._1kgenome]);
+        this.props.handleFrequencyFilterChange(["In dbsnp: " + event.target.value,"In 1k genome: " +  this.state._1kgenome]);
         console.log([event.target.value, this.state._1kgenome]);
             //console.log(event.target.value);
         //} else {
-        //    this.props.handleFilterChange("");
+        //    this.props.handleFilterChange("any");
         //}       
     }
 
@@ -31,11 +31,11 @@ class FrequencyFilter extends Component {
         this.setState({_1kgenome: event.target.value});
 
         //if (event.target.value !== "any") {            
-        this.props.handleFrequencyFilterChange([this.state.dbsnp, event.target.value]);
-        console.log([this.state.dbsnp, event.target.value]);
+            this.props.handleFrequencyFilterChange(["In dbsnp: " + this.state.dbsnp,"In 1k genome: " + event.target.value]);
+            console.log([this.state.dbsnp, event.target.value]);
             //console.log(event.target.value);
         //} else {
-        //    this.props.handleFilterChange("");
+        //    this.props.handleFilterChange("any");
         //} 
     }
 
