@@ -86,7 +86,9 @@ class FilterPanel extends Component {
     }
 
     handleFrequencyFilterChange(summary2) {
-        this.setState({summary2: summary2})
+        this.setState({summary2: summary2});
+        var frequencyInput = {filterDbsnp: summary2[0].split(": ")[1], filter1k: summary2[1].split(": ")[1]};
+        this.props.onInputChange(frequencyInput, this.state.filterType);
     }
 
     renderTitle() {
@@ -115,10 +117,12 @@ class FilterPanel extends Component {
 
     onClickClear() {        
         this.setState({summary: ""});
+
         if (this.state.filterType === "scenario")
             this.props.onInputChange("", this.state.filterType);
         if (this.state.filterType === "impact")
             this.props.onInputChange([], this.state.filterType);
+
         this.setState({ stateBustingKey: this.state.stateBustingKey + 1 });
     }
 
