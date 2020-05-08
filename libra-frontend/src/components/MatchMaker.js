@@ -189,10 +189,15 @@ class MatchMaker extends Component{
 
     
 
-    fetch_patient_hpo_metric(patient_id){
+    fetch_patient_by_metric(patient_id, isHPO){
         axios.get(`http://localhost:5000/patientprofile/${patient_id}`,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
         .then(res => {
-            this.state.fetchedPatientsByHPOMetric.push(res.data)
+            if(isHPO){
+                this.state.fetchedPatientsByHPOMetric.push(res.data)
+            }
+            else{
+                this.state.fetchedPatientsByGOMetric.push(res.data)
+            }
             this.setState({
                 refresher: []
             })
@@ -218,7 +223,7 @@ class MatchMaker extends Component{
                 hpoMetricResults: res.data
             })
             res.data.forEach(element => {
-                this.fetch_patient_hpo_metric(element.patient_id)
+                this.fetch_patient_by_metric(element.patient_id,true)
             })
         })
         .catch(err =>  {
@@ -231,7 +236,27 @@ class MatchMaker extends Component{
             }
         })
     }
-
+    fetch_go_patients(currentPatientID){  
+        axios.get(`http://localhost:5000/matchmakergo/${currentPatientID}`,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+        .then(res => {
+            console.log(res.data);
+            this.setState({
+                goMetricResults: res.data
+            })
+            res.data.forEach(element => {
+                this.fetch_patient_by_metric(element.patient_id,false)
+            })
+        })
+        .catch(err =>  {
+            if(err.response) {
+            console.log(axios.defaults.headers.common)
+            console.log(err.response.data)
+            if(err.response.status === 401) {
+                this.props.history.push('/');
+            }
+            }
+        })
+    }
     componentDidMount() {
         const {id} = this.props.match.params;
         
@@ -399,6 +424,7 @@ class MatchMaker extends Component{
                         <TableRow>
                             <TableCell>Patient Contact</TableCell>
                             <TableCell align="right">Diagnosis</TableCell>
+                            <TableCell align="right">Genotypes</TableCell>
                             <TableCell align="right">Phenotypes</TableCell>
                             <TableCell align="right">HPO Similarty Percentage</TableCell>
                         </TableRow>
@@ -410,6 +436,7 @@ class MatchMaker extends Component{
                                 {patient.patient_contact}
                             </TableCell>
                             <TableCell align="right">{patient.diagnosis}</TableCell>
+                            <TableCell align="right">{patient.go_tag_ids}</TableCell>
                             <TableCell align="right">{patient.hpo_tag_names}</TableCell>
                             <TableCell align="right">{hpoMetricResults.filter(function(v) {
                                 return v.patient_id == patient.id;

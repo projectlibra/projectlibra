@@ -285,7 +285,7 @@ class PatientProfiles extends Component{
             }
             return (
             <div key={patient.id}>
-                <PatientProfile patient_id={patient.id} name={patient.name} diagnosis={patient.diagnosis} hpo_tag_names={patient.hpo_tag_names} hpo_tag_ids={patient.hpo_tag_ids}/>
+                <PatientProfile patient_id={patient.id} name={patient.name} diagnosis={patient.diagnosis} hpo_tag_names={patient.hpo_tag_names} go_tag_ids={patient.go_tag_ids} hpo_tag_ids={patient.hpo_tag_ids}/>
                 <Button onClick={this.openEditDialog(edit_patient)}>Edit Patient</Button>
             </div>
             )

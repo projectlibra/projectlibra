@@ -108,13 +108,14 @@ class Patient(db.Model):
   hpo_tag = db.relationship('HPOTag', backref='patient')
   hpo_tag_names = db.Column(db.Text())
   hpo_tag_ids = db.Column(db.Text())
+  go_tag_ids = db.Column(db.Text())
   resolve_state = db.Column(db.Boolean, default=False, nullable=False)
   gene_names = db.relationship("GeneName", secondary="patient_gene_names")
   gene_ids = db.relationship("GeneId", secondary="patient_gene_ids")
 
 class PatientSchema(ma.Schema):
   class Meta:
-    fields = ('id','name','patient_contact','diagnosis','hpo_tag_names', 'hpo_tag_ids')
+    fields = ('id','name','patient_contact','diagnosis','hpo_tag_names', 'hpo_tag_ids', 'go_tag_ids')
 
 patient_schema = PatientSchema()
 patients_schema = PatientSchema(many=True)
