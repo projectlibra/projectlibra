@@ -115,11 +115,16 @@ class FilterPanel extends Component {
 
     onClickClear() {        
         this.setState({summary: ""});
+        if (this.state.filterType === "scenario")
+            this.props.onInputChange("", this.state.filterType);
+        if (this.state.filterType === "impact")
+            this.props.onInputChange([], this.state.filterType);
         this.setState({ stateBustingKey: this.state.stateBustingKey + 1 });
     }
 
     onClickClear2() {        
         this.setState({summary2: []});
+        this.props.onInputChange([], this.state.filterType);
         this.setState({ stateBustingKey: this.state.stateBustingKey + 1 });
     }
 
