@@ -6,11 +6,19 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import { Grid } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
 
+const highImpactArray = ["frameshift", "splice_acceptor", "splice_donor", "start_lost", "stop_gained", "stop_lost"];
+const medImpactArray = ["inframe_deletion", "inframe_insertion", "missense", "protein_altering", "splice_region"];
+const lowImpactArray = ["_3_prime_UTR", "_5_prime_UTR", "coding_sequence", "downstream_gene", "intergenic", "intron", "mature_miRNA", 
+    "non_coding_transcript_exon", "regulatory_region", "stop_retained", "synonymous", "upstream_gene"];
+
 class ImpactFilter extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
+            highImpactSelectedOptions: [],
+            medImpactSelectedOptions: [],
+            lowImpactSelectedOptions: [],
             high: false, 
             medium: false, 
             low: false, 
@@ -37,15 +45,83 @@ class ImpactFilter extends Component {
             stop_retained: false,
             synonymous: false,
             upstream_gene: false,
-            summary: ""};
+            summary: ""            
+        };
 
         this.handleChange = this.handleChange.bind(this);
         this.updateSummary = this.updateSummary.bind(this);
     }
 
+    
+
     handleChange(event) {
         var summaryString = this.updateSummary(event);
-        this.setState({...this.state, [event.target.name]: event.target.checked});
+        if (event.target.name === "high" && !event.target.checked) {
+            console.log("here");
+            var i;
+            for (i = 0; i < this.state.highImpactSelectedOptions.length; i++) {
+                this.setState({...this.state, [this.state.highImpactSelectedOptions[i]]: false});
+            }
+            this.setState({highImpactSelectedOptions: [], high: false});
+        } else if (event.target.name === "medium" && !event.target.checked) {
+            var i;
+            for (i = 0; i < this.state.medImpactSelectedOptions.length; i++) {
+                this.setState({...this.state, [this.state.medImpactSelectedOptions[i]]: false});
+            }
+            this.setState({medImpactSelectedOptions: [], medium: false});
+        } else if (event.target.name === "low" && !event.target.checked) {
+            var i;
+            for (i = 0; i < this.state.lowImpactSelectedOptions.length; i++) {
+                this.setState({...this.state, [this.state.lowImpactSelectedOptions[i]]: false});
+            }
+            this.setState({lowImpactSelectedOptions: [], low: false});
+        }
+        else {
+            if (event.target.checked) {                
+                if (highImpactArray.includes(event.target.name)) {
+                    //var temp =  this.state.highImpactSelectedOptions;
+                    //temp = temp.push[event.target.name];
+                    //console.log("temp is " + this.state.highImpactSelectedOptions)
+                    var temp = [...this.state.highImpactSelectedOptions, event.target.name];
+                    this.setState({highImpactSelectedOptions: temp});
+                } 
+
+                if (medImpactArray.includes(event.target.name)) {
+                    //var temp =  this.state.medImpactSelectedOptions;
+                    //temp = temp.push[event.target.name];
+                    this.setState({medImpactSelectedOptions: ["kill me"]});
+                }
+
+                if (lowImpactArray.includes(event.target.name)) {
+                    //var temp =  this.state.lowImpactSelectedOptions;
+                    //temp = temp.push[event.target.name];
+                    this.setState({lowImpactSelectedOptions: [...this.state.lowImpactSelectedOptions, event.target.name]});
+                }
+            } /*else {
+                if (highImpactArray.includes(event.target.name)) {
+                    var temp = [...this.state.highImpactSelectedOptions];
+                    temp = temp.filter(e => e !== event.target.name);
+                    console.log("temp is " + temp);
+                    this.setState({highImpactSelectedOptions: temp});
+                } 
+
+                if (medImpactArray.includes(event.target.name)) {
+                    var temp = [...this.state.medImpactSelectedOptions];
+                    temp = temp.filter(e => e !== event.target.name);
+                    this.setState({medImpactSelectedOptions: temp});
+                }
+
+                if (lowImpactArray.includes(event.target.name)) {
+                    var temp = [...this.state.lowImpactSelectedOptions];
+                    temp = temp.filter(e => e !== event.target.name);
+                    this.setState({lowImpactSelectedOptions: temp});                    
+                }
+            }*/
+
+            this.setState({...this.state, [event.target.name]: event.target.checked});
+        }
+        
+        console.log("lowImpactSelectedOptions " + this.state.lowImpactSelectedOptions + " medImpactSelectedOptions " + this.state.medImpactSelectedOptions + "  highImpactSelectedOptions " + this.state.highImpactSelectedOptions);
         this.props.handleFilterChange(summaryString);
     }
 

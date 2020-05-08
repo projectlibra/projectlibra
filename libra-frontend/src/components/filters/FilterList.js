@@ -7,6 +7,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ScenarioFilter from './ScenarioFilter';
 import FrequencyFilter from './FrequencyFilter';
 import ImpactFilter from './ImpactFilter';
+import PathogenicityFilter from './PathogenicityFilter';
 import ClearIcon from '@material-ui/icons/Clear';
 import IconButton from '@material-ui/core/IconButton';
 import Container from '@material-ui/core/Container';
@@ -52,6 +53,8 @@ class FilterList extends Component {
                     <FilterPanel filterType="frequency" onInputChange={this.onInputChange}/>
 
                     <FilterPanel filterType="impact" onInputChange={this.onInputChange}/>
+
+                    <FilterPanel filterType="pathogenicity" />
                     <Grid item xs>
                         <Button onClick={() => this.test()}>Apply Filter</Button>
                     </Grid>                    
@@ -99,6 +102,8 @@ class FilterPanel extends Component {
                 return "Frequency";
             case 'scenario':
                 return "Scenario";
+            case 'pathogenicity':
+                return "Pathogenicity";
             default:
                 return "Filter Type not defined.";
         }
@@ -112,6 +117,8 @@ class FilterPanel extends Component {
                 return <FrequencyFilter handleFrequencyFilterChange={this.handleFrequencyFilterChange} key={this.state.stateBustingKey}/>;
             case 'scenario':
                 return <ScenarioFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
+            case 'pathogenicity':
+                return <PathogenicityFilter />;
         }
     } 
 

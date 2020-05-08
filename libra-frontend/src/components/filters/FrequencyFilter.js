@@ -9,10 +9,11 @@ class FrequencyFilter extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {dbsnp: "any", _1kgenome: "any"};
+        this.state = {dbsnp: "any", _1kgenome: "any", _1kfrequency: "1"};
 
         this.onChangeDbsnp = this.onChangeDbsnp.bind(this);
         this.onChange1k = this.onChange1k.bind(this);
+        this.onChange1kfrequency = this.onChange1kfrequency.bind(this);
     }
 
     onChangeDbsnp(event) {
@@ -39,6 +40,18 @@ class FrequencyFilter extends Component {
         //} 
     }
 
+    onChange1kfrequency(event) {
+        this.setState({_1kfrequency: event.target.value});
+
+        //if (event.target.value !== "any") {            
+            //this.props.handleFrequencyFilterChange(["In dbsnp: " + this.state.dbsnp,"In 1k genome: " + event.target.value]);
+            //console.log([this.state.dbsnp, event.target.value]);
+            //console.log(event.target.value);
+        //} else {
+        //    this.props.handleFilterChange("any");
+        //} 
+    }
+
     render() {
         return(
             <FormControl component="fieldset">
@@ -54,6 +67,15 @@ class FrequencyFilter extends Component {
                     <FormControlLabel value="yes" control={<Radio />} label="yes" />
                     <FormControlLabel value="no" control={<Radio />} label="no" />
                     <FormControlLabel value="any" control={<Radio />} label="any" />
+                </RadioGroup>
+
+                <FormLabel component="legend">1000G Frequency</FormLabel>
+                <RadioGroup aria-label="1kfrequency" name="_1kfrequency" value={this.state._1kfrequency} onChange={this.onChange1kfrequency}>
+                    <FormControlLabel value="0" control={<Radio />} label="0" />
+                    <FormControlLabel value="0.001" control={<Radio />} label="1‰" />
+                    <FormControlLabel value="0.01" control={<Radio />} label="1%" />
+                    <FormControlLabel value="0.05" control={<Radio />} label="5%" />
+                    <FormControlLabel value="1" control={<Radio />} label="1" />
                 </RadioGroup>
             </FormControl>
         );
