@@ -122,3 +122,26 @@ class HPOSchema(ma.Schema):
 
 HPO_schema = HPOSchema()
 HPOs_schema = HPOSchema(many=True)
+
+class GOGene(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  GOGene_name = db.Column(db.String(50))
+  GOGene_id = db.Column(db.String(50))
+
+class GOGeneSchema(ma.Schema):
+  class Meta:
+    fields = ('id','GOGene_name','GOGene_id')
+
+GOGene_schema = GOGeneSchema()
+GOGenes_schema = GOGeneSchema(many=True)
+
+class GoSimilarity(db.Model):
+  patient_pair = db.Column(db.String(50), primary_key=True)
+  similarity = db.Column(db.Float)
+
+class GoSimilaritySchema(ma.Schema):
+  class Meta:
+    fields = ('patient_pair', 'similarity')
+
+GoSimilarity_schema = GoSimilaritySchema()
+GoSimilarities_schema = GoSimilaritySchema(many=True)
