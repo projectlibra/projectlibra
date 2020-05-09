@@ -8,11 +8,16 @@ import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormLabel from '@material-ui/core/FormLabel';
 
+const polyphenArray = ["probably_damaging", "possibly_damaging", "benign", "unknown", "no_value"];
+const siftArray = ["deleterious", "deleterious_low_confidence", "tolerated_low_confidence", "tolerated", "no_value_sift"];
+
 class PathogenicityFilter extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
+            polyphenSelectedOptions: [],
+            siftSelectedOptions: [],
             polyphen_pred: false,
             probably_damaging: false,
             possibly_damaging: false,
@@ -34,16 +39,78 @@ class PathogenicityFilter extends Component {
         this.onChangeSift = this.onChangeSift.bind(this);
     }
 
-    handleChange() {
+    handleChange(event) {
+        if (event.target.name === "polyphen_pred" || event.target.name === "sift_pred") { 
+            if (event.target.checked && event.target.name === "polyphen_pred") {
+                var i;
+                for (i = 0; i < polyphenArray.length; i++) {
+                    this.setState({[polyphenArray[i]]: true});
+                } 
+                this.setState({polyphenSelectedOptions: polyphenArray, polyphen_pred: true}, console.log(this.state));
+            }
 
+            if (event.target.checked && event.target.name === "sift_pred") {
+                var i;
+                for (i = 0; i < siftArray.length; i++) {
+                    this.setState({[siftArray[i]]: true});
+                } 
+                this.setState({siftSelectedOptions: siftArray, sift_pred: true}, console.log(this.state));
+            }
+
+            if (!event.target.checked && event.target.name === "polyphen_pred") {
+                var i;
+                for (i = 0; i < polyphenArray.length; i++) {
+                    this.setState({[polyphenArray[i]]: false});
+                } 
+                this.setState({polyphenSelectedOptions: [], polyphen_pred: false}, console.log(this.state));
+            }
+
+            if (!event.target.checked && event.target.name === "sift_pred") {
+                var i;
+                for (i = 0; i < siftArray.length; i++) {
+                    this.setState({[siftArray[i]]: false});
+                } 
+                this.setState({siftSelectedOptions: [], sift_pred: false}, console.log(this.state));
+            }
+        } else {
+            if (event.target.checked) {
+                if (polyphenArray.includes(event.target.name)) {
+                    this.setState({polyphenSelectedOptions: [...this.state.polyphenSelectedOptions, event.target.name],
+                         [event.target.name]: true},
+                         ()=>console.log(this.state));
+                }
+
+                if (siftArray.includes(event.target.name)) {
+                    this.setState({siftSelectedOptions: [...this.state.siftSelectedOptions, event.target.name],
+                         [event.target.name]: true},
+                         ()=>console.log(this.state));
+                }
+            } else {
+                if (polyphenArray.includes(event.target.name)) {
+                    var temp = [...this.state.polyphenSelectedOptions];
+                    temp = temp.filter(e => e !== event.target.name);
+                    this.setState({polyphenSelectedOptions: temp,
+                         [event.target.name]: false},
+                         ()=>console.log(this.state));
+                }
+
+                if (siftArray.includes(event.target.name)) {
+                    var temp = [...this.state.siftSelectedOptions];
+                    temp = temp.filter(e => e !== event.target.name);
+                    this.setState({siftSelectedOptions: temp,
+                         [event.target.name]: false},
+                         ()=>console.log(this.state));
+                }
+            }
+        }
     }
 
     onChangePolyphen(event) {
-        this.setState({polyphen_score: event.target.value});
+        this.setState({polyphen_score: event.target.value}, ()=>console.log(this.state));
     }    
 
     onChangeSift(event) {
-        this.setState({sift_score: event.target.value});
+        this.setState({sift_score: event.target.value}, ()=>console.log(this.state));
     }
 
     render() {
@@ -61,31 +128,31 @@ class PathogenicityFilter extends Component {
                             <FormGroup>
                                 <FormControlLabel
                                     control={<Checkbox name="probably_damaging" />}
-                                    checked={this.state.polyphen_pred || this.state.probably_damaging}
+                                    checked={this.state.polyphenSelectedOptions.includes("probably_damaging")}
                                     onChange={this.handleChange}
                                     label="probably damaging"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="possibly_damaging" />}
-                                    checked={this.state.polyphen_pred || this.state.possibly_damaging}
+                                    checked={this.state.polyphenSelectedOptions.includes("possibly_damaging")}
                                     onChange={this.handleChange}
                                     label="possibly damaging"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="benign" />}
-                                    checked={this.state.polyphen_pred || this.state.benign}
+                                    checked={this.state.polyphenSelectedOptions.includes("benign")}
                                     onChange={this.handleChange}
                                     label="benign"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="unknown" />}
-                                    checked={this.state.polyphen_pred || this.state.unknown}
+                                    checked={this.state.polyphenSelectedOptions.includes("unknown")}
                                     onChange={this.handleChange}
                                     label="unknown"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="no_value" />}
-                                    checked={this.state.polyphen_pred || this.state.no_value}
+                                    checked={this.state.polyphenSelectedOptions.includes("no_value")}
                                     onChange={this.handleChange}
                                     label="no value"
                                 />
@@ -101,31 +168,31 @@ class PathogenicityFilter extends Component {
                             <FormGroup>
                                 <FormControlLabel
                                     control={<Checkbox name="deleterious" />}
-                                    checked={this.state.sift_pred || this.state.deleterious}
+                                    checked={this.state.siftSelectedOptions.includes("deleterious")}
                                     onChange={this.handleChange}
                                     label="deleterious"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="deleterious_low_confidence" />}
-                                    checked={this.state.sift_pred || this.state.deleterious_low_confidence}
+                                    checked={this.state.siftSelectedOptions.includes("deleterious_low_confidence")}
                                     onChange={this.handleChange}
                                     label="deleterious low confidence"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="tolerated_low_confidence" />}
-                                    checked={this.state.sift_pred || this.state.tolerated_low_confidence}
+                                    checked={this.state.siftSelectedOptions.includes("tolerated_low_confidence")}
                                     onChange={this.handleChange}
                                     label="tolerated low confidence"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="tolerated" />}
-                                    checked={this.state.sift_pred || this.state.tolerated}
+                                    checked={this.state.siftSelectedOptions.includes("tolerated")}
                                     onChange={this.handleChange}
                                     label="tolerated"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="no_value_sift" />}
-                                    checked={this.state.sift_pred || this.state.no_value_sift}
+                                    checked={this.state.siftSelectedOptions.includes("no_value_sift")}
                                     onChange={this.handleChange}
                                     label="no value"
                                 />
