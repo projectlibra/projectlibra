@@ -52,6 +52,7 @@ class ImpactFilter extends Component {
         this.updateSummary = this.updateSummary.bind(this);
     }    
 
+    // I apologize to everybody that will have a look at this atrocious method
     handleChange(event) {
         if (event.target.name === "high" || event.target.name === "medium" || event.target.name === "low") {
             if (event.target.checked && event.target.name === "high") {

@@ -42,6 +42,9 @@ class FilterList extends Component {
             case 'impact':
                 this.setState({impactInput: input});
                 return;
+            case 'pathogenicity':
+                this.setState({pathogenicityInput: input});
+                return;
         }
     }
 
@@ -59,7 +62,7 @@ class FilterList extends Component {
 
                     <FilterPanel filterType="impact" onInputChange={this.onInputChange}/>
 
-                    <FilterPanel filterType="pathogenicity" />
+                    <FilterPanel filterType="pathogenicity" onInputChange={this.onInputChange}/>
                     <Grid item xs>
                         <Button onClick={() => this.test()}>Apply Filter</Button>
                     </Grid>                    
@@ -116,7 +119,7 @@ class FilterPanel extends Component {
             case 'scenario':
                 return <ScenarioFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
             case 'pathogenicity':
-                return <PathogenicityFilter />;
+                return <PathogenicityFilter handleFilterChange={this.handleFilterChange}/>;
         }
     } 
 

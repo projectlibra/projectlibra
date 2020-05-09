@@ -30,8 +30,8 @@ class PathogenicityFilter extends Component {
             tolerated_low_confidence: false,
             tolerated: false,
             no_value_sift: false, 
-            polyphen_score: "0",
-            sift_score: "1"
+            polyphenScore: "0",
+            siftScore: "1"
         }
 
         this.handleChange = this.handleChange.bind(this);
@@ -46,7 +46,11 @@ class PathogenicityFilter extends Component {
                 for (i = 0; i < polyphenArray.length; i++) {
                     this.setState({[polyphenArray[i]]: true});
                 } 
-                this.setState({polyphenSelectedOptions: polyphenArray, polyphen_pred: true}, console.log(this.state));
+                this.setState({polyphenSelectedOptions: polyphenArray, polyphen_pred: true}, 
+                    this.props.handleFilterChange({polyphenArray: polyphenArray, 
+                    siftArray: this.state.siftSelectedOptions,
+                    polyphenScore: this.state.polyphenScore, 
+                    siftScore: this.state.siftScore}));
             }
 
             if (event.target.checked && event.target.name === "sift_pred") {
@@ -54,7 +58,11 @@ class PathogenicityFilter extends Component {
                 for (i = 0; i < siftArray.length; i++) {
                     this.setState({[siftArray[i]]: true});
                 } 
-                this.setState({siftSelectedOptions: siftArray, sift_pred: true}, console.log(this.state));
+                this.setState({siftSelectedOptions: siftArray, sift_pred: true}, 
+                    this.props.handleFilterChange({polyphenArray: this.state.polyphenSelectedOptions, 
+                    siftArray: siftArray,
+                    polyphenScore: this.state.polyphenScore, 
+                    siftScore: this.state.siftScore}));
             }
 
             if (!event.target.checked && event.target.name === "polyphen_pred") {
@@ -62,7 +70,11 @@ class PathogenicityFilter extends Component {
                 for (i = 0; i < polyphenArray.length; i++) {
                     this.setState({[polyphenArray[i]]: false});
                 } 
-                this.setState({polyphenSelectedOptions: [], polyphen_pred: false}, console.log(this.state));
+                this.setState({polyphenSelectedOptions: [], polyphen_pred: false}, 
+                    this.props.handleFilterChange({polyphenArray: [], 
+                    siftArray: this.state.siftSelectedOptions,
+                    polyphenScore: this.state.polyphenScore, 
+                    siftScore: this.state.siftScore}));
             }
 
             if (!event.target.checked && event.target.name === "sift_pred") {
@@ -70,47 +82,72 @@ class PathogenicityFilter extends Component {
                 for (i = 0; i < siftArray.length; i++) {
                     this.setState({[siftArray[i]]: false});
                 } 
-                this.setState({siftSelectedOptions: [], sift_pred: false}, console.log(this.state));
+                this.setState({siftSelectedOptions: [], sift_pred: false}, 
+                    this.props.handleFilterChange({polyphenArray: this.state.polyphenSelectedOptions, 
+                    siftArray: [],
+                    polyphenScore: this.state.polyphenScore, 
+                    siftScore: this.state.siftScore}));
             }
         } else {
             if (event.target.checked) {
                 if (polyphenArray.includes(event.target.name)) {
-                    this.setState({polyphenSelectedOptions: [...this.state.polyphenSelectedOptions, event.target.name],
-                         [event.target.name]: true},
-                         ()=>console.log(this.state));
+                    var newPolyphenSelections = [...this.state.polyphenSelectedOptions, event.target.name];
+                    this.setState({polyphenSelectedOptions: newPolyphenSelections,
+                        [event.target.name]: true},
+                        this.props.handleFilterChange({polyphenArray: newPolyphenSelections, 
+                        siftArray: this.state.siftSelectedOptions,
+                        polyphenScore: this.state.polyphenScore, 
+                        siftScore: this.state.siftScore}));
                 }
 
                 if (siftArray.includes(event.target.name)) {
-                    this.setState({siftSelectedOptions: [...this.state.siftSelectedOptions, event.target.name],
-                         [event.target.name]: true},
-                         ()=>console.log(this.state));
+                    var newSiftSelections = [...this.state.siftSelectedOptions, event.target.name];
+                    this.setState({siftSelectedOptions: newSiftSelections,
+                        [event.target.name]: true},
+                        this.props.handleFilterChange({polyphenArray: this.state.polyphenSelectedOptions, 
+                        siftArray: newSiftSelections,
+                        polyphenScore: this.state.polyphenScore, 
+                        siftScore: this.state.siftScore}));
                 }
             } else {
                 if (polyphenArray.includes(event.target.name)) {
                     var temp = [...this.state.polyphenSelectedOptions];
                     temp = temp.filter(e => e !== event.target.name);
                     this.setState({polyphenSelectedOptions: temp,
-                         [event.target.name]: false},
-                         ()=>console.log(this.state));
+                        [event.target.name]: false},
+                        this.props.handleFilterChange({polyphenArray: temp, 
+                        siftArray: this.state.siftSelectedOptions,
+                        polyphenScore: this.state.polyphenScore, 
+                        siftScore: this.state.siftScore}));
                 }
 
                 if (siftArray.includes(event.target.name)) {
                     var temp = [...this.state.siftSelectedOptions];
                     temp = temp.filter(e => e !== event.target.name);
                     this.setState({siftSelectedOptions: temp,
-                         [event.target.name]: false},
-                         ()=>console.log(this.state));
+                        [event.target.name]: false},
+                        this.props.handleFilterChange({polyphenArray: this.state.polyphenSelectedOptions, 
+                        siftArray: temp,
+                        polyphenScore: this.state.polyphenScore, 
+                        siftScore: this.state.siftScore}));
                 }
             }
         }
     }
 
     onChangePolyphen(event) {
-        this.setState({polyphen_score: event.target.value}, ()=>console.log(this.state));
+        this.setState({polyphenScore: event.target.value}, 
+            this.props.handleFilterChange({polyphenArray: this.state.polyphenSelectedOptions, 
+            siftArray: this.state.siftSelectedOptions,
+            polyphenScore: event.target.value, 
+            siftScore: this.state.siftScore}));
     }    
 
     onChangeSift(event) {
-        this.setState({sift_score: event.target.value}, ()=>console.log(this.state));
+        this.setState({siftScore: event.target.value}, this.props.handleFilterChange({polyphenArray: this.state.polyphenSelectedOptions, 
+            siftArray: this.state.siftSelectedOptions,
+            polyphenScore: this.state.polyphenScore, 
+            siftScore: event.target.value}));
     }
 
     render() {
@@ -200,7 +237,7 @@ class PathogenicityFilter extends Component {
                         </Container>
 
                         <FormLabel component="legend">Polyphen score</FormLabel>
-                        <RadioGroup aria-label="polyphen_score" name="polyphen_score" value={this.state.polyphen_score} onChange={this.onChangePolyphen}>
+                        <RadioGroup aria-label="polyphen_score" name="polyphen_score" value={this.state.polyphenScore} onChange={this.onChangePolyphen}>
                             <FormControlLabel value="0" control={<Radio />} label="0" />
                             <FormControlLabel value="0.001" control={<Radio />} label="1‰" />
                             <FormControlLabel value="0.01" control={<Radio />} label="1%" />
@@ -209,7 +246,7 @@ class PathogenicityFilter extends Component {
                         </RadioGroup>
 
                         <FormLabel component="legend">Sift score</FormLabel>
-                        <RadioGroup aria-label="sift_score" name="sift_score" value={this.state.sift_score} onChange={this.onChangeSift}>
+                        <RadioGroup aria-label="sift_score" name="sift_score" value={this.state.siftScore} onChange={this.onChangeSift}>
                             <FormControlLabel value="0" control={<Radio />} label="0" />
                             <FormControlLabel value="0.001" control={<Radio />} label="1‰" />
                             <FormControlLabel value="0.01" control={<Radio />} label="1%" />
