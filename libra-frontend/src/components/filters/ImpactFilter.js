@@ -50,79 +50,101 @@ class ImpactFilter extends Component {
 
         this.handleChange = this.handleChange.bind(this);
         this.updateSummary = this.updateSummary.bind(this);
-    }
-
-    
+    }    
 
     handleChange(event) {
-        var summaryString = this.updateSummary(event);
-        if (event.target.name === "high" && !event.target.checked) {
-            console.log("here");
-            var i;
-            for (i = 0; i < this.state.highImpactSelectedOptions.length; i++) {
-                this.setState({...this.state, [this.state.highImpactSelectedOptions[i]]: false});
-            }
-            this.setState({highImpactSelectedOptions: [], high: false});
-        } else if (event.target.name === "medium" && !event.target.checked) {
-            var i;
-            for (i = 0; i < this.state.medImpactSelectedOptions.length; i++) {
-                this.setState({...this.state, [this.state.medImpactSelectedOptions[i]]: false});
-            }
-            this.setState({medImpactSelectedOptions: [], medium: false});
-        } else if (event.target.name === "low" && !event.target.checked) {
-            var i;
-            for (i = 0; i < this.state.lowImpactSelectedOptions.length; i++) {
-                this.setState({...this.state, [this.state.lowImpactSelectedOptions[i]]: false});
-            }
-            this.setState({lowImpactSelectedOptions: [], low: false});
-        }
-        else {
-            if (event.target.checked) {                
-                if (highImpactArray.includes(event.target.name)) {
-                    //var temp =  this.state.highImpactSelectedOptions;
-                    //temp = temp.push[event.target.name];
-                    //console.log("temp is " + this.state.highImpactSelectedOptions)
-                    var temp = [...this.state.highImpactSelectedOptions, event.target.name];
-                    this.setState({highImpactSelectedOptions: temp});
+        if (event.target.name === "high" || event.target.name === "medium" || event.target.name === "low") {
+            if (event.target.checked && event.target.name === "high") {
+                console.log("here");
+                var i;
+                for (i = 0; i < highImpactArray.length; i++) {
+                    this.setState({[highImpactArray[i]]: true});
                 } 
+                this.setState({highImpactSelectedOptions: highImpactArray, high: true}, console.log(this.state));
+            }
+            if (event.target.checked && event.target.name === "medium") {
+                var i;
+                for (i = 0; i < medImpactArray.length; i++) {
+                    this.setState({[medImpactArray[i]]: true});
+                } 
+                this.setState({medImpactSelectedOptions: medImpactArray, medium: true}, console.log(this.state));
+            }
+            if (event.target.checked && event.target.name === "low") {
+                var i;
+                for (i = 0; i < lowImpactArray.length; i++) {
+                    this.setState({[lowImpactArray[i]]: true});
+                } 
+                this.setState({lowImpactSelectedOptions: lowImpactArray, low: true}, console.log(this.state));
+            }
+
+            if (!event.target.checked && event.target.name === "high") {
+                var i;
+                for (i = 0; i < highImpactArray.length; i++) {
+                    this.setState({[highImpactArray[i]]: false});
+                } 
+                this.setState({highImpactSelectedOptions: [], high: false}, console.log(this.state));                
+            }
+            
+            if (!event.target.checked && event.target.name === "medium") {
+                var i;
+                for (i = 0; i < medImpactArray.length; i++) {
+                    this.setState({[medImpactArray[i]]: false});
+                } 
+                this.setState({medImpactSelectedOptions: [], medium: false}, console.log(this.state));                
+            }
+
+            if (!event.target.checked && event.target.name === "low") {
+                var i;
+                for (i = 0; i < lowImpactArray.length; i++) {
+                    this.setState({[lowImpactArray[i]]: false});
+                } 
+                this.setState({lowImpactSelectedOptions: [], low: false}, console.log(this.state));                
+            }
+        } else {
+            if (event.target.checked) {
+                if (highImpactArray.includes(event.target.name)) {
+                    this.setState({highImpactSelectedOptions: [...this.state.highImpactSelectedOptions, event.target.name],
+                         [event.target.name]: true},
+                         ()=>console.log(this.state));
+                }
 
                 if (medImpactArray.includes(event.target.name)) {
-                    //var temp =  this.state.medImpactSelectedOptions;
-                    //temp = temp.push[event.target.name];
-                    this.setState({medImpactSelectedOptions: ["kill me"]});
+                    this.setState({medImpactSelectedOptions: [...this.state.medImpactSelectedOptions, event.target.name],
+                         [event.target.name]: true},
+                         ()=>console.log(this.state));
                 }
 
                 if (lowImpactArray.includes(event.target.name)) {
-                    //var temp =  this.state.lowImpactSelectedOptions;
-                    //temp = temp.push[event.target.name];
-                    this.setState({lowImpactSelectedOptions: [...this.state.lowImpactSelectedOptions, event.target.name]});
+                    this.setState({lowImpactSelectedOptions: [...this.state.lowImpactSelectedOptions, event.target.name],
+                         [event.target.name]: true},
+                         ()=>console.log(this.state));
                 }
-            } /*else {
+            } else {
                 if (highImpactArray.includes(event.target.name)) {
                     var temp = [...this.state.highImpactSelectedOptions];
                     temp = temp.filter(e => e !== event.target.name);
-                    console.log("temp is " + temp);
-                    this.setState({highImpactSelectedOptions: temp});
-                } 
+                    this.setState({highImpactSelectedOptions: temp,
+                         [event.target.name]: false},
+                         ()=>console.log(this.state));
+                }
 
                 if (medImpactArray.includes(event.target.name)) {
                     var temp = [...this.state.medImpactSelectedOptions];
                     temp = temp.filter(e => e !== event.target.name);
-                    this.setState({medImpactSelectedOptions: temp});
+                    this.setState({medImpactSelectedOptions: temp,
+                         [event.target.name]: false},
+                         ()=>console.log(this.state));
                 }
 
                 if (lowImpactArray.includes(event.target.name)) {
                     var temp = [...this.state.lowImpactSelectedOptions];
                     temp = temp.filter(e => e !== event.target.name);
-                    this.setState({lowImpactSelectedOptions: temp});                    
+                    this.setState({lowImpactSelectedOptions: temp,
+                         [event.target.name]: false},
+                         ()=>console.log(this.state));
                 }
-            }*/
-
-            this.setState({...this.state, [event.target.name]: event.target.checked});
+            }
         }
-        
-        console.log("lowImpactSelectedOptions " + this.state.lowImpactSelectedOptions + " medImpactSelectedOptions " + this.state.medImpactSelectedOptions + "  highImpactSelectedOptions " + this.state.highImpactSelectedOptions);
-        this.props.handleFilterChange(summaryString);
     }
 
     updateSummary(event) {
@@ -158,37 +180,37 @@ class ImpactFilter extends Component {
                             <FormGroup>
                                 <FormControlLabel
                                     control={<Checkbox name="frameshift" />}
-                                    checked={this.state.high || this.state.frameshift}
+                                    checked={this.state.highImpactSelectedOptions.includes("frameshift")}
                                     onChange={this.handleChange}
                                     label="frameshift"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="splice_acceptor" />}
-                                    checked={this.state.high || this.state.splice_acceptor}
+                                    checked={this.state.highImpactSelectedOptions.includes("splice_acceptor")}
                                     onChange={this.handleChange}
                                     label="splice acceptor"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="splice_donor" />}
-                                    checked={this.state.high || this.state.splice_donor}
+                                    checked={this.state.highImpactSelectedOptions.includes("splice_donor")}
                                     onChange={this.handleChange}
                                     label="splice donor"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="start_lost" />}
-                                    checked={this.state.high || this.state.start_lost}
+                                    checked={this.state.highImpactSelectedOptions.includes("start_lost")}
                                     onChange={this.handleChange}
                                     label="start lost"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="stop_gained" />}
-                                    checked={this.state.high || this.state.stop_gained}
+                                    checked={this.state.highImpactSelectedOptions.includes("stop_gained")}
                                     onChange={this.handleChange}
                                     label="stop gained"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="stop_lost" />}
-                                    checked={this.state.high || this.state.stop_lost}
+                                    checked={this.state.highImpactSelectedOptions.includes("stop_lost")}
                                     onChange={this.handleChange}
                                     label="stop lost"
                                 />
@@ -205,31 +227,31 @@ class ImpactFilter extends Component {
                             <FormGroup> 
                                 <FormControlLabel
                                     control={<Checkbox name="inframe_deletion" />}
-                                    checked={this.state.medium || this.state.inframe_deletion}
+                                    checked={this.state.medImpactSelectedOptions.includes("inframe_deletion")}
                                     onChange={this.handleChange}
                                     label="inframe deletion"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="inframe_insertion" />}
-                                    checked={this.state.medium || this.state.inframe_insertion}
+                                    checked={this.state.medImpactSelectedOptions.includes("inframe_insertion")}
                                     onChange={this.handleChange}
                                     label="inframe insertion"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="missense" />}
-                                    checked={this.state.medium || this.state.missense}
+                                    checked={this.state.medImpactSelectedOptions.includes("missense")}
                                     onChange={this.handleChange}
                                     label="missense"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="protein_altering" />}
-                                    checked={this.state.medium || this.state.protein_altering}
+                                    checked={this.state.medImpactSelectedOptions.includes("protein_altering")}
                                     onChange={this.handleChange}
                                     label="protein altering"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="splice_region" />}
-                                    checked={this.state.medium || this.state.splice_region}
+                                    checked={this.state.medImpactSelectedOptions.includes("splice_region")}
                                     onChange={this.handleChange}
                                     label="splice region"
                                 />
@@ -246,73 +268,73 @@ class ImpactFilter extends Component {
                             <FormGroup> 
                                 <FormControlLabel
                                     control={<Checkbox name="_3_prime_UTR" />}
-                                    checked={this.state.low || this.state._3_prime_UTR}
+                                    checked={this.state.lowImpactSelectedOptions.includes("_3_prime_UTR")}
                                     onChange={this.handleChange}
                                     label="3 prime UTR"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="_5_prime_UTR" />}
-                                    checked={this.state.low || this.state._5_prime_UTR}
+                                    checked={this.state.lowImpactSelectedOptions.includes("_5_prime_UTR")}
                                     onChange={this.handleChange}
                                     label="5 prime UTR"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="coding_sequence" />}
-                                    checked={this.state.low || this.state.coding_sequence}
+                                    checked={this.state.lowImpactSelectedOptions.includes("coding_sequence")}
                                     onChange={this.handleChange}
                                     label="coding sequence"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="downstream_gene" />}
-                                    checked={this.state.low || this.state.downstream_gene}
+                                    checked={this.state.lowImpactSelectedOptions.includes("downstream_gene")}
                                     onChange={this.handleChange}
                                     label="downstream gene"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="intergenic" />}
-                                    checked={this.state.low || this.state.intergenic}
+                                    checked={this.state.lowImpactSelectedOptions.includes("intergenic")}
                                     onChange={this.handleChange}
                                     label="intergenic"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="intron" />}
-                                    checked={this.state.low || this.state.intron}
+                                    checked={this.state.lowImpactSelectedOptions.includes("intron")}
                                     onChange={this.handleChange}
                                     label="intron"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="mature_miRNA" />}
-                                    checked={this.state.low || this.state.mature_miRNA}
+                                    checked={this.state.lowImpactSelectedOptions.includes("mature_miRNA")}
                                     onChange={this.handleChange}
                                     label="mature miRNA"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="non_coding_transcript_exon" />}
-                                    checked={this.state.low || this.state.non_coding_transcript_exon}
+                                    checked={this.state.lowImpactSelectedOptions.includes("non_coding_transcript_exon")}
                                     onChange={this.handleChange}
                                     label="non coding transcript exon"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="regulatory_region" />}
-                                    checked={this.state.low || this.state.regulatory_region}
+                                    checked={this.state.lowImpactSelectedOptions.includes("regulatory_region")}
                                     onChange={this.handleChange}
                                     label="regulatory region"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="stop_retained" />}
-                                    checked={this.state.low || this.state.stop_retained}
+                                    checked={this.state.lowImpactSelectedOptions.includes("stop_retained")}
                                     onChange={this.handleChange}
                                     label="stop retained"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="synonymous" />}
-                                    checked={this.state.low || this.state.synonymous}
+                                    checked={this.state.lowImpactSelectedOptions.includes("synonymous")}
                                     onChange={this.handleChange}
                                     label="synonymous"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="upstream_gene" />}
-                                    checked={this.state.low || this.state.upstream_gene}
+                                    checked={this.state.lowImpactSelectedOptions.includes("upstream_gene")}
                                     onChange={this.handleChange}
                                     label="upstream gene"
                                 />
