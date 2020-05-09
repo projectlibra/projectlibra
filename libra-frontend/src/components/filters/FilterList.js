@@ -79,18 +79,11 @@ class FilterPanel extends Component {
         this.handleFrequencyFilterChange = this.handleFrequencyFilterChange.bind(this);
     }
 
-    handleFilterChange(summary) {
-        this.setState({summary: summary})
-        if (this.state.filterType === "scenario") {
-            this.props.onInputChange(summary, this.state.filterType);
-        } 
-        if (this.state.filterType === "impact") {
-            var impactInput = summary.split(" ");
-            impactInput = impactInput.filter(e => e !== '');
-            impactInput = impactInput.map(function(x){ return x.toUpperCase() })
-            console.log("Impact input is " + impactInput + " size is " + impactInput.length);
-            this.props.onInputChange(impactInput, this.state.filterType);
-        }
+    handleFilterChange(input) {
+        //this.setState({summary: summary})
+        //console.log("In filter list");
+        //console.log(input);
+        this.props.onInputChange(input, this.state.filterType);
     }
 
     handleFrequencyFilterChange(summary2) {
