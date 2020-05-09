@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as actionTypes from './actionTypes';
+import host from '../../host';
 
 export const authStart = () => {
     return {
@@ -91,7 +92,7 @@ export const authSignup = (username, email, password1, password2) => {
 export const authLogin = (username, password) => {
     return dispatch => {
         dispatch(authStart());
-        axios.post('http://127.0.0.1:5000/login', {}, 
+        axios.post(host + '/login', {}, 
         {
             auth: {
                 username: username,
@@ -115,7 +116,7 @@ export const authLogin = (username, password) => {
 export const authSignup = (username, email, password1, password2) => {
     return dispatch => {
         dispatch(authStart());
-        axios.post('http://127.0.0.1:5000/register', {
+        axios.post(host + '/register', {
             username: username,
             email: email,
             password1: password1,

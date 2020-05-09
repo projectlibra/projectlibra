@@ -9,13 +9,21 @@ function ListItemLink(props) {
     return <ListItem button component="a" {...props} />;
   }
 const PatientProfile= (props) => {
-    const hpo_tags = props.hpo_tag_names.split(',');
-    const hpo_tag_ids = props.hpo_tag_ids.split(',');
-    var list = [];
+    const hpo_tags = props.hpo_tag_names === null ? []: props.hpo_tag_names.split(',');
+    const hpo_tag_ids = props.hpo_tag_ids === null ? []: props.hpo_tag_ids.split(',');
+    const go_tag_ids = props.go_tag_ids === null ? [] : props.go_tag_ids.split(',');
+    var phenotype_list = [];
     for(var i = 0; i < hpo_tags.length; i++){
         var link = "/HPO/" + hpo_tag_ids[i];
-        list.push(<ListItemLink href={link} >
+        phenotype_list.push(<ListItemLink href={link} >
             <ListItemText  primary={hpo_tags[i]} />
+        </ListItemLink>	);
+    }
+    var genotype_list = [];
+    for(var i = 0; i < go_tag_ids.length; i++){
+        var link = "https://www.ncbi.nlm.nih.gov/gene/?term=" + go_tag_ids[i];
+        genotype_list.push(<ListItemLink href={link} >
+            <ListItemText  primary={go_tag_ids[i]} />
         </ListItemLink>	);
     }
     return (
@@ -27,7 +35,9 @@ const PatientProfile= (props) => {
             </p>
             <List  component="nav" >
                 <h2>Phenotypes</h2>
-            {list}
+            {phenotype_list}
+            <h2>Genotypes</h2>
+            {genotype_list}
             </List >
             
         </Card>

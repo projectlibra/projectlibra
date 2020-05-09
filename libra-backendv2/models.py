@@ -42,8 +42,9 @@ class FileSchema(ma.Schema):
 
 file_schema = FileSchema()
 files_schema = FileSchema(many=True)
-class VCFs(db.Model):
-  vcf_id = db.Column(db.Integer, primary_key=True)
+
+class Vcf(db.Model):
+  id = db.Column(db.Integer, primary_key=True, autoincrement=True)
   filename = db.Column(db.String(50))
   project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
   user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -58,16 +59,24 @@ class VCFs(db.Model):
   info = db.Column(db.Text())
   #sample_id = db.Column(db.String(100))
   #sample_data = db.Column(db.String(100))
-  samples = db.relationship('Sample', backref='vcfs')
+  samples = db.relationship('Sample', backref='vcf')
+  alelle = db.Column(db.Text())
+  annotation = db.Column(db.Text())
+  annotation_impact = db.Column(db.Text())
+  gene_name = db.Column(db.Text())
+  gene_id = db.Column(db.Text())
+  feature_type = db.Column(db.Text())
+  feature_id = db.Column(db.Text())
 
-class VCFsSchema(ma.Schema):
+class VcfSchema(ma.Schema):
   class Meta:
-    fields = ('vcf_id', 'filename', 'chrom', 'pos', 'variant_id', 'ref',
+    fields = ('id', 'filename', 'chrom', 'pos', 'variant_id', 'ref',
               'alt', 'qual', 'filter', 'info')
     #fields = ('id', 'filename', 'chrom', 'pos', 'variant_id', 'ref',
     #          'alt', 'qual', 'filter', 'info', 'sample_id', 'sample_data')
 
-vcfs_schema = VCFsSchema()
+vcf_schema = VcfSchema()
+vcfs_schema = VcfSchema(many=True)
 
 '''class VCFsSamzzple(db.Model):
   vcf_id = db.Column(db.Integer, db.ForeignKey('vc_fs.id'), primary_key=True)
@@ -81,7 +90,7 @@ vcfssample_schema = VCFsSampleSchema()'''
 
 class Sample(db.Model):
   sample_id = db.Column(db.String(100), primary_key=True)
-  vcf_id = db.Column(db.Integer, db.ForeignKey('vc_fs.vcf_id'), primary_key=True)
+  vcf_id = db.Column(db.Integer, db.ForeignKey('vcf.id'), primary_key=True)
   sample_data = db.Column(db.String(100))
 
 class SampleSchema(ma.Schema):
@@ -99,11 +108,14 @@ class Patient(db.Model):
   hpo_tag = db.relationship('HPOTag', backref='patient')
   hpo_tag_names = db.Column(db.Text())
   hpo_tag_ids = db.Column(db.Text())
+  go_tag_ids = db.Column(db.Text())
   resolve_state = db.Column(db.Boolean, default=False, nullable=False)
+  gene_names = db.relationship("GeneName", secondary="patient_gene_names")
+  gene_ids = db.relationship("GeneId", secondary="patient_gene_ids")
 
 class PatientSchema(ma.Schema):
   class Meta:
-    fields = ('id','name','patient_contact','diagnosis','hpo_tag_names', 'hpo_tag_ids')
+    fields = ('id','name','patient_contact','diagnosis','hpo_tag_names', 'hpo_tag_ids', 'go_tag_ids')
 
 patient_schema = PatientSchema()
 patients_schema = PatientSchema(many=True)
@@ -121,3 +133,39 @@ class HPOSchema(ma.Schema):
 
 HPO_schema = HPOSchema()
 HPOs_schema = HPOSchema(many=True)
+
+class GeneName(db.Model):
+  __tablename__ = "gene_name"
+  name = db.Column(db.Text(), primary_key=True)
+  patients = db.relationship("Patient", secondary="patient_gene_names")
+
+class GeneId(db.Model):
+  __tablename__ = "gene_id"
+  gene_id = db.Column(db.Text(), primary_key=True)
+  patients = db.relationship("Patient", secondary="patient_gene_ids")
+
+class PatientGeneName(db.Model):
+  __tablename__ = "patient_gene_names"
+  id = db.Column(db.Integer, primary_key=True)
+  patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'))
+  gene_name = db.Column(db.Text(), db.ForeignKey('gene_name.name'))
+
+class PatientGeneID(db.Model):
+  __tablename__ = "patient_gene_ids"
+  id = db.Column(db.Integer, primary_key=True)
+  patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'))
+  gene_id = db.Column(db.Text(), db.ForeignKey('gene_id.gene_id'))
+
+"""
+class Gogene(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  gogene_name = db.Column(db.String(50))
+  gogene_id = db.Column(db.String(50))
+
+class GogeneSchema(ma.Schema):
+  class Meta:
+    fields = ('id','gogene_name','gogene_id')
+
+gogene_schema = gogeneSchema()
+gogenes_schema = gogeneSchema(many=True)
+"""

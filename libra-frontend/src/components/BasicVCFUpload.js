@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import host from '../host';
 
 class BasicVCFUpload extends React.Component {
   constructor(props) {
@@ -39,7 +40,7 @@ class BasicVCFUpload extends React.Component {
     //       }
     //     }
     //   });
-    fetch('http://localhost:5000/vcf_upload', {
+    fetch(host + '/vcf_upload', {
       method: 'POST',
       body: data,
       headers: {

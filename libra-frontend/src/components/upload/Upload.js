@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import Dropzone from "../dropzone/Dropzone";
 import "./Upload.css";
 import Progress from "../progress/Progress";
+import host from '../../host';
+import LoadingOverlay from 'react-loading-overlay';
 
 class Upload extends Component {
   constructor(props) {
@@ -10,7 +12,8 @@ class Upload extends Component {
       files: [],
       uploading: false,
       uploadProgress: {},
-      successfullUploaded: false
+      successfullUploaded: false,
+      isActive: false
     };
 
     this.onFilesAdded = this.onFilesAdded.bind(this);
@@ -44,7 +47,7 @@ class Upload extends Component {
   sendRequest(file) {
     return new Promise((resolve, reject) => {
       const req = new XMLHttpRequest();
-      
+      var that = this;
       req.upload.addEventListener("progress", event => {
         if (event.lengthComputable) {
           const copy = { ...this.state.uploadProgress };
@@ -59,23 +62,32 @@ class Upload extends Component {
       req.upload.addEventListener("load", event => {
         const copy = { ...this.state.uploadProgress };
         copy[file.name] = { state: "done", percentage: 100 };
-        this.setState({ uploadProgress: copy });
+        this.setState({ uploadProgress: copy, isActive: true  });
         resolve(req.response);
       });
 
       req.upload.addEventListener("error", event => {
         const copy = { ...this.state.uploadProgress };
         copy[file.name] = { state: "error", percentage: 0 };
-        this.setState({ uploadProgress: copy });
+        this.setState({ uploadProgress: copy});
         reject(req.response);
       });
+
+      req.onreadystatechange = function(e){
+        console.log(this);
+        if (req.readyState === 4 && req.status === 200){
+          console.log("ok, response :", this.response);
+          that.setState({isActive: false});
+        }
+      }
 
       const formData = new FormData();
       formData.append("file", file, file.name);
       formData.append('project_id', this.props.project_id);
       //req.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`);
-      req.open("POST", `http://localhost:5000/vcf_upload`);
+      req.open("POST", `${host}/vcf_upload`);
       req.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`);
+      
       req.send(formData);
     });
   }
@@ -127,6 +139,11 @@ class Upload extends Component {
   render() {
     return (
       <div className="Card">
+      <LoadingOverlay
+          active={this.state.isActive}
+          spinner
+          text='Annotating and processing...'
+          >
       <div className="Upload">
         <span className="Title">Upload Files</span>
         <div className="Content">
@@ -149,6 +166,7 @@ class Upload extends Component {
         </div>
         <div className="Actions">{this.renderActions()}</div>
       </div>
+      </LoadingOverlay>
       </div>
     );
   }

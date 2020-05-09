@@ -12,6 +12,7 @@ import axios from 'axios';
 import Autocomplete from 'react-autocomplete';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import host from '../host';
 
 const style = {display: 'flex', flexWrap: 'wrap'}
 
@@ -189,7 +190,7 @@ class PatientProfiles extends Component{
     }
 
     fetchPatients = () => {
-        axios.get('http://localhost:5000/patientprofile',{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+        axios.get(host + '/patientprofile',{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
         .then(res => {
             console.log("Here:");
             console.log(res.data);
@@ -217,7 +218,7 @@ class PatientProfiles extends Component{
     }
 
     submitDialog = () => {
-        axios.post('http://localhost:5000/createPatientProfile',{
+        axios.post(host + '/createPatientProfile',{
         name: this.state.name,
         diagnosis: this.state.diagnosis,
         hpo_tag_ids: this.state.currentIDs,
@@ -245,7 +246,7 @@ class PatientProfiles extends Component{
         this.closeCreateDialog();
     }
     editDialog=() => {
-        axios.post(`http://localhost:5000/editPatientProfile/${this.state.edit_patient.patient_id}`,{
+        axios.post(`${host}/editPatientProfile/${this.state.edit_patient.patient_id}`,{
         name: this.state.name,
         diagnosis: this.state.diagnosis,
         hpo_tag_ids: this.state.currentIDs,
@@ -284,7 +285,7 @@ class PatientProfiles extends Component{
             }
             return (
             <div key={patient.id}>
-                <PatientProfile patient_id={patient.id} name={patient.name} diagnosis={patient.diagnosis} hpo_tag_names={patient.hpo_tag_names} hpo_tag_ids={patient.hpo_tag_ids}/>
+                <PatientProfile patient_id={patient.id} name={patient.name} diagnosis={patient.diagnosis} hpo_tag_names={patient.hpo_tag_names} go_tag_ids={patient.go_tag_ids} hpo_tag_ids={patient.hpo_tag_ids}/>
                 <Button onClick={this.openEditDialog(edit_patient)}>Edit Patient</Button>
             </div>
             )
