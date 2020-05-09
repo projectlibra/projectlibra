@@ -41,7 +41,7 @@ class FrequencyFilter extends Component {
     }
 
     onChange1kfrequency(event) {
-        this.setState({_1kfrequency: event.target.value});
+        this.setState({_1kfrequency: event.target.value}, () => console.log(this.state));
 
         //if (event.target.value !== "any") {            
             //this.props.handleFrequencyFilterChange(["In dbsnp: " + this.state.dbsnp,"In 1k genome: " + event.target.value]);

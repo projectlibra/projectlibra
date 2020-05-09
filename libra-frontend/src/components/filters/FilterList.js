@@ -20,7 +20,12 @@ class FilterList extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {scenarioInput: "", frequencyInput: {filterDbsnp: "any", filter1k: "any"}, impactInput: []};
+        this.state = {
+            scenarioInput: "", 
+            frequencyInput: {filterDbsnp: "any", filter1k: "any", filter1kfrequency: "1"}, 
+            impactInput: {highImpactArray: [], medImpactArray: [], lowImpactArray: []},
+            pathogenicityInput: {polyphenArray: [], siftArray: [], polyphenScore: "0", siftScore: "1"}
+        };
 
         this.onInputChange = this.onInputChange.bind(this);
         this.test = this.test.bind(this);
