@@ -21,15 +21,7 @@ class FrequencyFilter extends Component {
             this.props.handleFilterChange({filterDbsnp: event.target.value, 
             filter1k: this.state._1kgenome, 
             _1kfrequency: this.state._1kfrequency})
-            );
-
-        //if (event.target.value !== "any") {            
-        //this.props.handleFilterChange(["In dbsnp: " + event.target.value,"In 1k genome: " +  this.state._1kgenome]);
-        //console.log([event.target.value, this.state._1kgenome]);
-            //console.log(event.target.value);
-        //} else {
-        //    this.props.handleFilterChange("any");
-        //}       
+            );    
     }
 
     onChange1k(event) {
@@ -38,14 +30,6 @@ class FrequencyFilter extends Component {
             filter1k: event.target.value, 
             _1kfrequency: this.state._1kfrequency})
             );
-
-        //if (event.target.value !== "any") {            
-        //this.props.handleFilterChange(["In dbsnp: " + this.state.dbsnp,"In 1k genome: " + event.target.value]);
-        //console.log([this.state.dbsnp, event.target.value]);
-            //console.log(event.target.value);
-        //} else {
-        //    this.props.handleFilterChange("any");
-        //} 
     }
 
     onChange1kfrequency(event) {
@@ -54,14 +38,6 @@ class FrequencyFilter extends Component {
             filter1k: this.state._1kgenome, 
             _1kfrequency: event.target.value})
             );
-
-        //if (event.target.value !== "any") {            
-            //this.props.handleFrequencyFilterChange(["In dbsnp: " + this.state.dbsnp,"In 1k genome: " + event.target.value]);
-            //console.log([this.state.dbsnp, event.target.value]);
-            //console.log(event.target.value);
-        //} else {
-        //    this.props.handleFilterChange("any");
-        //} 
     }
 
     render() {

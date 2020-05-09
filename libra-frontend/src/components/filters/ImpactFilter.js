@@ -61,7 +61,8 @@ class ImpactFilter extends Component {
                 for (i = 0; i < highImpactArray.length; i++) {
                     this.setState({[highImpactArray[i]]: true});
                 } 
-                this.setState({highImpactSelectedOptions: highImpactArray, high: true}, this.props.handleFilterChange({highImpactArray: highImpactArray, 
+                this.setState({highImpactSelectedOptions: highImpactArray, high: true}, 
+                    this.props.handleFilterChange({highImpactArray: highImpactArray, 
                     medImpactArray: this.state.medImpactSelectedOptions, 
                     lowImpactArray: this.state.lowImpactSelectedOptions}));
             }
@@ -70,7 +71,8 @@ class ImpactFilter extends Component {
                 for (i = 0; i < medImpactArray.length; i++) {
                     this.setState({[medImpactArray[i]]: true});
                 } 
-                this.setState({medImpactSelectedOptions: medImpactArray, medium: true}, this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
+                this.setState({medImpactSelectedOptions: medImpactArray, medium: true}, 
+                    this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
                     medImpactArray: medImpactArray, 
                     lowImpactArray: this.state.lowImpactSelectedOptions}));
             }
@@ -79,7 +81,8 @@ class ImpactFilter extends Component {
                 for (i = 0; i < lowImpactArray.length; i++) {
                     this.setState({[lowImpactArray[i]]: true});
                 } 
-                this.setState({lowImpactSelectedOptions: lowImpactArray, low: true}, this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
+                this.setState({lowImpactSelectedOptions: lowImpactArray, low: true}, 
+                    this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
                     medImpactArray: this.state.medImpactSelectedOptions, 
                     lowImpactArray: lowImpactArray}));
             }
@@ -89,7 +92,8 @@ class ImpactFilter extends Component {
                 for (i = 0; i < highImpactArray.length; i++) {
                     this.setState({[highImpactArray[i]]: false});
                 } 
-                this.setState({highImpactSelectedOptions: [], high: false}, this.props.handleFilterChange({highImpactArray: [], 
+                this.setState({highImpactSelectedOptions: [], high: false}, 
+                    this.props.handleFilterChange({highImpactArray: [], 
                     medImpactArray: this.state.medImpactSelectedOptions, 
                     lowImpactArray: this.state.lowImpactSelectedOptions}));                
             }
@@ -99,7 +103,8 @@ class ImpactFilter extends Component {
                 for (i = 0; i < medImpactArray.length; i++) {
                     this.setState({[medImpactArray[i]]: false});
                 } 
-                this.setState({medImpactSelectedOptions: [], medium: false}, this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
+                this.setState({medImpactSelectedOptions: [], medium: false}, 
+                    this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
                     medImpactArray: [], 
                     lowImpactArray: this.state.lowImpactSelectedOptions}));                
             }
@@ -109,7 +114,8 @@ class ImpactFilter extends Component {
                 for (i = 0; i < lowImpactArray.length; i++) {
                     this.setState({[lowImpactArray[i]]: false});
                 } 
-                this.setState({lowImpactSelectedOptions: [], low: false}, this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
+                this.setState({lowImpactSelectedOptions: [], low: false}, 
+                    this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
                     medImpactArray: this.state.medImpactSelectedOptions, 
                     lowImpactArray: []}));                
             }

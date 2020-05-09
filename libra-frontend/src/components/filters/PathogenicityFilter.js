@@ -144,7 +144,8 @@ class PathogenicityFilter extends Component {
     }    
 
     onChangeSift(event) {
-        this.setState({siftScore: event.target.value}, this.props.handleFilterChange({polyphenArray: this.state.polyphenSelectedOptions, 
+        this.setState({siftScore: event.target.value}, 
+            this.props.handleFilterChange({polyphenArray: this.state.polyphenSelectedOptions, 
             siftArray: this.state.siftSelectedOptions,
             polyphenScore: this.state.polyphenScore, 
             siftScore: event.target.value}));

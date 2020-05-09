@@ -82,21 +82,10 @@ class FilterPanel extends Component {
         this.state = {filterType: props.filterType, summary: "", stateBustingKey: 0, summary2: []};
         
         this.handleFilterChange = this.handleFilterChange.bind(this);
-        this.handleFrequencyFilterChange = this.handleFrequencyFilterChange.bind(this);
     }
 
     handleFilterChange(input) {
-        //this.setState({summary: summary})
-        //console.log("In filter list");
-        //console.log(input);
         this.props.onInputChange(input, this.state.filterType);
-    }
-
-    // Useless method
-    handleFrequencyFilterChange(summary2) {
-        this.setState({summary2: summary2});
-        var frequencyInput = {filterDbsnp: summary2[0].split(": ")[1], filter1k: summary2[1].split(": ")[1]};
-        this.props.onInputChange(frequencyInput, this.state.filterType);
     }
 
     renderTitle() {
@@ -123,7 +112,7 @@ class FilterPanel extends Component {
             case 'scenario':
                 return <ScenarioFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
             case 'pathogenicity':
-                return <PathogenicityFilter handleFilterChange={this.handleFilterChange}/>;
+                return <PathogenicityFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
         }
     } 
 
@@ -150,30 +139,15 @@ class FilterPanel extends Component {
     onClickClear() {        
         var defaultState = this.selectDefaultState();
 
-        //this.setState({summary: ""});
-
-        //if (this.state.filterType === "scenario")
-            //this.props.onInputChange("", this.state.filterType);
-        //if (this.state.filterType === "impact")
-            //this.props.onInputChange([], this.state.filterType);
-
         this.setState({ stateBustingKey: this.state.stateBustingKey + 1 }, this.props.onInputChange(defaultState, this.state.filterType));
     }
 
-    onClickClear2() {        
-        this.setState({summary2: []});
-        this.props.onInputChange({filterDbsnp: "any", filter1k: "any"}, this.state.filterType);
-        this.setState({ stateBustingKey: this.state.stateBustingKey + 1 });
-    }
-
     renderReset() {        
-        //if (this.state.filterType !== "frequency" && this.state.summary !== "") {
         return(
             <ListItem > 
                 <Button onClick={()=>this.onClickClear()}>Reset filter</Button>
             </ListItem>
         );            
-        //} 
     }
 
     render() {
