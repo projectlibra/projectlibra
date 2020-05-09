@@ -45,6 +45,9 @@ class FilterList extends Component {
             case 'pathogenicity':
                 this.setState({pathogenicityInput: input});
                 return;
+            default:
+                this.setState(input);
+                return;
         }
     }
 
@@ -89,6 +92,7 @@ class FilterPanel extends Component {
         this.props.onInputChange(input, this.state.filterType);
     }
 
+    // Useless method
     handleFrequencyFilterChange(summary2) {
         this.setState({summary2: summary2});
         var frequencyInput = {filterDbsnp: summary2[0].split(": ")[1], filter1k: summary2[1].split(": ")[1]};
@@ -115,7 +119,7 @@ class FilterPanel extends Component {
             case 'impact':
                 return <ImpactFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
             case 'frequency':
-                return <FrequencyFilter handleFrequencyFilterChange={this.handleFrequencyFilterChange} key={this.state.stateBustingKey}/>;
+                return <FrequencyFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
             case 'scenario':
                 return <ScenarioFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
             case 'pathogenicity':
@@ -123,15 +127,37 @@ class FilterPanel extends Component {
         }
     } 
 
+    selectDefaultState() {
+        const defaultState = {
+            scenarioInput: "", 
+            frequencyInput: {filterDbsnp: "any", filter1k: "any", filter1kfrequency: "1"}, 
+            impactInput: {highImpactArray: [], medImpactArray: [], lowImpactArray: []},
+            pathogenicityInput: {polyphenArray: [], siftArray: [], polyphenScore: "0", siftScore: "1"}
+        };
+
+        switch(this.state.filterType) {
+            case "scenario":
+                return defaultState.scenarioInput;
+            case "frequency":
+                return defaultState.frequencyInput;
+            case "impact":
+                return defaultState.impactInput;
+            case "pathogenicity":
+                return defaultState.pathogenicityInput;
+        }
+    }
+
     onClickClear() {        
-        this.setState({summary: ""});
+        var defaultState = this.selectDefaultState();
 
-        if (this.state.filterType === "scenario")
-            this.props.onInputChange("", this.state.filterType);
-        if (this.state.filterType === "impact")
-            this.props.onInputChange([], this.state.filterType);
+        //this.setState({summary: ""});
 
-        this.setState({ stateBustingKey: this.state.stateBustingKey + 1 });
+        //if (this.state.filterType === "scenario")
+            //this.props.onInputChange("", this.state.filterType);
+        //if (this.state.filterType === "impact")
+            //this.props.onInputChange([], this.state.filterType);
+
+        this.setState({ stateBustingKey: this.state.stateBustingKey + 1 }, this.props.onInputChange(defaultState, this.state.filterType));
     }
 
     onClickClear2() {        
@@ -140,17 +166,14 @@ class FilterPanel extends Component {
         this.setState({ stateBustingKey: this.state.stateBustingKey + 1 });
     }
 
-    renderSummary() {
-        if (this.state.filterType !== "frequency" && this.state.summary !== "") {
-            return(
-                <ListItem > 
-                    <Typography display="inline">{this.state.summary }</Typography>
-                    <IconButton aria-label="clear" onClick={()=>this.onClickClear()}> 
-                        <ClearIcon fontSize="small" /> 
-                    </IconButton>
-                </ListItem>
-            );            
-        } 
+    renderReset() {        
+        //if (this.state.filterType !== "frequency" && this.state.summary !== "") {
+        return(
+            <ListItem > 
+                <Button onClick={()=>this.onClickClear()}>Reset filter</Button>
+            </ListItem>
+        );            
+        //} 
     }
 
     render() {
@@ -172,20 +195,7 @@ class FilterPanel extends Component {
                     </ExpansionPanelDetails>                
                 </ExpansionPanel>
                 <List component="nav" aria-label="main mailbox folders" dense={true}>
-                    {this.renderSummary()}
-                    {
-                        this.state.summary2.map(function(element, i) {
-                            if (!element.includes("any"))
-                                return(                            
-                                    <ListItem key={i}>     
-                                        <Typography display="inline">{element}</Typography>
-                                        <IconButton aria-label="clear" onClick={()=>this.onClickClear2()}> 
-                                            <ClearIcon fontSize="small" /> 
-                                        </IconButton>
-                                    </ListItem>
-                                )  
-                        }.bind(this))
-                     }
+                    {this.renderReset()}                    
                 </List>                
             </div>
             
