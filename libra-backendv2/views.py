@@ -17,12 +17,10 @@ import json
 import vcf
 import fastsemsim
 import time
-<<<<<<< HEAD
-=======
+
 import pandas as pd
 import io
 
->>>>>>> 07974a20fa4eae8c2d00d1e7c05fbcd169b59cd8
 PREFIX = 'Bearer'
 ss = 0
 ac = 0
@@ -144,7 +142,7 @@ def fileUpload(current_user):
     filename = secure_filename(file.filename)
     file_path = os.path.join(dir_path, filename)
     file.save(file_path)
-    
+    """
     # ANNOTATE DBSNP ID
     file_path2 = file_path[:-4] + "_dbsnp.vcf"
     print("java -jar " + app.config['SNPEFF_FOLDER'] + "/SnpSift.jar annotate -id " + app.config['SNPEFF_FOLDER'] + "/00-All.vcf.gz " + file_path + " > " + file_path[:-4] + "_dbsnp.vcf")
@@ -169,10 +167,10 @@ def fileUpload(current_user):
     #file_db = File(name='06A010111.vcf', path=file_path, project_id=project_id)
     db.session.add(file_db)
     db.session.commit()
-
+    """
     #parse vcf using pyvcf and upload to database
-    #vcf_reader = vcf.Reader(open(file_path, 'r'))
-    vcf_reader = vcf.Reader(filename=file_path4)
+    vcf_reader = vcf.Reader(filename=file_path)
+    #vcf_reader = vcf.Reader(filename=file_path4)
     user_id = current_user.id
     print("FILE OPEN")
     cnt= 0
@@ -500,6 +498,13 @@ def get_hpo_tags(current_user, patient_id):
   result = HPOs_schema.dump(hpo_tags)
   return jsonify(result)
 
+@app.route('/getgonames/<patient_id>', methods=['GET'])
+@token_required
+def get_go_names(current_user, patient_id):
+  gene_names = PatientGeneName.query.filter(PatientGeneName.patient_id == patient_id)
+  result = PatientGeneNames_schema.dump(gene_names)
+  return jsonify(result)
+
 @app.route('/matchmakerresults/<cur_hpo_id>', methods=['GET'])
 @token_required
 def get_matchmaker_results(current_user, cur_hpo_id):
@@ -548,7 +553,6 @@ def get_matchmaker_hpo(current_user, patient_id):
       print(ss.SemSim(patient_id, patient))
   sorted_results = sorted(result, key=lambda k: k['similarity'], reverse=True)
   return jsonify(sorted_results)
-<<<<<<< HEAD
 
 @app.route('/matchmakergo/<patient_id>', methods=['GET'])
 @token_required
@@ -569,10 +573,14 @@ def get_matchmaker_go(current_user, patient_id):
 
 def goFileCreate():
   patient_file = open('./metricFiles/gopatient', 'w')
-  for patient in db_engine.execute('select id, go_tag_ids from patient where go_tag_ids is not null'):
-    patient_to_write = str(patient)
-    patient_to_write = (patient_to_write[1:len(patient_to_write)-1]).replace('\'', '').replace('\'', '')
+  
+  for patient in db_engine.execute('select id from patient'):
+    patient_id = patient[0]
+    patient_to_write = str(patient_id) 
+    for gene_id in db_engine.execute('select gene_id from patient_gene_ids where patient_id =' + str(patient_id)):
+      patient_to_write = patient_to_write + ", " + gene_id[0]
     patient_file.write(patient_to_write+'\n')
+
   patient_file.close()
   ac_params = {}
   ac_params['filter'] = {}
@@ -618,9 +626,4 @@ def sendNotifications():
           
           db.session.add(goSimilarity)
 
-  db.session.commit()
-          
- 
-=======
-  
->>>>>>> 07974a20fa4eae8c2d00d1e7c05fbcd169b59cd8
+  db.session.commit() 

@@ -11,7 +11,7 @@ function ListItemLink(props) {
 const PatientProfile= (props) => {
     const hpo_tags = props.hpo_tag_names === null ? []: props.hpo_tag_names.split(',');
     const hpo_tag_ids = props.hpo_tag_ids === null ? []: props.hpo_tag_ids.split(',');
-    const go_tag_ids = props.go_tag_ids === null ? [] : props.go_tag_ids.split(', ');
+    const go_names = props.go_names === undefined ? [] : props.go_names;
     var phenotype_list = [];
     for(var i = 0; i < hpo_tags.length; i++){
         var link = "/HPO/" + hpo_tag_ids[i];
@@ -20,10 +20,10 @@ const PatientProfile= (props) => {
         </ListItemLink>	);
     }
     var genotype_list = [];
-    for(var i = 0; i < go_tag_ids.length; i++){
-        var link = "http://amigo.geneontology.org/amigo/term/" + go_tag_ids[i];
+    for(var i = 0; i < go_names.length; i++){
+        var link = "https://www.ncbi.nlm.nih.gov/gene/?term=" + go_names[i];
         genotype_list.push(<ListItemLink href={link} >
-            <ListItemText  primary={go_tag_ids[i]} />
+            <ListItemText  primary={go_names[i]} />
         </ListItemLink>	);
     }
     return (
