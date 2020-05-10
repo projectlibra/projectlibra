@@ -13,6 +13,12 @@ import { Editor } from 'react-draft-wysiwyg';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import EditorConvertToHTML from './MyEditor';
 import {Chart} from 'react-google-charts';
+import host from '../host';
+import { TableFooter, TableCell, TableRow } from "@material-ui/core";
+import CustomFooter from "./CustomFooter";
+import LoadingOverlay from 'react-loading-overlay';
+import { StopOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
+import { Menu, Dropdown, message } from 'antd';
 
 const style = {display: 'flex', flexWrap: 'wrap'}
 
@@ -27,7 +33,10 @@ class Projects extends Component{
       table_data: [],
       pie_data: [],
       selected_key: 1,
-      editorState: EditorState.createEmpty()
+      load_index: 0,
+      editorState: EditorState.createEmpty(),
+      isActive: false,
+      patient_name: ""
     }
   }
 
@@ -56,7 +65,8 @@ class Projects extends Component{
   }
 
   fetchFiles = (id) => {
-    axios.get(`http://localhost:5000/files/${id}` ,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+
+    axios.get(`${host}/files/${id}` ,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
       .then(res => {
         console.log("Here:");
         console.log(res.data);
@@ -77,7 +87,7 @@ class Projects extends Component{
   }
 
   fetchVCFTable = (id) => {
-    axios.get(`http://localhost:5000/vcf_table/${id}` ,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+    axios.get(`${host}/vcf_table/${id}` ,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
       .then(res => {
         console.log("Here:");
         console.log(res.data);
@@ -104,6 +114,40 @@ class Projects extends Component{
       })
   }
 
+
+  loadMore = () => {
+    this.setState({
+      isActive: true
+    })
+    console.log("Load more called!")
+    axios.get(`${host}/vcf_table/${this.state.project_id}/${this.state.load_index + 1}` ,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+      .then(res => {
+        console.log("Here:");
+        console.log(res.data);
+        
+        this.setState({
+            table_data: this.state.table_data.concat(res.data.table_data),
+            load_index: this.state.load_index+1
+        }, () => {
+            this.setState({
+              isActive: false
+            })
+            console.log("Finished")
+            console.log(res.data.table_data)
+        })
+
+      })
+      .catch(err =>  {
+        if(err.response) {
+          console.log(axios.defaults.headers.common)
+          console.log(err.response.data)
+          if(err.response.status == 401) {
+            this.props.history.push('/');
+          }
+        }
+      })
+  }
+
   handleChange = (e) => {
     let {id, value} = e.target;
     this.setState({
@@ -112,7 +156,7 @@ class Projects extends Component{
   }
 
   submitDialog = () => {
-    axios.post('http://localhost:5000/project',{
+    axios.post(host + '/project',{
       name: this.state.name,
       desc: this.state.desc
     },{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
@@ -137,6 +181,12 @@ class Projects extends Component{
       
   }
 
+  handleMenuClick = (e) => {
+    message.info('Click on menu item.');
+    this.setState({patient_name: e.key})
+    console.log('click', e);
+  }
+
   updateState = (nextState) => {
     this.setState(nextState);
   }
@@ -157,7 +207,32 @@ class Projects extends Component{
     ];
     console.log(data);
     const options = {
-    filterType: 'checkbox', responsive: 'scroll', whiteSpace: 'nowrap'
+    filterType: 'dropdown', 
+    responsive: 'scroll', 
+    whiteSpace: 'nowrap',
+    /*customFooter: () => {
+      return(
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={6}>
+                <Button>Load More</Button>
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+      );
+    }*/
+    customFooter: (count, page, rowsPerPage, changeRowsPerPage, changePage, textLabels) => {
+      return (  
+        <CustomFooter 
+          count={count} 
+          page={page} 
+          rowsPerPage={rowsPerPage} 
+          changeRowsPerPage={changeRowsPerPage} 
+          changePage={changePage} 
+          textLabels={textLabels} 
+          loadMore={this.loadMore}/>
+      );
+    }
     };
     
     
@@ -183,7 +258,32 @@ class Projects extends Component{
     ) : (
         <div></div>
     )*/
-    const fileUploader = (<Upload project_id={project_id} />)
+    const menu = (
+      <Menu onClick={this.handleMenuClick}>
+        <Menu.Item key="1" icon={<UserOutlined />}>
+         <StopOutlined/> None
+        </Menu.Item>
+        <Menu.Item key="2" icon={<UserOutlined />}>
+          <PlusOutlined /> New Patient
+        </Menu.Item>
+        <Menu.Item key="3" icon={<UserOutlined />}>
+          Patient1
+        </Menu.Item>
+        <Menu.Item key="4" icon={<UserOutlined />}>
+          Patient2
+        </Menu.Item>
+      </Menu>
+    );
+
+    const fileUploader = (
+      <div>
+        <Dropdown.Button overlay={menu} icon={<UserOutlined />}>
+          Select a patient: 
+        </Dropdown.Button>
+        <p>{this.state.patient_name}</p>
+        <Upload project_id={project_id} />
+      </div>
+    );
     
     const fileUploadButton = open ? (
         <Button onClick={this.toggleDialog}>Close File Uploader</Button>
@@ -218,14 +318,21 @@ class Projects extends Component{
           chartEvents={this.chartEvents}
           style = {{float: 'right'}}
         />
-        <div style={{display: 'table', tableLayout:'fixed', width:'100%'}}>
+        <LoadingOverlay
+          active={this.state.isActive}
+          spinner
+          text='Loading more variants...'
+          >
+          <div style={{display: 'table', tableLayout:'fixed', width:'100%'}}>
                     <MUIDataTable
                     title={"VCF Table"}
                     data={table_data}
                     columns={columns}
                     options={options}
                     />
-        </div>
+          </div>
+        </LoadingOverlay>
+        
         </div>
     ): (
         <div><h3>Loading Table...</h3></div>

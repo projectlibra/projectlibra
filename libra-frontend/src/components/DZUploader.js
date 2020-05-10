@@ -1,7 +1,7 @@
 import React from 'react';
 import FileUploadProgress  from 'react-fileupload-progress';
 import axios from 'axios';
- 
+import host from '../host';
  
 class DZUploader extends React.Component {
   constructor(props) {
@@ -16,7 +16,7 @@ class DZUploader extends React.Component {
     formData.append("file", file);
 
     axios
-      .post("http://localhost:5000/upload", formData)
+      .post(host + "/upload", formData)
       .then(res => console.log(res))
       .catch(err => console.warn(err));
   }

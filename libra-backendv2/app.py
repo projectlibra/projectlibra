@@ -9,7 +9,9 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import os
 import uuid
 import fastsemsim
+
 import datetime
+import pickle
 
 # Init app
 app = Flask(__name__)
@@ -17,12 +19,16 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 # DB
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db2.sqlite')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:1@localhost:5432/libra' #Actual configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'secret' #Actual configuration
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config['SECRET_KEY'] = "mysecret"
 app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'uploads')
+app.config['SNPEFF_FOLDER'] = os.path.join(basedir, 'snpEff')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+with open('gene_dict.pickle', 'rb') as handle:
+    app.config['GENE_DICT'] = pickle.load(handle)
 
 # Init DB
 db = SQLAlchemy(app)
@@ -53,7 +59,7 @@ scheduler.start()
 
 # Run server
 if __name__ == '__main__':
-  app.run(debug=True)
+  app.run(debug=True, host="0.0.0.0", port=8883)
   # app.secret_key = os.urandom(24)
   # app.run(debug=True,host="0.0.0.0",use_reloader=False)
 

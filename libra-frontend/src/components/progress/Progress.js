@@ -15,6 +15,7 @@ class Progress extends Component {
         >
           <span style={{float: 'right', color:'white'}}>%{this.props.progress}</span>
         </div>
+        
       </div>
     );
   }
