@@ -29,6 +29,7 @@ class MatchMaker extends Component{
         this.state = {
             fetchedPatientsByHPOID: [],
             fetchedPatientsByHPOMetric: [],
+            fetchedPatientsByGOMetric: [],
             currentValues: [],
             unselectedValues: [],
             unselectedIDs: [],
@@ -48,6 +49,7 @@ class MatchMaker extends Component{
         this.onHPOTagChecked = this.onHPOTagChecked.bind(this);
         this.onManualMatchMakerClicked = this.onManualMatchMakerClicked.bind(this);
         this.onHPOMatchMakerClicked = this.onHPOMatchMakerClicked.bind(this);
+        this.onGOMatchMakerClicked = this.onGOMatchMakerClicked.bind(this);
         this.fetch_patients_by_hpo = this.fetch_patients_by_hpo.bind(this);
     }
     
@@ -244,8 +246,9 @@ class MatchMaker extends Component{
                 goMetricResults: res.data
             })
             res.data.forEach(element => {
-                this.fetch_patient_by_metric(element.patient_id,false)
-            })
+                    this.fetch_patient_by_metric(element.patient_id,false)
+                })
+            
         })
         .catch(err =>  {
             if(err.response) {
@@ -344,7 +347,15 @@ class MatchMaker extends Component{
         })
         this.fetch_hpo_patients(this.state.currentPatient.id);
     }
-
+    onGOMatchMakerClicked(){
+        this.setState({
+            fetchedPatientsByGOMetric : []
+        })
+        console.log(this.state.currentPatient);
+        if(this.state.currentPatient.go_tag_ids.length > 0){
+            this.fetch_go_patients(this.state.currentPatient.id);
+        }
+    }
     render() {
         const classes = {
             table: {
@@ -352,7 +363,7 @@ class MatchMaker extends Component{
             },
           }
         const { Title } = Typography;
-        const {fetchedPatientsByHPOID, fetchedPatientsByHPOMetric, hpoMetricResults, currentPatient} = this.state
+        const {fetchedPatientsByHPOID, fetchedPatientsByHPOMetric, fetchedPatientsByGOMetric, hpoMetricResults, goMetricResults, currentPatient} = this.state
         return (
             <div>
                 <Title level={3}>MatchMaker For Patient: {currentPatient.name}</Title>
@@ -447,6 +458,42 @@ class MatchMaker extends Component{
                     </Table>
                 </TableContainer>
 
+                <Divider orientation="left" style={{ color: '#333', fontWeight: 'normal' }}>
+                    
+                </Divider>
+                <Button type="primary" onClick={this.onGOMatchMakerClicked}>Run GO MatchMaker</Button>
+                <Divider orientation="left" style={{ color: '#333', fontWeight: 'normal' }}>
+                    GO MatchMaker Results
+                </Divider>
+
+                <TableContainer component={Paper}>
+                    <Table className={classes.table} size="small" aria-label="a dense table">
+                        <TableHead>
+                        <TableRow>
+                            <TableCell>Patient Contact</TableCell>
+                            <TableCell align="right">Diagnosis</TableCell>
+                            <TableCell align="right">Genotypes</TableCell>
+                            <TableCell align="right">Phenotypes</TableCell>
+                            <TableCell align="right">GO Similarty Percentage</TableCell>
+                        </TableRow>
+                        </TableHead>
+                        <TableBody>
+                        {fetchedPatientsByGOMetric.map(patient => (
+                            <TableRow>
+                            <TableCell component="th" scope="row">
+                                {patient.patient_contact}
+                            </TableCell>
+                            <TableCell align="right">{patient.diagnosis}</TableCell>
+                            <TableCell align="right">{patient.go_tag_ids}</TableCell>
+                            <TableCell align="right">{patient.hpo_tag_names}</TableCell>
+                            <TableCell align="right">{goMetricResults.filter(function(v) {
+                                return v.patient_id == patient.id;
+                            })[0].similarity}</TableCell>
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             </div>
 
         )

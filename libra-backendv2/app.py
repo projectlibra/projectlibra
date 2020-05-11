@@ -5,9 +5,12 @@ from flask_marshmallow import Marshmallow
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_migrate import Migrate
+from apscheduler.schedulers.background import BackgroundScheduler
 import os
 import uuid
 import fastsemsim
+
+import datetime
 import pickle
 
 # Init app
@@ -45,10 +48,15 @@ migrate = Migrate(app, db)
 
 # Init Ontology
 hpo = fastsemsim.load_ontology( ontology_type='Ontology', source_file='./ontologyMetric/hp.obo',file_type='obo')
-
+go =  fastsemsim.load_ontology( ontology_type='GeneOntology')
 CORS(app, expose_headers='Authorization')
 #app.config['CORS_HEADERS'] = 'Content-Type'
+
 from .views import *
+
+scheduler = BackgroundScheduler()
+job = scheduler.add_job(goFileCreate, 'interval', minutes=0.1, next_run_time = datetime.datetime.now())
+scheduler.start()
 
 # Run server
 if __name__ == '__main__':
