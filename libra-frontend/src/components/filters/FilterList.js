@@ -15,17 +15,13 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import * as filterConstants from "./FilterConstants";
 
 class FilterList extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {
-            scenarioInput: "", 
-            frequencyInput: {filterDbsnp: "any", filter1k: "any", filter1kfrequency: "1"}, 
-            impactInput: {highImpactArray: [], medImpactArray: [], lowImpactArray: []},
-            pathogenicityInput: {polyphenArray: [], siftArray: [], polyphenScore: "0", siftScore: "1"}
-        };
+        this.state = filterConstants.defaultState;        
 
         this.onInputChange = this.onInputChange.bind(this);
         this.test = this.test.bind(this);
@@ -117,22 +113,15 @@ class FilterPanel extends Component {
     } 
 
     selectDefaultState() {
-        const defaultState = {
-            scenarioInput: "", 
-            frequencyInput: {filterDbsnp: "any", filter1k: "any", filter1kfrequency: "1"}, 
-            impactInput: {highImpactArray: [], medImpactArray: [], lowImpactArray: []},
-            pathogenicityInput: {polyphenArray: [], siftArray: [], polyphenScore: "0", siftScore: "1"}
-        };
-
         switch(this.state.filterType) {
             case "scenario":
-                return defaultState.scenarioInput;
+                return filterConstants.defaultState.scenarioInput;
             case "frequency":
-                return defaultState.frequencyInput;
+                return filterConstants.defaultState.frequencyInput;
             case "impact":
-                return defaultState.impactInput;
+                return filterConstants.defaultState.impactInput;
             case "pathogenicity":
-                return defaultState.pathogenicityInput;
+                return filterConstants.defaultState.pathogenicityInput;
         }
     }
 
