@@ -1,4 +1,4 @@
-from .app import app, db, ma, bcrypt, basedir, db_engine, hpo, go
+from .app import app, db, ma, bcrypt, basedir, db_engine, hpo, go, mail
 from flask import Flask, request, jsonify, make_response, flash, redirect, url_for, session
 from werkzeug.utils import secure_filename
 from flask_cors import cross_origin
@@ -17,6 +17,7 @@ import json
 import vcf
 import fastsemsim
 import time
+from flask_mail import Message
 
 import pandas as pd
 import io
@@ -176,7 +177,7 @@ def fileUpload(current_user):
     cnt= 0
     variant_list = []
     start = time.time()
-    new_patient = Patient(name="RandPatient", diagnosis="rand_diag", patient_contact="rand@gmail.com", user_id=current_user.id, hpo_tag_names="", hpo_tag_ids="")
+    new_patient = Patient(name="RandPatient", diagnosis="rand_diag", patient_contact=current_user.email, user_id=current_user.id, hpo_tag_names="", hpo_tag_ids="")
     db.session.add(new_patient)
     db.session.commit()
 
@@ -603,27 +604,33 @@ def goFileCreate():
   print("--- %s seconds 1---" % (time.time() - start_time))
 
 def sendNotifications():
-  patient_ids = list(ac.obj_set)
+  with app.app_context():
+    patient_ids = list(ac.obj_set)
 
-  for i in range(0, len(patient_ids) - 1):
-    for j in range(i+1, len(patient_ids)):
-      pair = str(patient_ids[i])+ "." + str(patient_ids[j])
-      found_pair = db.session.query(GoSimilarity).filter_by(patient_pair=pair).first()
+    for i in range(0, len(patient_ids) - 1):
+      for j in range(i+1, len(patient_ids)):
+        pair = str(patient_ids[i])+ "." + str(patient_ids[j])
+        found_pair = db.session.query(GoSimilarity).filter_by(patient_pair=pair).first()
 
-      if not found_pair:
-        similarity = ss.SemSim(patient_ids[i], patient_ids[j])
-        if similarity is not None:
-          print(pair)
-          goSimilarity = GoSimilarity(patient_pair=pair, similarity = similarity)
-          patients = []
+        if not found_pair:
+          similarity = ss.SemSim(patient_ids[i], patient_ids[j])
+          if similarity is not None:
+            print(pair)
+            goSimilarity = GoSimilarity(patient_pair=pair, similarity = similarity)
+            patients = []
 
-          for info in db_engine.execute('select patient_contact, name from patient where id='+str(patient_ids[i])+'or id='+str(patient_ids[j])):
-            for key, value in info.items():
-              patients.append(value)
-          
-          print("To: " + patients[0] + " Your patient  "+ patients[1] +" is matched with Name: " + patients[3] + " Contact: " + patients[2])
-          print("To: " + patients[2] + " Your patient  "+ patients[3] +" is matched with Name: " + patients[1] + " Contact: " + patients[0])
-          
-          db.session.add(goSimilarity)
+            for info in db_engine.execute('select patient_contact, name from patient where id='+str(patient_ids[i])+' or id='+str(patient_ids[j])):
+              for key, value in info.items():
+                patients.append(value)
+            #recipient should be patient[0] if there is valid emails in the system
+            msg = Message('Similarity Notification for '+ patients[1], sender = 'projectlibra.similarity@gmail.com', recipients = ['halil.sahiner@ug.bilkent.edu.tr'])
+            msg.body = "Your patient  "+ patients[1] + " is matched with Name: " + patients[3] + " with the similarity: "+ similarity + " Contact: " + patients[2]
+            mail.send(msg)
+            #recipient should be patient[2] if there is valid emails in the system
+            msg = Message('Similarity Notification for '+ patients[3], sender = 'projectlibra.similarity@gmail.com', recipients = ['abdullah.talayhan@ug.bilkent.edu.tr'])
+            msg.body = "Your patient  "+ patients[3] + " is matched with Name: " + patients[1] + " with the similarity: "+ similarity + " Contact: " + patients[0]
+            mail.send(msg)
+            
+            db.session.add(goSimilarity)
 
-  db.session.commit() 
+    db.session.commit() 
