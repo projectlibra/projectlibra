@@ -6,10 +6,9 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import { Grid } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
 
-const highImpactArray = ["frameshift", "splice_acceptor", "splice_donor", "start_lost", "stop_gained", "stop_lost"];
-const medImpactArray = ["inframe_deletion", "inframe_insertion", "missense", "protein_altering", "splice_region"];
-const lowImpactArray = ["_3_prime_UTR", "_5_prime_UTR", "coding_sequence", "downstream_gene", "intergenic", "intron", "mature_miRNA", 
-    "non_coding_transcript_exon", "regulatory_region", "stop_retained", "synonymous", "upstream_gene"];
+const highImpactArray = ["chromosome_number_variation", "exon_loss_variant", "frameshift_variant", "rare_amino_acid_variant", "splice_acceptor_variant", "splice_donor_variant", "start_lost", "stop_gained", "stop_lost", "transcript_ablation"];
+const medImpactArray = ["3_prime_UTR_truncation&exon_loss", "5_prime_UTR_truncation&exon_loss_variant", "coding_sequence_variant", "conservative_inframe_deletion", "conservative_inframe_insertion", "disruptive_inframe_deletion", "disruptive_inframe_insertion", "missense_variant", "regulatory_region_ablation", "splice_region_variant", "TFBS_albation"];
+const lowImpactArray = ["5_prime_UTR_premature_start_codon_gain_variant", "initiator_codon_variant", "splice_region_variant", "start_retained", "stop_retained_variant", "synonymous_variant"];
 
 class ImpactFilter extends Component {
     constructor(props) {
@@ -213,22 +212,22 @@ class ImpactFilter extends Component {
                         <Container >
                             <FormGroup>
                                 <FormControlLabel
-                                    control={<Checkbox name="frameshift" />}
-                                    checked={this.state.highImpactSelectedOptions.includes("frameshift")}
+                                    control={<Checkbox name="frameshift_variant" />}
+                                    checked={this.state.highImpactSelectedOptions.includes("frameshift_variant")}
                                     onChange={this.handleChange}
-                                    label="frameshift"
+                                    label="frameshift_variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="splice_acceptor" />}
-                                    checked={this.state.highImpactSelectedOptions.includes("splice_acceptor")}
+                                    control={<Checkbox name="splice_acceptor_variant" />}
+                                    checked={this.state.highImpactSelectedOptions.includes("splice_acceptor_variant")}
                                     onChange={this.handleChange}
-                                    label="splice acceptor"
+                                    label="splice_acceptor_variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="splice_donor" />}
-                                    checked={this.state.highImpactSelectedOptions.includes("splice_donor")}
+                                    control={<Checkbox name="splice_donor_variant" />}
+                                    checked={this.state.highImpactSelectedOptions.includes("splice_donor_variant")}
                                     onChange={this.handleChange}
-                                    label="splice donor"
+                                    label="splice_donor_variant"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="start_lost" />}
@@ -260,34 +259,58 @@ class ImpactFilter extends Component {
                         <Container >
                             <FormGroup> 
                                 <FormControlLabel
-                                    control={<Checkbox name="inframe_deletion" />}
-                                    checked={this.state.medImpactSelectedOptions.includes("inframe_deletion")}
+                                    control={<Checkbox name="coding_sequence_variant" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("coding_sequence_variant")}
                                     onChange={this.handleChange}
-                                    label="inframe deletion"
+                                    label="coding_sequence_variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="inframe_insertion" />}
-                                    checked={this.state.medImpactSelectedOptions.includes("inframe_insertion")}
+                                    control={<Checkbox name="disruptive_inframe_deletion" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("disruptive_inframe_deletion")}
                                     onChange={this.handleChange}
-                                    label="inframe insertion"
+                                    label="disruptive_inframe_deletion"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="missense" />}
-                                    checked={this.state.medImpactSelectedOptions.includes("missense")}
+                                    control={<Checkbox name="conservative_inframe_deletion" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("conservative_inframe_deletion")}
                                     onChange={this.handleChange}
-                                    label="missense"
+                                    label="conservative_inframe_deletion"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="protein_altering" />}
-                                    checked={this.state.medImpactSelectedOptions.includes("protein_altering")}
+                                    control={<Checkbox name="disruptive_inframe_insertion" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("disruptive_inframe_insertion")}
                                     onChange={this.handleChange}
-                                    label="protein altering"
+                                    label="disruptive_inframe_insertion"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="splice_region" />}
-                                    checked={this.state.medImpactSelectedOptions.includes("splice_region")}
+                                    control={<Checkbox name="conservative_inframe_insertion" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("conservative_inframe_insertion")}
                                     onChange={this.handleChange}
-                                    label="splice region"
+                                    label="conservative_inframe_insertion"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="missense_variant" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("missense_variant")}
+                                    onChange={this.handleChange}
+                                    label="missense_variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="regulatory_region_ablation" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("regulatory_region_ablation")}
+                                    onChange={this.handleChange}
+                                    label="regulatory_region_ablation"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="splice_region_variant" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("splice_region_variant")}
+                                    onChange={this.handleChange}
+                                    label="splice_region_variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="TFBS_albation" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("TFBS_albation")}
+                                    onChange={this.handleChange}
+                                    label="TFBS_albation"
                                 />
                             </FormGroup>
                         </Container>                        
@@ -313,64 +336,35 @@ class ImpactFilter extends Component {
                                     label="5 prime UTR"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="coding_sequence" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("coding_sequence")}
+                                    control={<Checkbox name="initiator_codon_variant" />}
+                                    checked={this.state.lowImpactSelectedOptions.includes("initiator_codon_variant")}
                                     onChange={this.handleChange}
-                                    label="coding sequence"
+                                    label="initiator_codon_variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="downstream_gene" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("downstream_gene")}
+                                    control={<Checkbox name="start_retained" />}
+                                    checked={this.state.lowImpactSelectedOptions.includes("start_retained")}
                                     onChange={this.handleChange}
-                                    label="downstream gene"
+                                    label="start_retained"
+                                />
+                                
+                                <FormControlLabel
+                                    control={<Checkbox name="stop_retained_variant" />}
+                                    checked={this.state.lowImpactSelectedOptions.includes("stop_retained_variant")}
+                                    onChange={this.handleChange}
+                                    label="stop_retained_variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="intergenic" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("intergenic")}
+                                    control={<Checkbox name="synonymous_variant" />}
+                                    checked={this.state.lowImpactSelectedOptions.includes("synonymous_variant")}
                                     onChange={this.handleChange}
-                                    label="intergenic"
+                                    label="synonymous_variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="intron" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("intron")}
+                                    control={<Checkbox name="splice_region_variant" />}
+                                    checked={this.state.lowImpactSelectedOptions.includes("splice_region_variant")}
                                     onChange={this.handleChange}
-                                    label="intron"
-                                />
-                                <FormControlLabel
-                                    control={<Checkbox name="mature_miRNA" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("mature_miRNA")}
-                                    onChange={this.handleChange}
-                                    label="mature miRNA"
-                                />
-                                <FormControlLabel
-                                    control={<Checkbox name="non_coding_transcript_exon" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("non_coding_transcript_exon")}
-                                    onChange={this.handleChange}
-                                    label="non coding transcript exon"
-                                />
-                                <FormControlLabel
-                                    control={<Checkbox name="regulatory_region" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("regulatory_region")}
-                                    onChange={this.handleChange}
-                                    label="regulatory region"
-                                />
-                                <FormControlLabel
-                                    control={<Checkbox name="stop_retained" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("stop_retained")}
-                                    onChange={this.handleChange}
-                                    label="stop retained"
-                                />
-                                <FormControlLabel
-                                    control={<Checkbox name="synonymous" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("synonymous")}
-                                    onChange={this.handleChange}
-                                    label="synonymous"
-                                />
-                                <FormControlLabel
-                                    control={<Checkbox name="upstream_gene" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("upstream_gene")}
-                                    onChange={this.handleChange}
-                                    label="upstream gene"
+                                    label="splice_region_variant"
                                 />
                             </FormGroup>
                         </Container>                        
