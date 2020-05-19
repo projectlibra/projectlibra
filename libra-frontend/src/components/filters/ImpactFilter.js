@@ -9,15 +9,18 @@ import Container from '@material-ui/core/Container';
 const highImpactArray = ["chromosome_number_variation", "exon_loss_variant", "frameshift_variant", "rare_amino_acid_variant", 
     "splice_acceptor_variant", "splice_donor_variant", "start_lost", "stop_gained", "stop_lost", "transcript_ablation"];
 const medImpactArray = ["5_prime_UTR_truncation+exon_loss_variant", "3_prime_UTR_truncation+exon_loss",
-    "coding_sequence_variant", "conservative_inframe_deletion", "conservative_inframe_insertion", "disruptive_inframe_deletion",
-    "disruptive_inframe_insertion", "missense_variant", "regulatory_region_ablation", "splice_region_variant", "TFBS_ablation"];
-const lowImpactArray = [ "5_prime_UTR_premature_start_codon_gain_variant", "initiator_codon_variant", "splice_region_variant", "start_retained",
+    "coding_sequence_variant_moderate", "conservative_inframe_deletion", "conservative_inframe_insertion", "disruptive_inframe_deletion",
+    "disruptive_inframe_insertion", "missense_variant", "regulatory_region_ablation", "splice_region_variant_moderate", "TFBS_ablation"];
+    // coding_sequence_variant - splice_region_variant
+const lowImpactArray = [ "5_prime_UTR_premature_start_codon_gain_variant", "initiator_codon_variant", "splice_region_variant_low", "start_retained",
     "stop_retained_variant", "synonymous_variant"];
-const modifierImpactArray = ["3_prime_UTR_variant", "5_prime_UTR_variant", "coding_sequence_variant", "conserved_intergenic_variant",
+    // splice_region_variant
+const modifierImpactArray = ["3_prime_UTR_variant", "5_prime_UTR_variant", "coding_sequence_variant_modifier", "conserved_intergenic_variant",
     "conserved_intron_variant", "downstream_gene_variant",  "exon_variant", "feature_elongation", "feature_truncation", "gene_variant",
      "intergenic_region", "intragenic_variant", "intron_variant", "mature_miRNA_variant", "miRNA", "NMD_transcript_variant", 
      "non_coding_transcript_exon_variant", "non_coding_transcript_variant", "regulatory_region_amplification", "regulatory_region_variant",
      "TF_binding_site_variant", "TFBS_amplification", "transcript_amplification", "transcript_variant", "upstream_gene_variant"];
+     // coding_sequence_variant
 
 class ImpactFilter extends Component {
     constructor(props) {
@@ -31,30 +34,7 @@ class ImpactFilter extends Component {
             high: false, 
             medium: false, 
             low: false, 
-            modifier: false,
-            frameshift: false,
-            splice_acceptor: false,
-            splice_donor: false,
-            start_lost: false, 
-            stop_gained: false,
-            stop_lost: false,
-            inframe_deletion: false,
-            inframe_insertion: false,
-            missense: false,
-            protein_altering: false,
-            splice_region: false,
-            _3_prime_UTR: false,
-            _5_prime_UTR: false,
-            coding_sequence: false,
-            downstream_gene: false,
-            intergenic: false,
-            intron: false,
-            mature_miRNA: false,
-            non_coding_transcript_exon: false,
-            regulatory_region: false,
-            stop_retained: false,
-            synonymous: false,
-            upstream_gene: false
+            modifier: false
         };
 
         this.handleChange = this.handleChange.bind(this);
@@ -64,11 +44,6 @@ class ImpactFilter extends Component {
     handleChange(event) {
         if (event.target.name === "high" || event.target.name === "medium" || event.target.name === "low" || event.target.name === "modifier") {
             if (event.target.checked && event.target.name === "high") {
-                console.log("here");
-                var i;
-                for (i = 0; i < highImpactArray.length; i++) {
-                    this.setState({[highImpactArray[i]]: true});
-                } 
                 this.setState({highImpactSelectedOptions: highImpactArray, high: true}, 
                     this.props.handleFilterChange({highImpactArray: highImpactArray, 
                     medImpactArray: this.state.medImpactSelectedOptions, 
@@ -77,10 +52,6 @@ class ImpactFilter extends Component {
                 }));
             }
             if (event.target.checked && event.target.name === "medium") {
-                var i;
-                for (i = 0; i < medImpactArray.length; i++) {
-                    this.setState({[medImpactArray[i]]: true});
-                } 
                 this.setState({medImpactSelectedOptions: medImpactArray, medium: true}, 
                     this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
                     medImpactArray: medImpactArray, 
@@ -89,10 +60,6 @@ class ImpactFilter extends Component {
                 }));
             }
             if (event.target.checked && event.target.name === "low") {
-                var i;
-                for (i = 0; i < lowImpactArray.length; i++) {
-                    this.setState({[lowImpactArray[i]]: true});
-                } 
                 this.setState({lowImpactSelectedOptions: lowImpactArray, low: true}, 
                     this.props.handleFilterChange({
                     highImpactArray: this.state.highImpactSelectedOptions, 
@@ -103,10 +70,6 @@ class ImpactFilter extends Component {
             }
 
             if (event.target.checked && event.target.name === "modifier") {
-                var i;
-                for (i = 0; i < modifierImpactArray.length; i++) {
-                    this.setState({[modifierImpactArray[i]]: true});
-                } 
                 this.setState({modifierImpactSelectedOptions: modifierImpactArray, modifier: true}, 
                     this.props.handleFilterChange({
                     highImpactArray: this.state.highImpactSelectedOptions, 
@@ -117,10 +80,6 @@ class ImpactFilter extends Component {
             }
 
             if (!event.target.checked && event.target.name === "high") {
-                var i;
-                for (i = 0; i < highImpactArray.length; i++) {
-                    this.setState({[highImpactArray[i]]: false});
-                } 
                 this.setState({highImpactSelectedOptions: [], high: false}, 
                     this.props.handleFilterChange({
                     highImpactArray: [], 
@@ -131,10 +90,6 @@ class ImpactFilter extends Component {
             }
             
             if (!event.target.checked && event.target.name === "medium") {
-                var i;
-                for (i = 0; i < medImpactArray.length; i++) {
-                    this.setState({[medImpactArray[i]]: false});
-                } 
                 this.setState({medImpactSelectedOptions: [], medium: false}, 
                     this.props.handleFilterChange({
                     highImpactArray: this.state.highImpactSelectedOptions, 
@@ -145,10 +100,6 @@ class ImpactFilter extends Component {
             }
 
             if (!event.target.checked && event.target.name === "low") {
-                var i;
-                for (i = 0; i < lowImpactArray.length; i++) {
-                    this.setState({[lowImpactArray[i]]: false});
-                } 
                 this.setState({lowImpactSelectedOptions: [], low: false}, 
                     this.props.handleFilterChange({
                     highImpactArray: this.state.highImpactSelectedOptions, 
@@ -159,10 +110,6 @@ class ImpactFilter extends Component {
             }
 
             if (!event.target.checked && event.target.name === "modifier") {
-                var i;
-                for (i = 0; i < modifierImpactArray.length; i++) {
-                    this.setState({[modifierImpactArray[i]]: false});
-                } 
                 this.setState({modifierImpactSelectedOptions: [], modifier: false}, 
                     this.props.handleFilterChange({
                     highImpactArray: this.state.highImpactSelectedOptions, 
@@ -175,59 +122,94 @@ class ImpactFilter extends Component {
             if (event.target.checked) {
                 if (highImpactArray.includes(event.target.name)) {
                     var newHighImpactArray = [...this.state.highImpactSelectedOptions, event.target.name]
-                    this.setState({highImpactSelectedOptions: newHighImpactArray,
-                         [event.target.name]: true},
-                         this.props.handleFilterChange({highImpactArray: newHighImpactArray, 
+                    this.setState({highImpactSelectedOptions: newHighImpactArray},
+                         this.props.handleFilterChange({
+                            highImpactArray: newHighImpactArray, 
                             medImpactArray: this.state.medImpactSelectedOptions, 
-                            lowImpactArray: this.state.lowImpactSelectedOptions}));
+                            lowImpactArray: this.state.lowImpactSelectedOptions,
+                            modifierImpactArray: this.state.modifierImpactSelectedOptions
+                        }));
                 }
 
                 if (medImpactArray.includes(event.target.name)) {
                     var newMedImpactArray = [...this.state.medImpactSelectedOptions, event.target.name];
-                    this.setState({medImpactSelectedOptions: newMedImpactArray,
-                         [event.target.name]: true},
-                         this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
+                    this.setState({medImpactSelectedOptions: newMedImpactArray},
+                         this.props.handleFilterChange({
+                            highImpactArray: this.state.highImpactSelectedOptions, 
                             medImpactArray: newMedImpactArray, 
-                            lowImpactArray: this.state.lowImpactSelectedOptions}));
+                            lowImpactArray: this.state.lowImpactSelectedOptions,
+                            modifierImpactArray: this.state.modifierImpactSelectedOptions
+                        }));
                 }
 
                 if (lowImpactArray.includes(event.target.name)) {
                     var newLowImpactArray = [...this.state.lowImpactSelectedOptions, event.target.name];
-                    this.setState({lowImpactSelectedOptions: newLowImpactArray,
-                         [event.target.name]: true},
-                         this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
+                    this.setState({lowImpactSelectedOptions: newLowImpactArray},
+                         this.props.handleFilterChange({
+                            highImpactArray: this.state.highImpactSelectedOptions, 
                             medImpactArray: this.state.medImpactSelectedOptions, 
-                            lowImpactArray: newLowImpactArray}));
+                            lowImpactArray: newLowImpactArray,
+                            modifierImpactArray: this.state.modifierImpactSelectedOptions
+                        }));
+                }
+
+                if (modifierImpactArray.includes(event.target.name)) {
+                    var newModifierImpactArray = [...this.state.modifierImpactSelectedOptions, event.target.name];
+                    this.setState({modifierImpactSelectedOptions: newModifierImpactArray},
+                         this.props.handleFilterChange({
+                            highImpactArray: this.state.highImpactSelectedOptions, 
+                            medImpactArray: this.state.medImpactSelectedOptions, 
+                            lowImpactArray: this.state.lowImpactSelectedOptions,
+                            modifierImpactArray: newModifierImpactArray
+                        }));
                 }
             } else {
                 if (highImpactArray.includes(event.target.name)) {
                     var temp = [...this.state.highImpactSelectedOptions];
                     temp = temp.filter(e => e !== event.target.name);
-                    this.setState({highImpactSelectedOptions: temp,
-                         [event.target.name]: false},
-                         this.props.handleFilterChange({highImpactArray: temp, 
+                    this.setState({highImpactSelectedOptions: temp},
+                         this.props.handleFilterChange({
+                            highImpactArray: temp, 
                             medImpactArray: this.state.medImpactSelectedOptions, 
-                            lowImpactArray: this.state.lowImpactSelectedOptions}));
+                            lowImpactArray: this.state.lowImpactSelectedOptions,
+                            modifierImpactArray: this.state.modifierImpactSelectedOptions
+                        }));
                 }
 
                 if (medImpactArray.includes(event.target.name)) {
                     var temp = [...this.state.medImpactSelectedOptions];
                     temp = temp.filter(e => e !== event.target.name);
-                    this.setState({medImpactSelectedOptions: temp,
-                         [event.target.name]: false},
-                         this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
+                    this.setState({medImpactSelectedOptions: temp},
+                         this.props.handleFilterChange({
+                            highImpactArray: this.state.highImpactSelectedOptions, 
                             medImpactArray: temp, 
-                            lowImpactArray: this.state.lowImpactSelectedOptions}));
+                            lowImpactArray: this.state.lowImpactSelectedOptions,
+                            modifierImpactArray: this.state.modifierImpactSelectedOptions
+                        }));
                 }
 
                 if (lowImpactArray.includes(event.target.name)) {
                     var temp = [...this.state.lowImpactSelectedOptions];
                     temp = temp.filter(e => e !== event.target.name);
-                    this.setState({lowImpactSelectedOptions: temp,
-                         [event.target.name]: false},
-                         this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
+                    this.setState({lowImpactSelectedOptions: temp},
+                         this.props.handleFilterChange({
+                            highImpactArray: this.state.highImpactSelectedOptions, 
                             medImpactArray: this.state.medImpactSelectedOptions, 
-                            lowImpactArray: temp}));
+                            lowImpactArray: temp,
+                            modifierImpactArray: this.state.modifierImpactSelectedOptions
+                        }));
+                }
+
+                if (modifierImpactArray.includes(event.target.name)) {
+                    var temp = [...this.state.modifierImpactSelectedOptions];
+                    temp = temp.filter(e => e !== event.target.name);
+                    this.setState({modifierImpactSelectedOptions: temp},
+                         this.props.handleFilterChange({
+                            highImpactArray: this.state.highImpactSelectedOptions, 
+                            medImpactArray: this.state.medImpactSelectedOptions, 
+                            lowImpactArray: temp,
+                            modifierImpactArray: this.state.modifierImpactSelectedOptions
+                        }));
                 }
             }
         }
@@ -330,8 +312,8 @@ class ImpactFilter extends Component {
                                     label="3 prime UTR truncation & exon loss"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="coding_sequence_variant" />}
-                                    checked={this.state.medImpactSelectedOptions.includes("coding_sequence_variant")}
+                                    control={<Checkbox name="coding_sequence_variant_moderate" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("coding_sequence_variant_moderate")}
                                     onChange={this.handleChange}
                                     label="coding sequence variant"
                                 />
@@ -372,8 +354,8 @@ class ImpactFilter extends Component {
                                     label="regulatory region ablation"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="splice_region_variant" />}
-                                    checked={this.state.medImpactSelectedOptions.includes("splice_region_variant")}
+                                    control={<Checkbox name="splice_region_variant_moderate" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("splice_region_variant_moderate")}
                                     onChange={this.handleChange}
                                     label="splice region variant"
                                 />
@@ -407,8 +389,8 @@ class ImpactFilter extends Component {
                                     label="initiator codon variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="splice_region_variant" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("splice_region_variant")}
+                                    control={<Checkbox name="splice_region_variant_low" />}
+                                    checked={this.state.lowImpactSelectedOptions.includes("splice_region_variant_low")}
                                     onChange={this.handleChange}
                                     label="splice region variant"
                                 />
@@ -454,8 +436,8 @@ class ImpactFilter extends Component {
                                     label="5 prime UTR variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="coding_sequence_variant" />}
-                                    checked={this.state.modifierImpactSelectedOptions.includes("coding_sequence_variant")}
+                                    control={<Checkbox name="coding_sequence_variant_modifier" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("coding_sequence_variant_modifier")}
                                     onChange={this.handleChange}
                                     label="coding sequence variant"
                                 />
@@ -469,7 +451,7 @@ class ImpactFilter extends Component {
                                     control={<Checkbox name="conserved_intron_variant" />}
                                     checked={this.state.modifierImpactSelectedOptions.includes("conserved_intron_variant")}
                                     onChange={this.handleChange}
-                                    label="conserved_intron_variant"
+                                    label="conserved intron variant"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="downstream_gene_variant" />}
