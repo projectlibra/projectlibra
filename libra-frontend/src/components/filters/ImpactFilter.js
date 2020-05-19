@@ -6,10 +6,18 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import { Grid } from '@material-ui/core';
 import Container from '@material-ui/core/Container';
 
-const highImpactArray = ["frameshift", "splice_acceptor", "splice_donor", "start_lost", "stop_gained", "stop_lost"];
-const medImpactArray = ["inframe_deletion", "inframe_insertion", "missense", "protein_altering", "splice_region"];
-const lowImpactArray = ["_3_prime_UTR", "_5_prime_UTR", "coding_sequence", "downstream_gene", "intergenic", "intron", "mature_miRNA", 
-    "non_coding_transcript_exon", "regulatory_region", "stop_retained", "synonymous", "upstream_gene"];
+const highImpactArray = ["chromosome_number_variation", "exon_loss_variant", "frameshift_variant", "rare_amino_acid_variant", 
+    "splice_acceptor_variant", "splice_donor_variant", "start_lost", "stop_gained", "stop_lost", "transcript_ablation"];
+const medImpactArray = ["5_prime_UTR_truncation+exon_loss_variant", "3_prime_UTR_truncation+exon_loss",
+    "coding_sequence_variant", "conservative_inframe_deletion", "conservative_inframe_insertion", "disruptive_inframe_deletion",
+    "disruptive_inframe_insertion", "missense_variant", "regulatory_region_ablation", "splice_region_variant", "TFBS_ablation"];
+const lowImpactArray = [ "5_prime_UTR_premature_start_codon_gain_variant", "initiator_codon_variant", "splice_region_variant", "start_retained",
+    "stop_retained_variant", "synonymous_variant"];
+const modifierImpactArray = ["3_prime_UTR_variant", "5_prime_UTR_variant", "coding_sequence_variant", "conserved_intergenic_variant",
+    "conserved_intron_variant", "downstream_gene_variant",  "exon_variant", "feature_elongation", "feature_truncation", "gene_variant",
+     "intergenic_region", "intragenic_variant", "intron_variant", "mature_miRNA_variant", "miRNA", "NMD_transcript_variant", 
+     "non_coding_transcript_exon_variant", "non_coding_transcript_variant", "regulatory_region_amplification", "regulatory_region_variant",
+     "TF_binding_site_variant", "TFBS_amplification", "transcript_amplification", "transcript_variant", "upstream_gene_variant"];
 
 class ImpactFilter extends Component {
     constructor(props) {
@@ -19,9 +27,11 @@ class ImpactFilter extends Component {
             highImpactSelectedOptions: [],
             medImpactSelectedOptions: [],
             lowImpactSelectedOptions: [],
+            modifierImpactSelectedOptions: [],
             high: false, 
             medium: false, 
             low: false, 
+            modifier: false,
             frameshift: false,
             splice_acceptor: false,
             splice_donor: false,
@@ -44,17 +54,15 @@ class ImpactFilter extends Component {
             regulatory_region: false,
             stop_retained: false,
             synonymous: false,
-            upstream_gene: false,
-            summary: ""            
+            upstream_gene: false
         };
 
         this.handleChange = this.handleChange.bind(this);
-        this.updateSummary = this.updateSummary.bind(this);
     }    
 
     // I apologize to everybody that will have a look at this atrocious method
     handleChange(event) {
-        if (event.target.name === "high" || event.target.name === "medium" || event.target.name === "low") {
+        if (event.target.name === "high" || event.target.name === "medium" || event.target.name === "low" || event.target.name === "modifier") {
             if (event.target.checked && event.target.name === "high") {
                 console.log("here");
                 var i;
@@ -64,7 +72,9 @@ class ImpactFilter extends Component {
                 this.setState({highImpactSelectedOptions: highImpactArray, high: true}, 
                     this.props.handleFilterChange({highImpactArray: highImpactArray, 
                     medImpactArray: this.state.medImpactSelectedOptions, 
-                    lowImpactArray: this.state.lowImpactSelectedOptions}));
+                    lowImpactArray: this.state.lowImpactSelectedOptions,
+                    modifierImpactArray: this.state.modifierImpactSelectedOptions
+                }));
             }
             if (event.target.checked && event.target.name === "medium") {
                 var i;
@@ -74,7 +84,9 @@ class ImpactFilter extends Component {
                 this.setState({medImpactSelectedOptions: medImpactArray, medium: true}, 
                     this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
                     medImpactArray: medImpactArray, 
-                    lowImpactArray: this.state.lowImpactSelectedOptions}));
+                    lowImpactArray: this.state.lowImpactSelectedOptions,
+                    modifierImpactArray: this.state.modifierImpactSelectedOptions
+                }));
             }
             if (event.target.checked && event.target.name === "low") {
                 var i;
@@ -82,9 +94,26 @@ class ImpactFilter extends Component {
                     this.setState({[lowImpactArray[i]]: true});
                 } 
                 this.setState({lowImpactSelectedOptions: lowImpactArray, low: true}, 
-                    this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
+                    this.props.handleFilterChange({
+                    highImpactArray: this.state.highImpactSelectedOptions, 
                     medImpactArray: this.state.medImpactSelectedOptions, 
-                    lowImpactArray: lowImpactArray}));
+                    lowImpactArray: lowImpactArray,
+                    modifierImpactArray: this.state.modifierImpactSelectedOptions
+                }));
+            }
+
+            if (event.target.checked && event.target.name === "modifier") {
+                var i;
+                for (i = 0; i < modifierImpactArray.length; i++) {
+                    this.setState({[modifierImpactArray[i]]: true});
+                } 
+                this.setState({modifierImpactSelectedOptions: modifierImpactArray, modifier: true}, 
+                    this.props.handleFilterChange({
+                    highImpactArray: this.state.highImpactSelectedOptions, 
+                    medImpactArray: this.state.medImpactSelectedOptions, 
+                    lowImpactArray: this.state.lowImpactSelectedOptions,
+                    modifierImpactArray: modifierImpactArray
+                }));
             }
 
             if (!event.target.checked && event.target.name === "high") {
@@ -93,9 +122,12 @@ class ImpactFilter extends Component {
                     this.setState({[highImpactArray[i]]: false});
                 } 
                 this.setState({highImpactSelectedOptions: [], high: false}, 
-                    this.props.handleFilterChange({highImpactArray: [], 
+                    this.props.handleFilterChange({
+                    highImpactArray: [], 
                     medImpactArray: this.state.medImpactSelectedOptions, 
-                    lowImpactArray: this.state.lowImpactSelectedOptions}));                
+                    lowImpactArray: this.state.lowImpactSelectedOptions,
+                    modifierImpactArray: this.state.modifierImpactSelectedOptions
+                }));                
             }
             
             if (!event.target.checked && event.target.name === "medium") {
@@ -104,9 +136,12 @@ class ImpactFilter extends Component {
                     this.setState({[medImpactArray[i]]: false});
                 } 
                 this.setState({medImpactSelectedOptions: [], medium: false}, 
-                    this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
+                    this.props.handleFilterChange({
+                    highImpactArray: this.state.highImpactSelectedOptions, 
                     medImpactArray: [], 
-                    lowImpactArray: this.state.lowImpactSelectedOptions}));                
+                    lowImpactArray: this.state.lowImpactSelectedOptions,
+                    modifierImpactArray: this.state.modifierImpactSelectedOptions
+                }));                
             }
 
             if (!event.target.checked && event.target.name === "low") {
@@ -115,9 +150,26 @@ class ImpactFilter extends Component {
                     this.setState({[lowImpactArray[i]]: false});
                 } 
                 this.setState({lowImpactSelectedOptions: [], low: false}, 
-                    this.props.handleFilterChange({highImpactArray: this.state.highImpactSelectedOptions, 
+                    this.props.handleFilterChange({
+                    highImpactArray: this.state.highImpactSelectedOptions, 
                     medImpactArray: this.state.medImpactSelectedOptions, 
-                    lowImpactArray: []}));                
+                    lowImpactArray: [],
+                    modifierImpactArray: this.state.modifierImpactSelectedOptions
+                }));                
+            }
+
+            if (!event.target.checked && event.target.name === "modifier") {
+                var i;
+                for (i = 0; i < modifierImpactArray.length; i++) {
+                    this.setState({[modifierImpactArray[i]]: false});
+                } 
+                this.setState({modifierImpactSelectedOptions: [], modifier: false}, 
+                    this.props.handleFilterChange({
+                    highImpactArray: this.state.highImpactSelectedOptions, 
+                    medImpactArray: this.state.medImpactSelectedOptions, 
+                    lowImpactArray: this.state.lowImpactSelectedOptions,
+                    modifierImpactArray: []
+                }));                
             }
         } else {
             if (event.target.checked) {
@@ -181,24 +233,6 @@ class ImpactFilter extends Component {
         }
     }
 
-    updateSummary(event) {
-        var summaryString = "";
-        if (this.state.high && event.target.name !== "high") {
-            summaryString = summaryString + "high ";
-        }  
-        if (this.state.medium && event.target.name !== "medium") {
-            summaryString = summaryString + "medium ";
-        }  
-        if (this.state.low && event.target.name !== "low") {
-            summaryString = summaryString + "low ";
-        }  
-        if (event.target.checked) {
-            summaryString = summaryString + event.target.name;
-        }  
-
-        return summaryString;
-    }
-
     render() {
         return(
             <div>
@@ -209,26 +243,44 @@ class ImpactFilter extends Component {
                             checked={this.state.high}
                             onChange={this.handleChange}
                             label="HIGH"
-                        />
+                        />                        
                         <Container >
                             <FormGroup>
                                 <FormControlLabel
-                                    control={<Checkbox name="frameshift" />}
-                                    checked={this.state.highImpactSelectedOptions.includes("frameshift")}
+                                    control={<Checkbox name="chromosome_number_variation" />}
+                                    checked={this.state.highImpactSelectedOptions.includes("chromosome_number_variation")}
                                     onChange={this.handleChange}
-                                    label="frameshift"
+                                    label="chromosome number variation"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="splice_acceptor" />}
-                                    checked={this.state.highImpactSelectedOptions.includes("splice_acceptor")}
+                                    control={<Checkbox name="exon_loss_variant" />}
+                                    checked={this.state.highImpactSelectedOptions.includes("exon_loss_variant")}
                                     onChange={this.handleChange}
-                                    label="splice acceptor"
+                                    label="exon loss variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="splice_donor" />}
-                                    checked={this.state.highImpactSelectedOptions.includes("splice_donor")}
+                                    control={<Checkbox name="frameshift_variant" />}
+                                    checked={this.state.highImpactSelectedOptions.includes("frameshift_variant")}
                                     onChange={this.handleChange}
-                                    label="splice donor"
+                                    label="frameshift variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="rare_amino_acid_variant" />}
+                                    checked={this.state.highImpactSelectedOptions.includes("rare_amino_acid_variant")}
+                                    onChange={this.handleChange}
+                                    label="rare amino acid variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="splice_acceptor_variant" />}
+                                    checked={this.state.highImpactSelectedOptions.includes("splice_acceptor_variant")}
+                                    onChange={this.handleChange}
+                                    label="splice acceptor variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="splice_donor_variant" />}
+                                    checked={this.state.highImpactSelectedOptions.includes("splice_donor_variant")}
+                                    onChange={this.handleChange}
+                                    label="splice donor variant"
                                 />
                                 <FormControlLabel
                                     control={<Checkbox name="start_lost" />}
@@ -248,6 +300,12 @@ class ImpactFilter extends Component {
                                     onChange={this.handleChange}
                                     label="stop lost"
                                 />
+                                <FormControlLabel
+                                    control={<Checkbox name="transcript_ablation" />}
+                                    checked={this.state.highImpactSelectedOptions.includes("transcript_ablation")}
+                                    onChange={this.handleChange}
+                                    label="transcript ablation"
+                                />
                             </FormGroup>
                         </Container>                        
 
@@ -260,34 +318,70 @@ class ImpactFilter extends Component {
                         <Container >
                             <FormGroup> 
                                 <FormControlLabel
-                                    control={<Checkbox name="inframe_deletion" />}
-                                    checked={this.state.medImpactSelectedOptions.includes("inframe_deletion")}
+                                    control={<Checkbox name="5_prime_UTR_truncation+exon_loss_variant" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("5_prime_UTR_truncation+exon_loss_variant")}
                                     onChange={this.handleChange}
-                                    label="inframe deletion"
+                                    label="5 prime UTR truncation & exon loss variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="inframe_insertion" />}
-                                    checked={this.state.medImpactSelectedOptions.includes("inframe_insertion")}
+                                    control={<Checkbox name="3_prime_UTR_truncation+exon_loss" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("3_prime_UTR_truncation+exon_loss")}
                                     onChange={this.handleChange}
-                                    label="inframe insertion"
+                                    label="3 prime UTR truncation & exon loss"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="missense" />}
-                                    checked={this.state.medImpactSelectedOptions.includes("missense")}
+                                    control={<Checkbox name="coding_sequence_variant" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("coding_sequence_variant")}
                                     onChange={this.handleChange}
-                                    label="missense"
+                                    label="coding sequence variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="protein_altering" />}
-                                    checked={this.state.medImpactSelectedOptions.includes("protein_altering")}
+                                    control={<Checkbox name="conservative_inframe_deletion" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("conservative_inframe_deletion")}
                                     onChange={this.handleChange}
-                                    label="protein altering"
+                                    label="conservative inframe deletion"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="splice_region" />}
-                                    checked={this.state.medImpactSelectedOptions.includes("splice_region")}
+                                    control={<Checkbox name="conservative_inframe_insertion" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("conservative_inframe_insertion")}
                                     onChange={this.handleChange}
-                                    label="splice region"
+                                    label="conservative inframe insertion"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="disruptive_inframe_deletion" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("disruptive_inframe_deletion")}
+                                    onChange={this.handleChange}
+                                    label="disruptive inframe deletion"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="disruptive_inframe_insertion" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("disruptive_inframe_insertion")}
+                                    onChange={this.handleChange}
+                                    label="disruptive inframe insertion"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="missense_variant" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("missense_variant")}
+                                    onChange={this.handleChange}
+                                    label="missense variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="regulatory_region_ablation" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("regulatory_region_ablation")}
+                                    onChange={this.handleChange}
+                                    label="regulatory region ablation"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="splice_region_variant" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("splice_region_variant")}
+                                    onChange={this.handleChange}
+                                    label="splice region variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="TFBS_ablation" />}
+                                    checked={this.state.medImpactSelectedOptions.includes("TFBS_ablation")}
+                                    onChange={this.handleChange}
+                                    label="TFBS ablation"
                                 />
                             </FormGroup>
                         </Container>                        
@@ -301,79 +395,204 @@ class ImpactFilter extends Component {
                         <Container>
                             <FormGroup> 
                                 <FormControlLabel
-                                    control={<Checkbox name="_3_prime_UTR" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("_3_prime_UTR")}
+                                    control={<Checkbox name="5_prime_UTR_premature_start_codon_gain_variant" />}
+                                    checked={this.state.lowImpactSelectedOptions.includes("5_prime_UTR_premature_start_codon_gain_variant")}
                                     onChange={this.handleChange}
-                                    label="3 prime UTR"
+                                    label="5 prime UTR premature start codon gain variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="_5_prime_UTR" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("_5_prime_UTR")}
+                                    control={<Checkbox name="initiator_codon_variant" />}
+                                    checked={this.state.lowImpactSelectedOptions.includes("initiator_codon_variant")}
                                     onChange={this.handleChange}
-                                    label="5 prime UTR"
+                                    label="initiator codon variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="coding_sequence" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("coding_sequence")}
+                                    control={<Checkbox name="splice_region_variant" />}
+                                    checked={this.state.lowImpactSelectedOptions.includes("splice_region_variant")}
                                     onChange={this.handleChange}
-                                    label="coding sequence"
+                                    label="splice region variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="downstream_gene" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("downstream_gene")}
+                                    control={<Checkbox name="start_retained" />}
+                                    checked={this.state.lowImpactSelectedOptions.includes("start_retained")}
                                     onChange={this.handleChange}
-                                    label="downstream gene"
+                                    label="start retained"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="intergenic" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("intergenic")}
+                                    control={<Checkbox name="stop_retained_variant" />}
+                                    checked={this.state.lowImpactSelectedOptions.includes("stop_retained_variant")}
                                     onChange={this.handleChange}
-                                    label="intergenic"
+                                    label="stop retained variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="intron" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("intron")}
+                                    control={<Checkbox name="synonymous_variant" />}
+                                    checked={this.state.lowImpactSelectedOptions.includes("synonymous_variant")}
                                     onChange={this.handleChange}
-                                    label="intron"
+                                    label="synonymous variant"
+                                />                               
+                            </FormGroup>
+                        </Container>   
+
+                        <FormControlLabel
+                            control={<Checkbox name="modifier" />}
+                            checked={this.state.modifier}
+                            onChange={this.handleChange}
+                            label="MODIFIER"
+                        />            
+                        <Container>
+                            <FormGroup>    
+                                <FormControlLabel
+                                    control={<Checkbox name="3_prime_UTR_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("3_prime_UTR_variant")}
+                                    onChange={this.handleChange}
+                                    label="3 prime UTR variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="mature_miRNA" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("mature_miRNA")}
+                                    control={<Checkbox name="5_prime_UTR_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("5_prime_UTR_variant")}
                                     onChange={this.handleChange}
-                                    label="mature miRNA"
+                                    label="5 prime UTR variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="non_coding_transcript_exon" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("non_coding_transcript_exon")}
+                                    control={<Checkbox name="coding_sequence_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("coding_sequence_variant")}
                                     onChange={this.handleChange}
-                                    label="non coding transcript exon"
+                                    label="coding sequence variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="regulatory_region" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("regulatory_region")}
+                                    control={<Checkbox name="conserved_intergenic_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("conserved_intergenic_variant")}
                                     onChange={this.handleChange}
-                                    label="regulatory region"
+                                    label="conserved intergenic variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="stop_retained" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("stop_retained")}
+                                    control={<Checkbox name="conserved_intron_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("conserved_intron_variant")}
                                     onChange={this.handleChange}
-                                    label="stop retained"
+                                    label="conserved_intron_variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="synonymous" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("synonymous")}
+                                    control={<Checkbox name="downstream_gene_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("downstream_gene_variant")}
                                     onChange={this.handleChange}
-                                    label="synonymous"
+                                    label="downstream gene variant"
                                 />
                                 <FormControlLabel
-                                    control={<Checkbox name="upstream_gene" />}
-                                    checked={this.state.lowImpactSelectedOptions.includes("upstream_gene")}
+                                    control={<Checkbox name="exon_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("exon_variant")}
                                     onChange={this.handleChange}
-                                    label="upstream gene"
+                                    label="exon variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="feature_elongation" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("feature_elongation")}
+                                    onChange={this.handleChange}
+                                    label="feature elongation"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="feature_truncation" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("feature_truncation")}
+                                    onChange={this.handleChange}
+                                    label="feature truncation"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="gene_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("gene_variant")}
+                                    onChange={this.handleChange}
+                                    label="gene variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="intergenic_region" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("intergenic_region")}
+                                    onChange={this.handleChange}
+                                    label="intergenic region"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="intragenic_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("intragenic_variant")}
+                                    onChange={this.handleChange}
+                                    label="intragenic variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="intron_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("intron_variant")}
+                                    onChange={this.handleChange}
+                                    label="intron variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="mature_miRNA_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("mature_miRNA_variant")}
+                                    onChange={this.handleChange}
+                                    label="mature miRNA variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="miRNA" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("miRNA")}
+                                    onChange={this.handleChange}
+                                    label="miRNA"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="NMD_transcript_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("NMD_transcript_variant")}
+                                    onChange={this.handleChange}
+                                    label="NMD_transcript_variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="non_coding_transcript_exon_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("non_coding_transcript_exon_variant")}
+                                    onChange={this.handleChange}
+                                    label="non coding transcript exon variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="non_coding_transcript_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("non_coding_transcript_variant")}
+                                    onChange={this.handleChange}
+                                    label="non_coding_transcript_variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="regulatory_region_amplification" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("regulatory_region_amplification")}
+                                    onChange={this.handleChange}
+                                    label="regulatory region amplification"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="regulatory_region_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("regulatory_region_variant")}
+                                    onChange={this.handleChange}
+                                    label="regulatory region variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="TF_binding_site_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("TF_binding_site_variant")}
+                                    onChange={this.handleChange}
+                                    label="TF binding site variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="TFBS_amplification" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("TFBS_amplification")}
+                                    onChange={this.handleChange}
+                                    label="TFBS amplification"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="transcript_amplification" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("transcript_amplification")}
+                                    onChange={this.handleChange}
+                                    label="transcript amplification"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="transcript_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("transcript_variant")}
+                                    onChange={this.handleChange}
+                                    label="transcript variant"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox name="upstream_gene_variant" />}
+                                    checked={this.state.modifierImpactSelectedOptions.includes("upstream_gene_variant")}
+                                    onChange={this.handleChange}
+                                    label="upstream gene variant"
                                 />
                             </FormGroup>
-                        </Container>                        
+                        </Container>         
                     </FormGroup>
                 </FormControl>
             </div>            
