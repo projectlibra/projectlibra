@@ -57,7 +57,7 @@ class Projects extends Component{
       patient_name: "",
       scenarioInput: "", 
       frequencyInput: {filterDbsnp: "any", filter1k: "any", filter1kfrequency: "1"}, 
-      impactInput: {highImpactArray: [], medImpactArray: [], lowImpactArray: []},
+      impactInput: {highImpactArray: [], medImpactArray: [], lowImpactArray: [], modifierImpactArray: []},
       pathogenicityInput: {polyphenArray: [], siftArray: [], polyphenScore: "0", siftScore: "1"}
     }
     this.onInputChange = this.onInputChange.bind(this);
