@@ -16,6 +16,8 @@ import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import * as filterConstants from "./FilterConstants";
+import host from '../../host';
+import axios from 'axios';
 
 class FilterList extends Component {
     constructor(props) {
@@ -47,9 +49,34 @@ class FilterList extends Component {
         }
     }
 
-    test() {
-        console.log(this.state);
-    }
+    //test() {
+      //  console.log(this.state);
+    //}
+
+    test = () => {
+    axios.post(host + '/testfilter',{
+      impactInput: this.state.impactInput,
+      frequencyInput: this.state.frequencyInput
+    },{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+      .then(res => {
+        console.log("Here:");
+        console.log(res.data);
+        this.setState({
+          projects: res.data,
+          open: false
+        });
+        this.fetchProjects();
+      })
+      .catch(err =>  {
+        if(err.response) {
+          console.log(axios.defaults.headers.common)
+          console.log(err.response.data)
+          if(err.response.status == 401) {
+            this.props.history.push('/');
+          }
+        }
+      });
+  }
 
     render() {
         return(
