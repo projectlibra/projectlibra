@@ -104,6 +104,43 @@ def add_project(current_user):
 
   return project_schema.jsonify(project)
 
+@app.route('/testfilter', methods=['POST'])
+@token_required
+def test_filter(current_user):
+  impactInput = request.json['impactInput']
+  frequencyInput = request.json['frequencyInput']
+  if(len(impactInput['highImpactArray']) == 0):
+    print("high impact is empty")
+  else:
+    print("high impact is not empty")
+
+  if(len(impactInput['medImpactArray']) == 0):
+    print("medImpactArray is empty")
+  else:
+    print("medImpactArray is not empty")
+
+  print("high impact types")
+  for type in impactInput['highImpactArray']:
+    print(type)
+  
+  print(impactInput)
+  print(frequencyInput)
+
+  query = ''
+  for type in impactInput['highImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+  for type in impactInput['medImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+  for type in impactInput['lowImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+
+  query = query[3:]
+  print(query)
+  execquery = 'select * from vcf WHERE ' + query
+  print(execquery)
+
+  return make_response('Testing filters', 200)
+
 @app.route('/project', methods=['GET'])
 @token_required
 def get_projects(current_user):
@@ -217,7 +254,7 @@ def fileUpload(current_user):
       for sample in record.samples:
           # print (sample)
           # sample_data = str(sample.data)[9:-1] because pyvcf has "CallData()" wrapping it
-          # new_vcf = VCFs(filename=filename, project_id=project_id, user_id=user_id, chrom=str(record.CHROM),
+          # new_vcf = Vcf(filename=filename, project_id=project_id, user_id=user_id, chrom=str(record.CHROM),
           #  pos=record.POS, variant_id=record.ID, ref=record.REF, alt=str(record.ALT), qual=record.QUAL,
           #  filter=str(record.FILTER), info=str(record.INFO), sample_id = str(sample.sample),
           #  sample_data = str(sample.data)[9:-1])
@@ -285,17 +322,17 @@ def get_vcf_table(current_user, id):
   columns = [column.key for column in Vcf.__table__.columns]
   columns2 = [column.key for column in Sample.__table__.columns]
   columns = columns + list(set(columns2) - set(columns))
-  #for column in VCFs.__table__.columns
+  #for column in Vcf.__table__.columns
     #if column.key not in columns
     #  columns.append(column.key)
   print(columns)
   
-  #result = VCFs.query.filter_by(user_id=current_user.id, project_id=id).options(load_only(*columns[4:])).all()
-  #result = db.session.query(VCFs, Sample).outerjoin(Sample, VCFs.vcf_id == Sample.vcf_id).all()
-  #result = db.session.query(VCFs, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, VCFs.vcf_id == Sample.vcf_id).all()
+  #result = Vcf.query.filter_by(user_id=current_user.id, project_id=id).options(load_only(*columns[4:])).all()
+  #result = db.session.query(Vcf, Sample).outerjoin(Sample, Vcf.vcf_id == Sample.vcf_id).all()
+  #result = db.session.query(Vcf, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, Vcf.vcf_id == Sample.vcf_id).all()
   result = db.session.query(Vcf, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, Vcf.id == Sample.vcf_id).limit(1000).all()
   #print(result)
-  print(len(result))
+  print(result)
   '''table_data = []
   for vcf in result:
     row_data = []
@@ -324,8 +361,16 @@ def get_vcf_table(current_user, id):
     if "VT" in vcf[0].info:
       cnt_1k+=1
     row_data.append(vcf[0].info)
+    row_data.append(vcf[0].alelle)
+    row_data.append(vcf[0].annotation)
+    row_data.append(vcf[0].annotation_impact)
+    row_data.append(vcf[0].gene_name)
+    row_data.append(vcf[0].gene_id)
+    row_data.append(vcf[0].feature_type)
+    row_data.append(vcf[0].feature_id)
     #row_data.append(vcf[1].sample_id)
     #row_data.append(vcf[1].sample_data)
+
     table_data.append(row_data)
 
   #print(table_data)
@@ -349,19 +394,19 @@ def get_vcf_table_index(current_user, id, index):
   columns = [column.key for column in Vcf.__table__.columns]
   columns2 = [column.key for column in Sample.__table__.columns]
   columns = columns + list(set(columns2) - set(columns))
-  #for column in VCFs.__table__.columns
+  #for column in Vcf.__table__.columns
     #if column.key not in columns
     #  columns.append(column.key)
   print(columns)
   total_cnt = db.session.query(Vcf, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, Vcf.id == Sample.vcf_id).count()
-  #result = VCFs.query.filter_by(user_id=current_user.id, project_id=id).options(load_only(*columns[4:])).all()
-  #result = db.session.query(VCFs, Sample).outerjoin(Sample, VCFs.vcf_id == Sample.vcf_id).all()
-  #result = db.session.query(VCFs, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, VCFs.vcf_id == Sample.vcf_id).all()
+  #result = Vcf.query.filter_by(user_id=current_user.id, project_id=id).options(load_only(*columns[4:])).all()
+  #result = db.session.query(Vcf, Sample).outerjoin(Sample, Vcf.vcf_id == Sample.vcf_id).all()
+  #result = db.session.query(Vcf, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, Vcf.vcf_id == Sample.vcf_id).all()
   off = 1000
   lim = 1000
   if off*int(index) + lim > total_cnt:
     lim = total_cnt % off 
-  result = db.session.query(VCFs, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, VCFs.id == Sample.vcf_id).offset(int(index)*off).limit(lim).all()
+  result = db.session.query(Vcf, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, Vcf.id == Sample.vcf_id).offset(int(index)*off).limit(lim).all()
   #print(result)
   print(len(result))
   '''table_data = []
@@ -376,6 +421,7 @@ def get_vcf_table_index(current_user, id, index):
   cnt_all = 0
   cnt_1k = 0
   for vcf in result:
+    print(vcf[0])
     row_data = []
     row_data.append(vcf[0].chrom)
     row_data.append(vcf[0].pos)
@@ -392,6 +438,13 @@ def get_vcf_table_index(current_user, id, index):
     if "VT" in vcf[0].info:
       cnt_1k+=1
     row_data.append(vcf[0].info)
+    row_data.append(vcf[0].alelle)
+    row_data.append(vcf[0].annotation)
+    row_data.append(vcf[0].annotation_impact)
+    row_data.append(vcf[0].gene_name)
+    row_data.append(vcf[0].gene_id)
+    row_data.append(vcf[0].feature_type)
+    row_data.append(vcf[0].feature_id)
     #row_data.append(vcf[1].sample_id)
     #row_data.append(vcf[1].sample_data)
     table_data.append(row_data)
@@ -404,6 +457,177 @@ def get_vcf_table_index(current_user, id, index):
 
   resp = {
     'table_data': table_data,
+  }
+
+  return resp, 200
+
+@app.route('/vcf_table_filters/<id>', methods=['POST'])
+@token_required
+def get_vcf_table_with_filters(current_user, id):
+  columns = [column.key for column in Vcf.__table__.columns]
+  columns2 = [column.key for column in Sample.__table__.columns]
+  columns = columns + list(set(columns2) - set(columns))
+  print(columns)
+  
+  impactInput = request.json['impactInput']
+  frequencyInput = request.json['frequencyInput']
+  query = ''
+  for type in impactInput['highImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+  for type in impactInput['medImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+  for type in impactInput['lowImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+
+  if(len(query) > 0):
+    query = query[3:]
+    execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND ('+ query +') LIMIT 1000'
+  else:
+    execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' LIMIT 1000'
+
+  print(execquery)
+
+  result = db.session.execute(execquery)
+
+  table_data = []
+  cnt_dbsnp = 0
+  cnt_all = 0
+  cnt_1k = 0
+  for vcf in result:
+    if((frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "any") 
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "yes" and (vcf[6] is not None) and ("VT" in vcf[11]))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "no" and (vcf[6] is None) and ("VT" not in vcf[11]))
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "no" and (vcf[6] is not None) and ("VT" not in vcf[11]))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "yes" and (vcf[6] is None) and ("VT" in vcf[11]))
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "any" and (vcf[6] is not None))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "any" and (vcf[6] is None))
+      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "yes" and ("VT" in vcf[11]))
+      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "no" and ("VT" not in vcf[11]))
+    ):
+      row_data = []
+      row_data.append(vcf[4]) #chrom
+      row_data.append(vcf[5]) #pos
+      cnt_all+=1
+      if vcf[6] is None:
+        row_data.append(vcf[6]) #variant_id
+      else:
+        cnt_dbsnp +=1
+        row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[6] + '" target="_blank">' + vcf[6] +  '</a>')
+      row_data.append(vcf[7]) #ref
+      row_data.append(vcf[8]) #alt
+      row_data.append(vcf[9]) #qual
+      row_data.append(vcf[10]) #filter
+      if "VT" in vcf[11]: #info
+        cnt_1k+=1
+      row_data.append(vcf[11]) #info 
+      row_data.append(vcf[12]) #allele
+      row_data.append(vcf[13]) #annotation
+      row_data.append(vcf[14]) #annotation_impact
+      row_data.append(vcf[15]) #gene_name
+      row_data.append(vcf[16]) #gene_id
+      row_data.append(vcf[17]) #feature_type
+      row_data.append(vcf[18]) #feature_id
+
+      table_data.append(row_data)
+
+  print(len(table_data))
+    
+  print("Columns:", columns[4:len(columns)-2])
+
+  resp = {
+    'columns': columns[4:len(columns)-2],
+    'table_data': table_data,
+    'pie_data' : [['db', 'count'], ['dbSNP', cnt_dbsnp], ['Novel', cnt_all - cnt_dbsnp]],
+    'pie1k_data' : [['db', 'count'], ['1KG', cnt_1k], ['Novel', cnt_all - cnt_1k]] 
+  }
+
+  return resp, 200
+
+@app.route('/vcf_table_filters/<id>/<index>', methods=['POST'])
+@token_required
+def get_vcf_table_with_filters_index(current_user, id, index):
+  columns = [column.key for column in Vcf.__table__.columns]
+  columns2 = [column.key for column in Sample.__table__.columns]
+  columns = columns + list(set(columns2) - set(columns))
+  
+  print(columns)
+  #total_cnt = db.session.query(Vcf, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, Vcf.id == Sample.vcf_id).count()
+  off = 1000
+  lim = 1000
+  #if off*int(index) + lim > total_cnt:
+  #  lim = total_cnt % off 
+  # result = db.session.query(Vcf, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, Vcf.id == Sample.vcf_id).offset(int(index)*off).limit(lim).all()
+
+  impactInput = request.json['impactInput']
+  frequencyInput = request.json['frequencyInput']
+  query = ''
+  for type in impactInput['highImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+  for type in impactInput['medImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+  for type in impactInput['lowImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+
+  if(len(query) > 0):
+    query = query[3:]
+    execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+  else:
+    execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+
+  print(execquery)
+
+  result = db.session.execute(execquery)
+
+  table_data = []
+  cnt_dbsnp = 0
+  cnt_all = 0
+  cnt_1k = 0
+  for vcf in result:
+    if((frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "any") 
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "yes" and (vcf[6] is not None) and ("VT" in vcf[11]))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "no" and (vcf[6] is None) and ("VT" not in vcf[11]))
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "no" and (vcf[6] is not None) and ("VT" not in vcf[11]))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "yes" and (vcf[6] is None) and ("VT" in vcf[11]))
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "any" and (vcf[6] is not None))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "any" and (vcf[6] is None))
+      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "yes" and ("VT" in vcf[11]))
+      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "no" and ("VT" not in vcf[11]))
+    ):
+      row_data = []
+      row_data.append(vcf[4]) #chrom
+      row_data.append(vcf[5]) #pos
+      cnt_all+=1
+      if vcf[6] is None:
+        row_data.append(vcf[6]) #variant_id
+      else:
+        cnt_dbsnp +=1
+        row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[6] + '" target="_blank">' + vcf[6] +  '</a>')
+      row_data.append(vcf[7]) #ref
+      row_data.append(vcf[8]) #alt
+      row_data.append(vcf[9]) #qual
+      row_data.append(vcf[10]) #filter
+      if "VT" in vcf[11]: #info
+        cnt_1k+=1
+      row_data.append(vcf[11]) #info 
+      row_data.append(vcf[12]) #allele
+      row_data.append(vcf[13]) #annotation
+      row_data.append(vcf[14]) #annotation_impact
+      row_data.append(vcf[15]) #gene_name
+      row_data.append(vcf[16]) #gene_id
+      row_data.append(vcf[17]) #feature_type
+      row_data.append(vcf[18]) #feature_id
+
+      table_data.append(row_data)
+
+  print(len(table_data))
+    
+  print("Columns:", columns[4:len(columns)-2])
+
+  resp = {
+    'columns': columns[4:len(columns)-2],
+    'table_data': table_data,
+    'pie_data' : [['db', 'count'], ['dbSNP', cnt_dbsnp], ['Novel', cnt_all - cnt_dbsnp]],
+    'pie1k_data' : [['db', 'count'], ['1KG', cnt_1k], ['Novel', cnt_all - cnt_1k]] 
   }
 
   return resp, 200
