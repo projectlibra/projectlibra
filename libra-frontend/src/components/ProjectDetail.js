@@ -33,10 +33,12 @@ class Projects extends Component{
       table_data: [],
       pie_data: [],
       selected_key: 1,
+      selected_patient: -1,
       load_index: 0,
       editorState: EditorState.createEmpty(),
       isActive: false,
-      patient_name: ""
+      patient_name: "",
+      patients: []
     }
   }
 
@@ -61,7 +63,9 @@ class Projects extends Component{
         project: this.props.location.project
     });
     this.fetchFiles(id);
+    this.fetchPatients();
     this.fetchVCFTable(id);
+    
   }
 
   fetchFiles = (id) => {
@@ -102,6 +106,26 @@ class Projects extends Component{
             console.log(res.data.table_data)
         })
 
+      })
+      .catch(err =>  {
+        if(err.response) {
+          console.log(axios.defaults.headers.common)
+          console.log(err.response.data)
+          if(err.response.status == 401) {
+            this.props.history.push('/');
+          }
+        }
+      })
+  }
+
+  fetchPatients = () => {
+    axios.get(`${host}/patientprofile` ,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+      .then(res => {
+        console.log("Here:");
+        console.log(res.data);
+        this.setState({
+          patients: res.data,
+        });
       })
       .catch(err =>  {
         if(err.response) {
@@ -183,7 +207,7 @@ class Projects extends Component{
 
   handleMenuClick = (e) => {
     message.info('Click on menu item.');
-    this.setState({patient_name: e.key})
+    this.setState({patient_name: e.key, selected_patient: e.key})
     console.log('click', e);
   }
 
@@ -192,13 +216,35 @@ class Projects extends Component{
   }
   
   render() {
-    const {files, no_files, open, project_id, columns, table_data, pie_data, pie1k_data} = this.state;
+    const {files, no_files, open, project_id, table_data, pie_data, pie1k_data, patients} = this.state;
     console.log("Render:")
-    console.log(columns)
+    
     console.log(table_data)
     /*
     const columns = ["Name", "Company", "City", "State", "Name2", "Company2", "City2", "State2",  "Name3", "Company3", "City3", "State3"];
     */
+    const columns = [
+      {name: "chrom"},
+      {name: "pos"},
+      {name: "id",
+       options: {
+         customBodyRender: (value, tableMeta, updateValue) => (
+           <a href={`https://www.ncbi.nlm.nih.gov/snp/${value}`} target="_blank">{value}</a>
+         )
+       }},
+      {name: "ref"},
+      {name: "alt"},
+      {name: "qual"},
+      {name: "filter"},
+      {name: "info"},
+      {name: "alelle"},
+      {name: "annotation"},
+      {name: "impact"},
+      {name: "gene_name"},
+      {name: "gene_id"},
+      {name: "feature_type"},
+      {name: "feature_id"},
+    ];
     const data = [
     ["Joe James", "Test Corp", "Yonkers", "NY", "Joe James", "Test Corp", "Yonkers", "NY", "Joe James", "Test Corp", "Yonkers", "NY"],
     ["John Walsh", "Test Corp", "Hartford", "CT", "John Walsh", "Test Corp", "Hartford", "CT", "Joe James", "Test Corp", "Yonkers", "NY"],
@@ -258,20 +304,30 @@ class Projects extends Component{
     ) : (
         <div></div>
     )*/
+
+    const patientList = patients.length ? (
+      patients.map(patient => {
+      return (
+        <Menu.Item key={patient.id} icon={<UserOutlined />}>
+          <li>{patient.name}</li>
+        </Menu.Item>
+      )
+    })
+  ) : (<Menu.Item key="5" icon={<UserOutlined />}>
+  Patient3
+</Menu.Item>)
+    const other = (<Menu.Item key="5" icon={<UserOutlined />}>
+    Patient3
+  </Menu.Item>)
     const menu = (
       <Menu onClick={this.handleMenuClick}>
-        <Menu.Item key="1" icon={<UserOutlined />}>
+        <Menu.Item key="-1" icon={<UserOutlined />}>
          <StopOutlined/> None
         </Menu.Item>
-        <Menu.Item key="2" icon={<UserOutlined />}>
+        <Menu.Item key="0" icon={<UserOutlined />}>
           <PlusOutlined /> New Patient
         </Menu.Item>
-        <Menu.Item key="3" icon={<UserOutlined />}>
-          Patient1
-        </Menu.Item>
-        <Menu.Item key="4" icon={<UserOutlined />}>
-          Patient2
-        </Menu.Item>
+        {patientList}
       </Menu>
     );
 

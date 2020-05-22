@@ -63,7 +63,7 @@ def register_user():
   
   pw_hash = bcrypt.generate_password_hash(data['password1'])
   pw_hash = pw_hash.decode('utf-8')
-  new_user = User(public_id = str(uuid.uuid4()), username=data['username'], email=data['email'], password=pw_hash, admin=False)
+  new_user = User(public_id = str(uuid.uuid4()), username=data['username'], name=data['name'], email=data['email'], password=pw_hash, admin=False, ph_thrs=0.5, gn_thrs=0.5)
   db.session.add(new_user)
   db.session.commit()
   
@@ -94,6 +94,24 @@ def login():
     return jsonify({'token': token.decode('UTF-8')})
   
   return make_response('Could not verify!', 401, {"WWW-Authenticate": "Basic realm='Login Required!' "})
+
+
+@app.route('/user', methods=['GET'])
+@token_required
+def get_user(current_user):
+  return user_schema.jsonify(current_user)
+
+@app.route('/user_update', methods=['POST'])
+@token_required
+def update_user(current_user):
+  current_user.username = request.json['username']
+  current_user.name = request.json['name']
+  current_user.email = request.json['email']
+  current_user.ph_thrs = request.json['ph_thrs']
+  current_user.gn_thrs = request.json['gn_thrs']
+
+  db.session.commit()
+  return user_schema.jsonify(current_user)
 
 @app.route('/project', methods=['POST'])
 @token_required
@@ -182,7 +200,7 @@ def fileUpload(current_user):
     new_patient = Patient(name="RandPatient", diagnosis="rand_diag", patient_contact=current_user.email, user_id=current_user.id, hpo_tag_names="", hpo_tag_ids="")
     db.session.add(new_patient)
     db.session.commit()
-
+    go_list = []
     for record in vcf_reader:
         # print (record)
       
@@ -206,6 +224,7 @@ def fileUpload(current_user):
           db_gene_name = GeneName(name=new_vcf.gene_name)
           db.session.merge(db_gene_name)
           for go_id in app.config['GENE_DICT'][new_vcf.gene_name]:
+            go_list.append(go_id)
             db_gene_id = GeneId(gene_id=go_id)
             db.session.merge(db_gene_id)
           db.session.commit()
@@ -239,6 +258,8 @@ def fileUpload(current_user):
     start = time.time()
     db.session.commit()
     end = time.time()
+    new_patient.go_ids = ','.join(list(set(go_list)))
+    db.session.commit()
     print("Elapsed time for db commit: ", end - start)
     
     """
@@ -319,7 +340,8 @@ def get_vcf_table(current_user, id):
       row_data.append(vcf[0].variant_id)
     else:
       cnt_dbsnp +=1
-      row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[0].variant_id + '" target="_blank">' + vcf[0].variant_id +  '</a>')
+      #row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[0].variant_id + '" target="_blank">' + vcf[0].variant_id +  '</a>')
+      row_data.append(vcf[0].variant_id)
     row_data.append(vcf[0].ref)
     row_data.append(vcf[0].alt)
     row_data.append(vcf[0].qual)
@@ -327,6 +349,13 @@ def get_vcf_table(current_user, id):
     if "VT" in vcf[0].info:
       cnt_1k+=1
     row_data.append(vcf[0].info)
+    row_data.append(vcf[0].alelle)
+    row_data.append(vcf[0].annotation)
+    row_data.append(vcf[0].annotation_impact)
+    row_data.append(vcf[0].gene_name)
+    row_data.append(vcf[0].gene_id)
+    row_data.append(vcf[0].feature_type)
+    row_data.append(vcf[0].feature_id)
     #row_data.append(vcf[1].sample_id)
     #row_data.append(vcf[1].sample_data)
     table_data.append(row_data)
@@ -387,7 +416,8 @@ def get_vcf_table_index(current_user, id, index):
       row_data.append(vcf[0].variant_id)
     else:
       cnt_dbsnp +=1
-      row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[0].variant_id + '" target="_blank">' + vcf[0].variant_id +  '</a>')
+      #row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[0].variant_id + '" target="_blank">' + vcf[0].variant_id +  '</a>')
+      row_data.append(vcf[0].variant_id)
     row_data.append(vcf[0].ref)
     row_data.append(vcf[0].alt)
     row_data.append(vcf[0].qual)
@@ -395,6 +425,13 @@ def get_vcf_table_index(current_user, id, index):
     if "VT" in vcf[0].info:
       cnt_1k+=1
     row_data.append(vcf[0].info)
+    row_data.append(vcf[0].alelle)
+    row_data.append(vcf[0].annotation)
+    row_data.append(vcf[0].annotation_impact)
+    row_data.append(vcf[0].gene_name)
+    row_data.append(vcf[0].gene_id)
+    row_data.append(vcf[0].feature_type)
+    row_data.append(vcf[0].feature_id)
     #row_data.append(vcf[1].sample_id)
     #row_data.append(vcf[1].sample_data)
     table_data.append(row_data)
@@ -431,7 +468,7 @@ def create_patient(current_user):
       hpo_tag_ids_str = hpo_tag_ids_str +", " 
  
   patient = Patient(name=name, diagnosis=diagnosis, patient_contact=patient_contact,
-                    user_id=user_id, hpo_tag_names=hpo_tag_names_str, hpo_tag_ids=hpo_tag_ids_str, go_tag_ids="", resolve_state=False)
+                    user_id=user_id, hpo_tag_names=hpo_tag_names_str, hpo_tag_ids=hpo_tag_ids_str, resolve_state=False)
 
   db.session.add(patient)
   db.session.commit()
@@ -447,6 +484,7 @@ def create_patient(current_user):
 @token_required
 def edit_patient(current_user, patient_id):
   db.session.query(HPOTag).filter(HPOTag.patient_id == patient_id).delete()
+  db.session.query(Patient).filter(Patient.id == patient_id).delete()
   db.session.commit()
 
   name = request.json['name']
@@ -464,20 +502,17 @@ def edit_patient(current_user, patient_id):
       hpo_tag_names_str = hpo_tag_names_str +", "
       hpo_tag_ids_str = hpo_tag_ids_str +", " 
  
-  db.session.query(Patient).filter(Patient.id == patient_id).\
-                            update({"name":name, 
-                                    "diagnosis":diagnosis, 
-                                    "patient_contact":patient_contact,
-                                    "user_id":user_id, 
-                                    "hpo_tag_names":hpo_tag_names_str, 
-                                    "hpo_tag_ids":hpo_tag_ids_str})
-  
-  for i in range(len(hpo_tag_ids)):
-    hpo_tag = HPOTag(hpo_tag_id=hpo_tag_ids[i], hpo_tag_name=hpo_tag_names[i], patient_id=patient_id, resolve_state=False)
-    db.session.add(hpo_tag)
-    
+  patient = Patient(name=name, diagnosis=diagnosis, patient_contact=patient_contact,
+                    user_id=user_id, hpo_tag_names=hpo_tag_names_str, hpo_tag_ids=hpo_tag_ids_str, resolve_state=False)
+
+  db.session.add(patient)
   db.session.commit()
-  patient = Patient.query.filter_by(id=patient_id).first()
+
+  for i in range(len(hpo_tag_ids)):
+    hpo_tag = HPOTag(hpo_tag_id=hpo_tag_ids[i], hpo_tag_name=hpo_tag_names[i], patient_id=patient.id, resolve_state=False)
+    db.session.add(hpo_tag)
+    db.session.commit()
+  
   return patient_schema.jsonify(patient)
 
 @app.route('/patientprofile', methods=['GET'])
@@ -511,6 +546,7 @@ def get_go_names(current_user, patient_id):
 @app.route('/matchmakerresults/<cur_hpo_id>', methods=['GET'])
 @token_required
 def get_matchmaker_results(current_user, cur_hpo_id):
+  
   matched_patitents = Patient.query.join(HPOTag)\
                                   .add_columns(Patient.id, Patient.patient_contact, Patient.diagnosis, Patient.hpo_tag_names)\
                                   .filter(HPOTag.hpo_tag_id == cur_hpo_id)
@@ -545,7 +581,6 @@ def hpoAlgorithm():
   global ss_hpo, ac_hpo
   for patient in db_engine.execute('select id, hpo_tag_ids from patient'):
     patient_to_write = str(patient)
-    print(patient_to_write)
     patient_to_write = (patient_to_write[1:len(patient_to_write)-1]).replace('\'', '').replace('\'', '')
     patient_file.write(patient_to_write+'\n')
   patient_file.close()

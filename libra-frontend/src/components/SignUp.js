@@ -5,6 +5,8 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import * as actions from '../redux/actions/auth';
 
+import 'antd/dist/antd.css';
+
 const FormItem = Form.Item;
 const formItemLayout = {
   labelCol: {
@@ -36,6 +38,7 @@ const RegistrationForm = (props) =>  {
   const onFinish = (values) => {
         props.onAuth(
             values.userName,
+            values.name,
             values.email,
             values.password,
             values.confirm
@@ -51,6 +54,7 @@ const RegistrationForm = (props) =>  {
         form={form}
         name="register"
         onFinish={onFinish}
+        style={{maxWidth: "450px", margin: "0 auto"}}
         scrollToFirstError
       >
         
@@ -61,6 +65,19 @@ const RegistrationForm = (props) =>  {
           {
             required: true,
             message: 'Please input your username!',
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+
+      <Form.Item
+        name="name"
+        label="Name"
+        rules={[
+          {
+            required: true,
+            message: 'Please input your name!',
           },
         ]}
       >
@@ -148,7 +165,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        onAuth: (username, email, password1, password2) => dispatch(actions.authSignup(username, email, password1, password2)) 
+        onAuth: (username, name, email, password1, password2) => dispatch(actions.authSignup(username, name, email, password1, password2)) 
     }
 }
 
