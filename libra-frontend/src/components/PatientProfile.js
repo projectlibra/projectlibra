@@ -26,22 +26,16 @@ const PatientProfile= (props) => {
             <ListItemText  primary={go_names[i]} />
         </ListItemLink>	);
     }
+    console.log(genotype_list)
     return (
         <div>
-        <Link to={`/matchmaker/${props.patient_id}`}>
-        <Card title={props.name} extra={<a href={'/matchmaker'}>More</a>} style={{ width: 300, marginRight: '20px', marginBottom: '10px' }}>
+        
+        <Card title={props.name} extra={<a href={`/patients/${props.patient_id}`}>Detail</a>} style={{ width: 300, marginRight: '20px', marginBottom: '10px' }}>
             <p>
                 {props.diagnosis}
             </p>
-            <List  component="nav" >
-                <h2>Phenotypes</h2>
-            {phenotype_list}
-            <h2>Genotypes</h2>
-            {genotype_list}
-            </List >
             
         </Card>
-        </Link>
         </div>
     
   )

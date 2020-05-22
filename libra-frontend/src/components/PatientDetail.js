@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { Button, Divider } from 'antd';
-import PatientProfile from './PatientProfile';
+import { Button, Divider,Card } from 'antd';
 
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -13,8 +12,7 @@ import Autocomplete from 'react-autocomplete';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import host from '../host';
-
-const style = {display: 'flex', flexWrap: 'wrap'}
+import ListItemText from '@material-ui/core/ListItemText';
 
 const menuStyle = {
 	borderRadius: '3px',
@@ -28,20 +26,25 @@ const menuStyle = {
 	"zIndex": 100,
   };
 
-class PatientProfiles extends Component{
+function ListItemLink(props) {
+    return <ListItem button component="a" {...props} />;
+}
+
+class PatientDetail extends Component{
     constructor(props) {
         super(props);
         this.state = {
-            create_open: false,
             edit_open: false,
             edit_patient: {},
-            patients: [],
+            patient: [],
             go_names: {},
             value: "",
             currentIDs: [],
             currentValues:[],
             hpo_tags:[],
             hpo_tag_names: [],
+            phenotype_list : [],
+            genotype_list : [],
             // Data that will be rendered in the autocomplete
             // As it is asynchronous, it is initially empty
             autocompleteData: [],
@@ -53,9 +56,9 @@ class PatientProfiles extends Component{
         this.getItemValue = this.getItemValue.bind(this);
         this.renderItem = this.renderItem.bind(this);
         this.retrieveDataAsynchronously = this.retrieveDataAsynchronously.bind(this);
-        this.fetchGONames = this.fetchGONames.bind(this);
+        
     }
-    /**
+        /**
      * Updates the state of the autocomplete data with the remote data obtained via AJAX.
      * 
      * @param {String} searchText content of the input that will filter the autocomplete data.
@@ -160,13 +163,70 @@ class PatientProfiles extends Component{
     getID(item){
     	return item.id
     }
-
-    openCreateDialog = () => {
-        this.setState({create_open: true});
+    componentDidMount() {
+        const {id} = this.props.match.params;
+        this.fetchPatient(id);
+        this.fetchGONames(id);
+        this.setState({
+            refresher: []
+        })
     }
-    closeCreateDialog = () => {
-        this.cleanTags();
-        this.setState({create_open: false});
+    fetchPatient = (id) => {
+        axios.get(host + `/patientprofile/${id}`,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+        .then(res => {
+            console.log(res.data)
+            
+            const hpo_tags = res.data.hpo_tag_names === null ? []: res.data.hpo_tag_names.split(',');
+            const hpo_tag_ids = res.data.hpo_tag_ids === null ? []: res.data.hpo_tag_ids.split(',');
+            var tmp_arr = this.state.phenotype_list
+            for(var i = 0; i < hpo_tags.length; i++){
+                var link = "/HPO/" + hpo_tag_ids[i];
+                tmp_arr.push(<ListItemLink href={link} >
+                    <ListItemText  primary={hpo_tags[i]} />
+                </ListItemLink>	);
+            }
+            console.log(this.state.phenotype_list)
+            this.setState({
+                phenotype_list : tmp_arr,
+                patient: res.data
+            })
+        })
+        .catch(err =>  {
+            if(err.response) {
+            console.log(axios.defaults.headers.common)
+            console.log(err.response.data)
+            if(err.response.status === 401) {
+                this.props.history.push('/');
+            }
+            }
+        })
+    
+    }
+    fetchGONames = (patient_id) => {
+        axios.get(host + `/getgonames/${patient_id}`,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+        .then(res => {
+            var tmp_arr = this.state.genotype_list;
+            res.data.forEach(element => {
+                var link = "https://www.ncbi.nlm.nih.gov/gene/?term=" + element.gene_name;
+                tmp_arr.push(<ListItemLink href={link} >
+                    <ListItemText  primary={element.gene_name} />
+                </ListItemLink>);
+            
+            });
+            console.log(tmp_arr)
+            this.setState({
+                genotype_list : tmp_arr
+            })
+        })
+        .catch(err =>  {
+            if(err.response) {
+            console.log(axios.defaults.headers.common)
+            console.log(err.response.data)
+            if(err.response.status === 401) {
+                this.props.history.push('/');
+            }
+            }
+        })
     }
     openEditDialog = param => e => {
         this.state.edit_patient = {
@@ -187,88 +247,6 @@ class PatientProfiles extends Component{
         this.setState({currentValues:[]});
         this.setState({autocompleteData: []});
     }
-
-    componentDidMount() {
-        this.fetchPatients();       
-    }
-
-    fetchPatients = () => {
-        axios.get(host + '/patientprofile',{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
-        .then(res => {
-            this.setState({
-            patients: res.data
-            })
-            res.data.map(patient =>{
-                this.fetchGONames(patient.id)
-            })
-        })
-        .catch(err =>  {
-            if(err.response) {
-            console.log(axios.defaults.headers.common)
-            console.log(err.response.data)
-            if(err.response.status === 401) {
-                this.props.history.push('/');
-            }
-            }
-        })
-    }
-    fetchGONames = (patient_id) => {
-        axios.get(host + `/getgonames/${patient_id}`,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
-        .then(res => {
-            this.state.go_names[patient_id] = []
-            res.data.forEach(element => {
-                this.state.go_names[patient_id].push(element.gene_name)
-            });
-            this.setState({
-                refresher: []
-            })
-        })
-        .catch(err =>  {
-            if(err.response) {
-            console.log(axios.defaults.headers.common)
-            console.log(err.response.data)
-            if(err.response.status === 401) {
-                this.props.history.push('/');
-            }
-            }
-        })
-    }
-
-    handleChange = (e) => {
-        let {id, value} = e.target;
-        this.setState({
-        [id]: value
-        });
-    }
-
-    submitDialog = () => {
-        axios.post(host + '/createPatientProfile',{
-        name: this.state.name,
-        diagnosis: this.state.diagnosis,
-        hpo_tag_ids: this.state.currentIDs,
-        hpo_tag_names: this.state.currentValues
-        },{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
-        .then(res => {
-            console.log("Here:");
-            console.log(res.data);
-            this.setState({
-            patients: res.data,
-            open: false
-            });
-            this.fetchPatients();
-        })
-        .catch(err =>  {
-            if(err.response) {
-            console.log(axios.defaults.headers.common)
-            console.log(err.response.data)
-            if(err.response.status === 401) {
-                this.props.history.push('/');
-            }
-            }
-        });
-        this.cleanTags();
-        this.closeCreateDialog();
-    }
     editDialog=() => {
         axios.post(`${host}/editPatientProfile/${this.state.edit_patient.patient_id}`,{
         name: this.state.name,
@@ -277,12 +255,10 @@ class PatientProfiles extends Component{
         hpo_tag_names: this.state.currentValues
         },{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
         .then(res => {
-            console.log("Here:");
-            console.log(res.data);
             this.setState({
             edit_open: false
             });
-            this.fetchPatients();
+            this.fetchPatient(this.state.edit_patient.patient_id);
         })
         .catch(err =>  {
             if(err.response) {
@@ -294,99 +270,42 @@ class PatientProfiles extends Component{
             }
         });
         this.cleanTags();
-        this.closeCreateDialog();
+        this.closeEditDialog();
     }
-    
-    render() {
-        const {patients, go_names} = this.state
-        const patientList = patients.length ? (
-        patients.map(patient => {
-            const edit_patient = {
-                patient_id: patient.id,
-                name: patient.name,
-                diagnosis: patient.diagnosis,
-                hpo_tag_names: patient.hpo_tag_names
-            }
-            
-            console.log(go_names[patient.id])
-            return (
+    handleChange = (e) => {
+        let {id, value} = e.target;
+        this.setState({
+        [id]: value
+        });
+    }
+    render()
+    {
+        const{patient, phenotype_list, genotype_list} = this.state;
+        
+        
+        const edit_patient = {
+            patient_id: patient.id,
+            name: patient.name,
+            diagnosis: patient.diagnosis,
+            hpo_tag_names: patient.hpo_tag_names
+        }
+        return(
             <div key={patient.id}>
-                <PatientProfile patient_id={patient.id} name={patient.name} diagnosis={patient.diagnosis} hpo_tag_names={patient.hpo_tag_names} go_names={go_names[patient.id]} hpo_tag_ids={patient.hpo_tag_ids}/>
                 
-            </div>
-            )
-        })
-        )
-        :
-        (
-        <div> Loading Patients </div>
-        )
-        return (
-        <div>
-            <Button onClick={this.openCreateDialog}>Create New Patient</Button>
-            <Divider orientation="left" style={{ color: '#333', fontWeight: 'normal' }}>
-            Your Patients
-            </Divider>
+            <Button onClick={this.openEditDialog(edit_patient)}>Edit Patient</Button>
             
-            <div style={style}>
-            {patientList}
-            </div>
-
-            <Dialog open={this.state.create_open}  fullWidth={true} aria-labelledby="form-dialog-title">
-            <DialogTitle id="form-dialog-title">Create New Patient</DialogTitle>
-            <DialogContent>
-                <DialogContentText>
-                    Please fill the following content related to the patient:
-                </DialogContentText>
-                <TextField
-                autoFocus
-                margin="dense"
-                id="name"
-                label="Patient Name"
-                fullWidth
-                onChange={this.handleChange}
-                />
-                <TextField
-                margin="dense"
-                id="diagnosis"
-                label="Diagnosis"
-                fullWidth
-                multiline
-                onChange={this.handleChange}
-                />
-                <List  component="nav" >
-                    Selected Phenotypes:
-                {this.state.currentValues.map( value => 
-                    <ListItem  >
-                        {value}
-                    </ListItem>																			               
-                )}
-                </List >
-                <Autocomplete
-							multiple
-							getItemValue={this.getItemValue}
-							items={this.state.autocompleteData}
-							renderItem={this.renderItem}
-							value={this.state.value}
-							onChange={this.onChange}
-							onSelect={this.onSelect}
-							inputProps={{ style: menuStyle },{ placeholder: 'HPO Tags' }}
-							
-                />
-                
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={this.cleanTags} color="primary">
-                Clean Tags
-                </Button>
-                <Button onClick={this.closeCreateDialog} color="primary">
-                Cancel
-                </Button>
-                <Button onClick={this.submitDialog} color="primary">
-                Create
-                </Button>
-            </DialogActions>
-            </Dialog>
+           
+            <Card title={patient.name} extra={<a href={`/matchmaker/${patient.id}`}>matchmaker</a>} >
+            <p>
+                {patient.diagnosis}
+            </p>
+            <List  component="nav" >
+            <h2>Phenotypes</h2>
+            {phenotype_list.length ? phenotype_list : <h1>Loading Phenotypes</h1>}
+            <h2>Genotypes</h2>
+            {genotype_list.length ? genotype_list : <h1>Loading Genotypes</h1>}
+            </List >
+            </Card>
             <Dialog open={this.state.edit_open}  fullWidth={true} aria-labelledby="form-dialog-title">
             <DialogTitle id="form-dialog-title">Edit Patient</DialogTitle>
             <DialogContent>
@@ -447,10 +366,9 @@ class PatientProfiles extends Component{
                 </Button>
             </DialogActions>
             </Dialog>
+            </div>
             
-        </div>
         )
     }
 }
-
-export default PatientProfiles;
+export default PatientDetail
