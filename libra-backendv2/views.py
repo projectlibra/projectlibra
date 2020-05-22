@@ -1,4 +1,4 @@
-from .app import app, db, ma, bcrypt, basedir, db_engine, hpo
+from .app import app, db, ma, bcrypt, basedir, db_engine, hpo, go, mail
 from flask import Flask, request, jsonify, make_response, flash, redirect, url_for, session
 from werkzeug.utils import secure_filename
 from flask_cors import cross_origin
@@ -17,10 +17,14 @@ import json
 import vcf
 import fastsemsim
 import time
+from flask_mail import Message
+
 import pandas as pd
 import io
 
 PREFIX = 'Bearer'
+ss = 0
+ac = 0
 
 def token_required(f):
   @wraps(f)
@@ -157,7 +161,7 @@ def fileUpload(current_user):
     filename = secure_filename(file.filename)
     file_path = os.path.join(dir_path, filename)
     file.save(file_path)
-    
+    """
     # ANNOTATE DBSNP ID
     file_path2 = file_path[:-4] + "_dbsnp.vcf"
     print("java -jar " + app.config['SNPEFF_FOLDER'] + "/SnpSift.jar annotate -id " + app.config['SNPEFF_FOLDER'] + "/00-All.vcf.gz " + file_path + " > " + file_path[:-4] + "_dbsnp.vcf")
@@ -182,16 +186,16 @@ def fileUpload(current_user):
     #file_db = File(name='06A010111.vcf', path=file_path, project_id=project_id)
     db.session.add(file_db)
     db.session.commit()
-
+    """
     #parse vcf using pyvcf and upload to database
-    #vcf_reader = vcf.Reader(open(file_path, 'r'))
-    vcf_reader = vcf.Reader(filename=file_path4)
+    vcf_reader = vcf.Reader(filename=file_path)
+    #vcf_reader = vcf.Reader(filename=file_path4)
     user_id = current_user.id
     print("FILE OPEN")
     cnt= 0
     variant_list = []
     start = time.time()
-    new_patient = Patient(name="RandPatient", diagnosis="rand_diag", patient_contact="rand@gmail.com", user_id=current_user.id, hpo_tag_names="", hpo_tag_ids="", go_tag_ids="")
+    new_patient = Patient(name="RandPatient", diagnosis="rand_diag", patient_contact=current_user.email, user_id=current_user.id, hpo_tag_names="", hpo_tag_ids="")
     db.session.add(new_patient)
     db.session.commit()
     go_list = []
@@ -530,6 +534,12 @@ def get_hpo_tags(current_user, patient_id):
   result = HPOs_schema.dump(hpo_tags)
   return jsonify(result)
 
+@app.route('/getgonames/<patient_id>', methods=['GET'])
+@token_required
+def get_go_names(current_user, patient_id):
+  gene_names = PatientGeneName.query.filter(PatientGeneName.patient_id == patient_id)
+  result = PatientGeneNames_schema.dump(gene_names)
+  return jsonify(result)
 
 @app.route('/matchmakerresults/<cur_hpo_id>', methods=['GET'])
 @token_required
@@ -550,8 +560,8 @@ def query_db(query, args=(), one=False):
 @app.route('/matchmakerhpo/<patient_id>', methods=['GET'])
 @token_required
 def get_matchmaker_hpo(current_user, patient_id):
-  patient_file = open('patient', 'w')
-  for patient in db_engine.execute('select id, hpo_tag_ids from patient'):
+  patient_file = open('./metricFiles/hpopatient'+str(current_user.id), 'w')
+  for patient in db_engine.execute('select id, hpo_tag_ids from patient where hpo_tag_ids is not null'):
     patient_to_write = str(patient)
     patient_to_write = (patient_to_write[1:len(patient_to_write)-1]).replace('\'', '').replace('\'', '')
     patient_file.write(patient_to_write+'\n')
@@ -561,7 +571,7 @@ def get_matchmaker_hpo(current_user, patient_id):
   ac_params['multiple'] = True
   ac_params['term first'] = False
   ac_params['separator'] = ", "
-  ac = fastsemsim.load_ac(ontology=hpo, source_file='patient', file_type='plain',params=ac_params)
+  ac = fastsemsim.load_ac(ontology=hpo, source_file='./metricFiles/hpopatient'+str(current_user.id), file_type='plain',params=ac_params)
 
   # Parameters for the SS
   semsim_type='obj'
@@ -579,4 +589,83 @@ def get_matchmaker_hpo(current_user, patient_id):
       print(ss.SemSim(patient_id, patient))
   sorted_results = sorted(result, key=lambda k: k['similarity'], reverse=True)
   return jsonify(sorted_results)
+
+@app.route('/matchmakergo/<patient_id>', methods=['GET'])
+@token_required
+def get_matchmaker_go(current_user, patient_id):
+  sorted_results = []
+  global ss
+  if ss != 0:
+    result = []
+    for patient in ac.obj_set:
+      if patient != patient_id:
+        similarity = ss.SemSim(patient_id, patient)
+        if similarity is not None:
+          patient_element = {"patient_id": str(patient), 
+                            "similarity": similarity}
+          result.append(patient_element)
+    sorted_results = sorted(result, key=lambda k: k['similarity'], reverse=True)
+  return jsonify(sorted_results)
+
+def goFileCreate():
+  patient_file = open('./metricFiles/gopatient', 'w')
   
+  for patient in db_engine.execute('select id from patient'):
+    patient_id = patient[0]
+    patient_to_write = str(patient_id) 
+    for gene_id in db_engine.execute('select gene_id from patient_gene_ids where patient_id =' + str(patient_id)):
+      patient_to_write = patient_to_write + ", " + gene_id[0]
+    patient_file.write(patient_to_write+'\n')
+
+  patient_file.close()
+  ac_params = {}
+  ac_params['filter'] = {}
+  ac_params['multiple'] = True
+  ac_params['term first'] = False
+  ac_params['separator'] = ", "
+  global ac
+  ac = fastsemsim.load_ac(ontology=go, source_file='./metricFiles/gopatient', file_type='plain',params=ac_params)
+
+  # Parameters for the SS
+  semsim_type='obj'
+  semsim_measure='Cosine'
+  mixing_strategy='BMA'
+
+  # Initializing semantic similarity
+  start_time = time.time()
+  global ss
+  ss = fastsemsim.init_semsim(ontology = go, ac = ac, semsim_type = semsim_type, semsim_measure = semsim_measure, mixing_strategy = mixing_strategy)
+  sendNotifications()
+  print("--- %s seconds 1---" % (time.time() - start_time))
+
+def sendNotifications():
+  with app.app_context():
+    patient_ids = list(ac.obj_set)
+
+    for i in range(0, len(patient_ids) - 1):
+      for j in range(i+1, len(patient_ids)):
+        pair = str(patient_ids[i])+ "." + str(patient_ids[j])
+        found_pair = db.session.query(GoSimilarity).filter_by(patient_pair=pair).first()
+
+        if not found_pair:
+          similarity = ss.SemSim(patient_ids[i], patient_ids[j])
+          if similarity is not None:
+            print(pair)
+            goSimilarity = GoSimilarity(patient_pair=pair, similarity = similarity)
+            patients = []
+
+            for info in db_engine.execute('select patient_contact, name from patient where id='+str(patient_ids[i])+' or id='+str(patient_ids[j])):
+              for key, value in info.items():
+                patients.append(value)
+            #recipient should be patient[0] if there is valid emails in the system
+            msg = Message('Similarity Notification for '+ patients[1], sender = 'projectlibra.similarity@gmail.com', recipients = ['halil.sahiner@ug.bilkent.edu.tr'])
+            msg.body = "Your patient  "+ patients[1] + " is matched with Name: " + patients[3] + " with the similarity: "+ similarity + " Contact: " + patients[2]
+            mail.send(msg)
+            #recipient should be patient[2] if there is valid emails in the system
+            msg = Message('Similarity Notification for '+ patients[3], sender = 'projectlibra.similarity@gmail.com', recipients = ['abdullah.talayhan@ug.bilkent.edu.tr'])
+            msg.body = "Your patient  "+ patients[3] + " is matched with Name: " + patients[1] + " with the similarity: "+ similarity + " Contact: " + patients[0]
+            mail.send(msg)
+            
+            db.session.add(goSimilarity)
+
+    db.session.commit() 

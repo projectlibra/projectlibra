@@ -36,6 +36,7 @@ class PatientProfiles extends Component{
             edit_open: false,
             edit_patient: {},
             patients: [],
+            go_names: {},
             value: "",
             currentIDs: [],
             currentValues:[],
@@ -43,7 +44,8 @@ class PatientProfiles extends Component{
             hpo_tag_names: [],
             // Data that will be rendered in the autocomplete
             // As it is asynchronous, it is initially empty
-            autocompleteData: []  
+            autocompleteData: [],
+            refresher: []
         }
         // Bind `this` context to functions of the class
         this.onChange = this.onChange.bind(this);
@@ -51,6 +53,7 @@ class PatientProfiles extends Component{
         this.getItemValue = this.getItemValue.bind(this);
         this.renderItem = this.renderItem.bind(this);
         this.retrieveDataAsynchronously = this.retrieveDataAsynchronously.bind(this);
+        this.fetchGONames = this.fetchGONames.bind(this);
     }
     /**
      * Updates the state of the autocomplete data with the remote data obtained via AJAX.
@@ -186,16 +189,17 @@ class PatientProfiles extends Component{
     }
 
     componentDidMount() {
-        this.fetchPatients();
+        this.fetchPatients();       
     }
 
     fetchPatients = () => {
         axios.get(host + '/patientprofile',{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
         .then(res => {
-            console.log("Here:");
-            console.log(res.data);
             this.setState({
             patients: res.data
+            })
+            res.data.map(patient =>{
+                this.fetchGONames(patient.id)
             })
         })
         .catch(err =>  {
@@ -208,7 +212,27 @@ class PatientProfiles extends Component{
             }
         })
     }
-   
+    fetchGONames = (patient_id) => {
+        axios.get(host + `/getgonames/${patient_id}`,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+        .then(res => {
+            this.state.go_names[patient_id] = []
+            res.data.forEach(element => {
+                this.state.go_names[patient_id].push(element.gene_name)
+            });
+            this.setState({
+                refresher: []
+            })
+        })
+        .catch(err =>  {
+            if(err.response) {
+            console.log(axios.defaults.headers.common)
+            console.log(err.response.data)
+            if(err.response.status === 401) {
+                this.props.history.push('/');
+            }
+            }
+        })
+    }
 
     handleChange = (e) => {
         let {id, value} = e.target;
@@ -274,7 +298,7 @@ class PatientProfiles extends Component{
     }
     
     render() {
-        const {patients} = this.state
+        const {patients, go_names} = this.state
         const patientList = patients.length ? (
         patients.map(patient => {
             const edit_patient = {
@@ -283,9 +307,11 @@ class PatientProfiles extends Component{
                 diagnosis: patient.diagnosis,
                 hpo_tag_names: patient.hpo_tag_names
             }
+            
+            console.log(go_names[patient.id])
             return (
             <div key={patient.id}>
-                <PatientProfile patient_id={patient.id} name={patient.name} diagnosis={patient.diagnosis} hpo_tag_names={patient.hpo_tag_names} go_tag_ids={patient.go_tag_ids} hpo_tag_ids={patient.hpo_tag_ids}/>
+                <PatientProfile patient_id={patient.id} name={patient.name} diagnosis={patient.diagnosis} hpo_tag_names={patient.hpo_tag_names} go_names={go_names[patient.id]} hpo_tag_ids={patient.hpo_tag_ids}/>
                 <Button onClick={this.openEditDialog(edit_patient)}>Edit Patient</Button>
             </div>
             )

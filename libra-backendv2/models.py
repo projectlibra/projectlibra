@@ -137,6 +137,17 @@ class HPOSchema(ma.Schema):
 HPO_schema = HPOSchema()
 HPOs_schema = HPOSchema(many=True)
 
+class GoSimilarity(db.Model):
+  patient_pair = db.Column(db.String(50), primary_key=True)
+  similarity = db.Column(db.Float)
+
+class GoSimilaritySchema(ma.Schema):
+  class Meta:
+    fields = ('patient_pair', 'similarity')
+
+GoSimilarity_schema = GoSimilaritySchema()
+GoSimilarities_schema = GoSimilaritySchema(many=True)
+
 class GeneName(db.Model):
   __tablename__ = "gene_name"
   name = db.Column(db.Text(), primary_key=True)
@@ -153,22 +164,17 @@ class PatientGeneName(db.Model):
   patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'))
   gene_name = db.Column(db.Text(), db.ForeignKey('gene_name.name'))
 
+class PatientGeneNameSchema(ma.Schema):
+  class Meta:
+    fields = ('id', 'patient_id', 'gene_name')
+
+PatientGeneName_schema = PatientGeneNameSchema()
+PatientGeneNames_schema = PatientGeneNameSchema(many=True)
+
+
 class PatientGeneID(db.Model):
   __tablename__ = "patient_gene_ids"
   id = db.Column(db.Integer, primary_key=True)
   patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'))
   gene_id = db.Column(db.Text(), db.ForeignKey('gene_id.gene_id'))
 
-"""
-class Gogene(db.Model):
-  id = db.Column(db.Integer, primary_key=True)
-  gogene_name = db.Column(db.String(50))
-  gogene_id = db.Column(db.String(50))
-
-class GogeneSchema(ma.Schema):
-  class Meta:
-    fields = ('id','gogene_name','gogene_id')
-
-gogene_schema = gogeneSchema()
-gogenes_schema = gogeneSchema(many=True)
-"""
