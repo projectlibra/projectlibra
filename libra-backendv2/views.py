@@ -502,17 +502,20 @@ def edit_patient(current_user, patient_id):
       hpo_tag_names_str = hpo_tag_names_str +", "
       hpo_tag_ids_str = hpo_tag_ids_str +", " 
  
-  patient = Patient(name=name, diagnosis=diagnosis, patient_contact=patient_contact,
-                    user_id=user_id, hpo_tag_names=hpo_tag_names_str, hpo_tag_ids=hpo_tag_ids_str, resolve_state=False)
-
-  db.session.add(patient)
-  db.session.commit()
-
-  for i in range(len(hpo_tag_ids)):
-    hpo_tag = HPOTag(hpo_tag_id=hpo_tag_ids[i], hpo_tag_name=hpo_tag_names[i], patient_id=patient.id, resolve_state=False)
-    db.session.add(hpo_tag)
-    db.session.commit()
+ db.session.query(Patient).filter(Patient.id == patient_id).\
+                            update({"name":name, 
+                                    "diagnosis":diagnosis, 
+                                    "patient_contact":patient_contact,
+                                    "user_id":user_id, 
+                                    "hpo_tag_names":hpo_tag_names_str, 
+                                    "hpo_tag_ids":hpo_tag_ids_str})
   
+  for i in range(len(hpo_tag_ids)):
+    hpo_tag = HPOTag(hpo_tag_id=hpo_tag_ids[i], hpo_tag_name=hpo_tag_names[i], patient_id=patient_id, resolve_state=False)
+    db.session.add(hpo_tag)
+    
+  db.session.commit()
+  patient = Patient.query.filter_by(id=patient_id).first()
   return patient_schema.jsonify(patient)
 
 @app.route('/patientprofile', methods=['GET'])
@@ -700,7 +703,7 @@ def sendEmail(patient_ids, hpo_sim, go_sim):
     msg.html = get_mail_template(mail_info[1][0], mail_info[0][0], mail_info[0][1], 100*go_sim, 100*hpo_sim)
     thr = Thread(target=send_async_email, args=[msg])
     thr.start()
-    
+
 def matchmakerAlgorithms():
   goAlgortihm()
   hpoAlgorithm()

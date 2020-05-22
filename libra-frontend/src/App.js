@@ -24,6 +24,7 @@ import HPO from './components/HPO';
 import Upload from './components/upload/Upload';
 import MatchMaker from './components/MatchMaker'
 import PatientDetail from './components/PatientDetail'
+import UpdateForm from './pages/userSettings';
 class App extends React.Component{
 
   
@@ -118,10 +119,11 @@ class App extends React.Component{
           
           
           <br></br>
-          <div style={{paddingLeft: '20px', paddingRight: '20px'}}>
+          <div style={{paddingLeft: '5px', paddingRight: '5px'}}>
           <Switch >
             {/* Insert Page routes here: */}
             {/*<Route path="/" component={}/>*/}
+            
             <Route exact path="/drop" component={Upload} />
             <Route exact path="/editPatient" component={editPatient} />
             <Route exact path="/matchmaker/:id" component={MatchMaker} />
@@ -138,6 +140,7 @@ class App extends React.Component{
             <Route exact path="/HPO/:id" component={HPO} />
             <Route exact path="/" component={Homepage} />
             <Route exact path="/hpo/:id" component={HPO} />
+            <Route exact path="/userSettings" component={UpdateForm} />
             {/*correct way to Route with props*/ }
             <Route exact path="/list-files" 
             render={ (props) =><VcfFiles {...props} ws={this.state.ws} ws_data={this.state.ws_data}  />} />
