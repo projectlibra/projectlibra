@@ -5,14 +5,17 @@ class User(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   public_id = db.Column(db.String(50), unique=True)
   username = db.Column(db.String(50))
+  name = db.Column(db.String(80))
   email = db.Column(db.String(80))
   password = db.Column(db.String(80))
   admin = db.Column(db.Boolean)
+  ph_thrs = db.Column(db.Float())
+  gn_thrs = db.Column(db.Float())
   projects = db.relationship('Project', backref='user')
 
 class UserSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'username', 'email', 'admin')
+    fields = ('id', 'username', 'name', 'email', 'ph_thrs', 'gn_thrs')
 
 user_schema = UserSchema()
 

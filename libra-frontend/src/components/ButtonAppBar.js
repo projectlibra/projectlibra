@@ -17,9 +17,10 @@ import { withRouter } from "react-router";
 const useStyles = makeStyles(theme => ({
   root: {
     flexGrow: 1,
+    backgroundColor: '#2E3B55'
   },
   menuButton: {
-    marginRight: theme.spacing(2),
+    marginRight: theme.spacing(1),
   },
   title: {
     flexGrow: 1,
@@ -35,7 +36,7 @@ const ButtonAppBar = (props) => {
 
   if(props.token) {
     return (<div className={classes.root}>
-      <AppBar position="static">
+      <AppBar position="static" className={classes.root} >
         <Toolbar>
           <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" component={Link} to="/">
             <HomeIcon />
@@ -54,6 +55,7 @@ const ButtonAppBar = (props) => {
           */}
           <Button color="inherit" component={Link} to="/projects">My Projects</Button>
           <Button color="inherit" component={Link} to="/patients">My Patients</Button>
+          <Button color="inherit" component={Link} to="/userSettings">My Profile</Button>
           <Button color="inherit" onClick={onFinish}>Sign Out</Button>
         </Toolbar>
       </AppBar>
@@ -62,7 +64,7 @@ const ButtonAppBar = (props) => {
   else {
     return (
       <div className={classes.root}>
-        <AppBar position="static">
+        <AppBar position="static" className={classes.root}>
           <Toolbar>
             <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" component={Link} to="/">
               <HomeIcon />

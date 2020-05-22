@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Button, Row, Col, Divider } from 'antd';
+import {Row, Col, Divider } from 'antd';
 import Project from '../components/Project';
 
+import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -105,9 +106,9 @@ class Projects extends Component{
     )
     return (
       <div>
-        <Button onClick={this.openDialog}>Create New Project</Button>
+        <Button onClick={this.openDialog} variant="contained" >Create New Project</Button>
         <Divider orientation="left" style={{ color: '#333', fontWeight: 'normal' }}>
-          Your Projects
+          <h2>Your Projects</h2>
         </Divider>
         
         <div style={style}>
