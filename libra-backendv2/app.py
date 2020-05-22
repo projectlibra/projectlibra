@@ -64,7 +64,7 @@ mail = Mail(app)
 from .views import *
 
 scheduler = BackgroundScheduler()
-job = scheduler.add_job(matchmakerAlgorithms, 'interval', minutes=0.1, next_run_time = datetime.datetime.now())
+job = scheduler.add_job(matchmakerAlgorithms, 'interval', minutes=0.5)
 
 scheduler.start()
 

@@ -502,11 +502,10 @@ def edit_patient(current_user, patient_id):
       hpo_tag_names_str = hpo_tag_names_str +", "
       hpo_tag_ids_str = hpo_tag_ids_str +", " 
  
- db.session.query(Patient).filter(Patient.id == patient_id).\
+  db.session.query(Patient).filter(Patient.id == patient_id).\
                             update({"name":name, 
                                     "diagnosis":diagnosis, 
                                     "patient_contact":patient_contact,
-                                    "user_id":user_id, 
                                     "hpo_tag_names":hpo_tag_names_str, 
                                     "hpo_tag_ids":hpo_tag_ids_str})
   
@@ -660,39 +659,52 @@ def send_async_email(msg):
 
 def notificationChecker():
   patient_ids = list(ac.obj_set)
-  pair_1 = str(patient_ids[i])+ "." + str(patient_ids[j])
-  pair_2 = str(patient_ids[j])+ "." + str(patient_ids[i])
-
+  
   for i in range(0, len(patient_ids) - 1):
     for j in range(i+1, len(patient_ids)):
-      pair= db.session.query(Similarity).filter(or_(Similiarity.patient_pair==pair_1),
-                                                    Similiarity.patient_pair==pair_2).first()
+      pair_1 = str(patient_ids[i])+ "." + str(patient_ids[j])
+      pair_2 = str(patient_ids[j])+ "." + str(patient_ids[i])
+
+      pair = db.session.query(Similarity).filter(or_(Similarity.patient_pair==pair_1,
+                                                    Similarity.patient_pair==pair_2)).first()
+
       hpo_sim = ss_hpo.SemSim(patient_ids[i], patient_ids[j])
       go_sim = ss.SemSim(patient_ids[i], patient_ids[j])
-      if pair:
-        for row in pair:
-          if(row.hpo_similarity != hpo_sim or row.go_similarity != go_sim):
-            db.session.query(Similarity).filter(or_(Similiarity.patient_pair==str(patient_ids[i])+ "." + str(patient_ids[j]),
-                                                      Similiarity.patient_pair==str(patient_ids[j])+ "." + str(patient_ids[i]))).\
-                          update({"hpo_similarity":hpo_sim, 
-                                  "go_similarity":go_sim })
-            sendEmail((patient_ids[i], patient_ids[j]), hpo_sim, go_sim)
-      else:
-        similiarity = Similarity(patient_pair= pair_1, hpo_similarity=hpo_sim, go_similarity= go_sim)
+      if not hpo_sim:
+        hpo_sim = 0
+      if not go_sim:
+        go_sim = 0
+      
+      if (not pair):
+        print("new",pair)
+        similarity = Similarity(patient_pair= pair_1, hpo_similarity=hpo_sim, go_similarity= go_sim)
         sendEmail((patient_ids[i], patient_ids[j]), hpo_sim, go_sim)
         db.session.add(similarity)
-  db.session.commit() 
+        db.session.commit() 
+  
+      else:
+        if(pair.hpo_similarity != hpo_sim or pair.go_similarity != go_sim):  
+          print("old",pair)                
+          db.session.query(Similarity).filter(or_(Similarity.patient_pair==str(patient_ids[i])+ "." + str(patient_ids[j]),
+                                                    Similarity.patient_pair==str(patient_ids[j])+ "." + str(patient_ids[i]))).\
+                        update({"hpo_similarity":hpo_sim, 
+                                "go_similarity":go_sim })
+          sendEmail((patient_ids[i], patient_ids[j]), hpo_sim, go_sim)
+          db.session.commit() 
+       
         
 def sendEmail(patient_ids, hpo_sim, go_sim):
   mail_info = []
   for patient_id in patient_ids:
-    for user_id in db_engine.execute('select user_id from patient where id='+str(patient_id))):
-      user = db.session.query(User).filter(User.id == int(user_id[0])).first()
+    for user_id in db_engine.execute('select user_id from patient where id='+str(patient_id)):
+      
+      user = db.session.query(User).filter(User.id == int(user_id[0]))
       for row in user:
         if(row.gn_thrs <= go_sim and row.ph_thrs <= hpo_sim):
           mail_info.append([patient_id, row.email, True])
         else:
           mail_info.append([patient_id, row.email, False])
+  
   if mail_info[0][2]:
     msg = Message('Similarity Notification for '+ mail_info[0][0], sender = 'projectlibra.similarity@gmail.com', recipients = [mail_info[0][1]])
     msg.html = get_mail_template(mail_info[0][0], mail_info[1][0], mail_info[1][1], 100*go_sim, 100*hpo_sim)

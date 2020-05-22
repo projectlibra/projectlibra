@@ -8,6 +8,7 @@ def get_mail_template(patient_1, patient_2, mail_to_contact, phenotype_sim, geno
         phenotype_sim = "-"
         phenotype_text = "Phenotype similiarty couldn't be calculated"
     else:
+        phenotype_sim = "{:0.2f}".format(phenotype_sim)
         phenotype_text = "This similiarty is higher than the threshold that you set"
     
     genotype_text = ""
@@ -15,6 +16,7 @@ def get_mail_template(patient_1, patient_2, mail_to_contact, phenotype_sim, geno
         genotype_sim = "-"
         genotype_text = "Genotype similiarty couldn't be calculated"
     else:
+        genotype_sim = "{:0.2f}".format(genotype_sim)
         genotype_text = "This similiarty is higher than the threshold that you set"
     
     return """
@@ -61,7 +63,7 @@ def get_mail_template(patient_1, patient_2, mail_to_contact, phenotype_sim, geno
 
                                                             <tr>
                                                                 <td style='padding: 25px 0 0 0; color: #153643; font-family: Arial, sans-serif; font-size: 16px; line-height: 20px;'>
-                                                                    <h4>Genotype Similarity: %{:0.2f}</h4>
+                                                                    <h4>Genotype Similarity: %{}</h4>
                                                                     {}
                                                                 </td>
                                                             </tr>
@@ -74,7 +76,7 @@ def get_mail_template(patient_1, patient_2, mail_to_contact, phenotype_sim, geno
                                                         <table border='0' cellpadding='0' cellspacing='0' width='100%'>
                                                             <tr>
                                                                 <td style='padding: 25px 0 0 0; color: #153643; font-family: Arial, sans-serif; font-size: 16px; line-height: 20px;'>
-                                                                    <h4>Phenotype Similarity: %{:0.2f}</h4>
+                                                                    <h4>Phenotype Similarity: %{}</h4>
                                                                     {}
                                                                 </td>
                                                             </tr>
