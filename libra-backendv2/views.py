@@ -484,13 +484,10 @@ def create_patient(current_user):
 @token_required
 def edit_patient(current_user, patient_id):
   db.session.query(HPOTag).filter(HPOTag.patient_id == patient_id).delete()
-  db.session.query(Patient).filter(Patient.id == patient_id).delete()
   db.session.commit()
 
   name = request.json['name']
   diagnosis = request.json['diagnosis']
-  patient_contact = current_user.email
-  user_id = current_user.id
   hpo_tag_ids = request.json['hpo_tag_ids']
   hpo_tag_names = request.json['hpo_tag_names']
   hpo_tag_names_str = ""
@@ -505,7 +502,6 @@ def edit_patient(current_user, patient_id):
   db.session.query(Patient).filter(Patient.id == patient_id).\
                             update({"name":name, 
                                     "diagnosis":diagnosis, 
-                                    "patient_contact":patient_contact,
                                     "hpo_tag_names":hpo_tag_names_str, 
                                     "hpo_tag_ids":hpo_tag_ids_str})
   

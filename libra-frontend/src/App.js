@@ -5,7 +5,8 @@ import BuildQuery from './components/BuildQuery';
 import VCFUpload from './components/VCFUpload';
 import ButtonAppBar from "./components/ButtonAppBar"
 // Components
-import editPatient from './pages/editPatient';
+//import editPatient from './pages/editPatient';
+import editPatient from './components/EditPatient';
 import Login from './components/Login'
 import SignUp from './components/SignUp'
 import Forgot from './components/Forgot'
@@ -125,7 +126,7 @@ class App extends React.Component{
             {/*<Route path="/" component={}/>*/}
             
             <Route exact path="/drop" component={Upload} />
-            <Route exact path="/editPatient" component={editPatient} />
+            <Route exact path="/editPatient/:id" component={editPatient} />
             <Route exact path="/matchmaker/:id" component={MatchMaker} />
             <Route exact path="/buildquery" component={BuildQuery} />
             <Route exact path="/vcfupload" component={VCFUpload} />
