@@ -35,8 +35,7 @@ import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import * as filterConstants from "./filters/FilterConstants";
-
-
+import _ from 'lodash';
 
 const style = {display: 'flex', flexWrap: 'wrap'}
 
@@ -489,98 +488,110 @@ class Projects extends Component{
 }
 
 class FilterPanel extends Component {
-    constructor(props) {
-        super(props);
+  constructor(props) {
+      super(props);
 
-        this.state = {filterType: props.filterType, summary: "", stateBustingKey: 0, summary2: []};
-        
-        this.handleFilterChange = this.handleFilterChange.bind(this);
-    }
+      this.state = {filterType: props.filterType, selectedOptions: "", stateBustingKey: 0, summary2: []};
+      
+      this.handleFilterChange = this.handleFilterChange.bind(this);
+  }
 
-    handleFilterChange(input) {
-        this.props.onInputChange(input, this.state.filterType);
-    }
+  handleFilterChange(input) {
+      this.setState({selectedOptions: input}, this.props.onInputChange(input, this.state.filterType));
+  }
 
-    renderTitle() {
-        switch(this.state.filterType) {
-            case 'impact':
-                return "Impact";
-            case 'frequency':
-                return "Frequency";
-            case 'scenario':
-                return "Scenario";
-            case 'pathogenicity':
-                return "Pathogenicity";
-            default:
-                return "Filter Type not defined.";
-        }
-    } 
+  renderTitle() {
+      switch(this.state.filterType) {
+          case 'impact':
+              return "Impact";
+          case 'frequency':
+              return "Frequency";
+          case 'scenario':
+              return "Scenario";
+          case 'pathogenicity':
+              return "Pathogenicity";
+          default:
+              return "Filter Type not defined.";
+      }
+  } 
 
-    renderSwitch() {
-        switch(this.state.filterType) {
-            case 'impact':
-                return <ImpactFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
-            case 'frequency':
-                return <FrequencyFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
-            case 'scenario':
-                return <ScenarioFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
-            case 'pathogenicity':
-                return <PathogenicityFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
-        }
-    } 
+  renderSwitch() {
+      switch(this.state.filterType) {
+          case 'impact':
+              return <ImpactFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
+          case 'frequency':
+              return <FrequencyFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
+          case 'scenario':
+              return <ScenarioFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
+          case 'pathogenicity':
+              return <PathogenicityFilter handleFilterChange={this.handleFilterChange} key={this.state.stateBustingKey}/>;
+      }
+  } 
 
-    selectDefaultState() {
-        switch(this.state.filterType) {
-            case "scenario":
-                return filterConstants.defaultState.scenarioInput;
-            case "frequency":
-                return filterConstants.defaultState.frequencyInput;
-            case "impact":
-                return filterConstants.defaultState.impactInput;
-            case "pathogenicity":
-                return filterConstants.defaultState.pathogenicityInput;
-        }
-    }
+  selectDefaultState() {
+      switch(this.state.filterType) {
+          case "scenario":
+              return filterConstants.defaultState.scenarioInput;
+          case "frequency":
+              return filterConstants.defaultState.frequencyInput;
+          case "impact":
+              return filterConstants.defaultState.impactInput;
+          case "pathogenicity":
+              return filterConstants.defaultState.pathogenicityInput;
+      }
+  }
 
-    onClickClear() {        
-        var defaultState = this.selectDefaultState();
+  onClickClear() {        
+      var defaultState = this.selectDefaultState();
 
-        this.setState({ stateBustingKey: this.state.stateBustingKey + 1 }, this.props.onInputChange(defaultState, this.state.filterType));
-    }
+      this.setState({ stateBustingKey: this.state.stateBustingKey + 1, selectedOptions: defaultState }, 
+          this.props.onInputChange(defaultState, this.state.filterType));
+  }
 
-    renderReset() {        
-        return(
-            <ListItem > 
-                <Button onClick={()=>this.onClickClear()}>Reset filter</Button>
-            </ListItem>
-        );            
-    }
+  renderReset() {
+      if (!_.isEqual(this.state.selectedOptions, filterConstants.defaultState.scenarioInput) && 
+          !_.isEqual(this.state.selectedOptions, filterConstants.defaultState.frequencyInput) &&
+          !_.isEqual(this.state.selectedOptions, filterConstants.defaultState.impactInput) && 
+          !_.isEqual(this.state.selectedOptions, filterConstants.defaultState.pathogenicityInput)) {
+              return(
+                  <ListItem > 
+                      <Button
+                          variant="contained"
+                          color="secondary"  
+                          onClick={()=>this.onClickClear()}
+                      >
+                          Reset filter
+                      </Button>
+                  </ListItem>
+              );     
+          }                   
+  }
 
-    render() {
-        return(
-            <div>
-                <ExpansionPanel>                
-                    <ExpansionPanelSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        aria-controls={this.state.filterType}
-                        id={this.state.filterType}
-                    >
-                        <Typography style={{whiteSpace: 'pre-line'}}>
-                            {this.renderTitle()}                             
-                        </Typography>                 
-                    </ExpansionPanelSummary>
-                    
-                    <ExpansionPanelDetails>
-                        {this.renderSwitch()}
-                    </ExpansionPanelDetails>                
-                </ExpansionPanel>
-                <List component="nav" aria-label="main mailbox folders" dense={true}>
-                    {this.renderReset()}                    
-                </List>                
-            </div>
-            
-        );
-    }
+  render() {
+      return(
+          <div>
+              <ExpansionPanel>                
+                  <ExpansionPanelSummary
+                      expandIcon={<ExpandMoreIcon />}
+                      aria-controls={this.state.filterType}
+                      id={this.state.filterType}
+                  >
+                      <Typography style={{whiteSpace: 'pre-line'}}>
+                          {this.renderTitle()}                             
+                      </Typography>                 
+                  </ExpansionPanelSummary>
+                  
+                  <ExpansionPanelDetails>
+                      {this.renderSwitch()}
+                  </ExpansionPanelDetails>                
+              </ExpansionPanel>
+              <List component="nav" aria-label="main mailbox folders" dense={true}>
+                  {this.renderReset()}                    
+              </List>                
+          </div>
+          
+      );
+  }
 }
 
 export default Projects;

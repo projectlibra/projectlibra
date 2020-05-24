@@ -18,6 +18,8 @@ import ListItem from '@material-ui/core/ListItem';
 import * as filterConstants from "./FilterConstants";
 import host from '../../host';
 import axios from 'axios';
+import _ from 'lodash';
+import isEqual from 'lodash/isEqual';
 
 class FilterList extends Component {
     constructor(props) {
@@ -50,7 +52,7 @@ class FilterList extends Component {
     }
 
     //test() {
-      //  console.log(this.state);
+    //    console.log(this.state);
     //}
 
     test = () => {
@@ -90,7 +92,14 @@ class FilterList extends Component {
 
                     <FilterPanel filterType="pathogenicity" onInputChange={this.onInputChange}/>
                     <Grid item xs>
-                        <Button onClick={() => this.test()}>Apply Filter</Button>
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            color="primary" 
+                            onClick={() => this.test()}
+                        >
+                            Apply Filter
+                        </Button>
                     </Grid>                    
                 </Container>
             </div>
@@ -102,13 +111,13 @@ class FilterPanel extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {filterType: props.filterType, summary: "", stateBustingKey: 0, summary2: []};
+        this.state = {filterType: props.filterType, selectedOptions: "", stateBustingKey: 0, summary2: []};
         
         this.handleFilterChange = this.handleFilterChange.bind(this);
     }
 
     handleFilterChange(input) {
-        this.props.onInputChange(input, this.state.filterType);
+        this.setState({selectedOptions: input}, this.props.onInputChange(input, this.state.filterType));
     }
 
     renderTitle() {
@@ -155,15 +164,27 @@ class FilterPanel extends Component {
     onClickClear() {        
         var defaultState = this.selectDefaultState();
 
-        this.setState({ stateBustingKey: this.state.stateBustingKey + 1 }, this.props.onInputChange(defaultState, this.state.filterType));
+        this.setState({ stateBustingKey: this.state.stateBustingKey + 1, selectedOptions: defaultState }, 
+            this.props.onInputChange(defaultState, this.state.filterType));
     }
 
-    renderReset() {        
-        return(
-            <ListItem > 
-                <Button onClick={()=>this.onClickClear()}>Reset filter</Button>
-            </ListItem>
-        );            
+    renderReset() {
+        if (!_.isEqual(this.state.selectedOptions, filterConstants.defaultState.scenarioInput) && 
+            !_.isEqual(this.state.selectedOptions, filterConstants.defaultState.frequencyInput) &&
+            !_.isEqual(this.state.selectedOptions, filterConstants.defaultState.impactInput) && 
+            !_.isEqual(this.state.selectedOptions, filterConstants.defaultState.pathogenicityInput)) {
+                return(
+                    <ListItem > 
+                        <Button
+                            variant="contained"
+                            color="secondary"  
+                            onClick={()=>this.onClickClear()}
+                        >
+                            Reset filter
+                        </Button>
+                    </ListItem>
+                );     
+            }                   
     }
 
     render() {
