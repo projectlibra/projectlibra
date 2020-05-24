@@ -37,6 +37,7 @@ class MatchMaker extends Component{
             currentIDs: [],
             autocompleteData: [],
             hpoMetricResults:[],
+            goMetricResults: [],
             currentPatient: [],
             refresher: []
         };
@@ -245,6 +246,7 @@ class MatchMaker extends Component{
             this.setState({
                 goMetricResults: res.data
             })
+            
             res.data.forEach(element => {
                     this.fetch_patient_by_metric(element.patient_id,false)
                 })
@@ -345,16 +347,17 @@ class MatchMaker extends Component{
         this.setState({
             fetchedPatientsByHPOMetric : []
         })
-        this.fetch_hpo_patients(this.state.currentPatient.id);
+        if(this.state.currentPatient.hpo_tag_names.length > 0){
+            this.fetch_hpo_patients(this.state.currentPatient.id);
+        }
     }
     onGOMatchMakerClicked(){
         this.setState({
             fetchedPatientsByGOMetric : []
         })
         console.log(this.state.currentPatient);
-        if(this.state.currentPatient.go_tag_ids.length > 0){
-            this.fetch_go_patients(this.state.currentPatient.id);
-        }
+        
+        this.fetch_go_patients(this.state.currentPatient.id);
     }
     render() {
         const classes = {
@@ -434,9 +437,8 @@ class MatchMaker extends Component{
                         <TableHead>
                         <TableRow>
                             <TableCell>Patient Contact</TableCell>
+                            <TableCell align="right">Patient Name</TableCell>
                             <TableCell align="right">Diagnosis</TableCell>
-                            <TableCell align="right">Genotypes</TableCell>
-                            <TableCell align="right">Phenotypes</TableCell>
                             <TableCell align="right">HPO Similarty Percentage</TableCell>
                         </TableRow>
                         </TableHead>
@@ -446,9 +448,8 @@ class MatchMaker extends Component{
                             <TableCell component="th" scope="row">
                                 {patient.patient_contact}
                             </TableCell>
+                            <TableCell align="right">{patient.name}</TableCell>
                             <TableCell align="right">{patient.diagnosis}</TableCell>
-                            <TableCell align="right">{patient.go_tag_ids}</TableCell>
-                            <TableCell align="right">{patient.hpo_tag_names}</TableCell>
                             <TableCell align="right">{hpoMetricResults.filter(function(v) {
                                 return v.patient_id == patient.id;
                             })[0].similarity}</TableCell>
@@ -471,25 +472,32 @@ class MatchMaker extends Component{
                         <TableHead>
                         <TableRow>
                             <TableCell>Patient Contact</TableCell>
+                            <TableCell align="right">Patient Name</TableCell>
                             <TableCell align="right">Diagnosis</TableCell>
-                            <TableCell align="right">Genotypes</TableCell>
-                            <TableCell align="right">Phenotypes</TableCell>
                             <TableCell align="right">GO Similarty Percentage</TableCell>
                         </TableRow>
                         </TableHead>
                         <TableBody>
-                        {fetchedPatientsByGOMetric.map(patient => (
+                        
+                        {goMetricResults.map(patient => (
+                            fetchedPatientsByGOMetric.filter(function(v) {
+                                return v.id == patient.patient_id;
+                            })[0] !== undefined ? 
                             <TableRow>
                             <TableCell component="th" scope="row">
-                                {patient.patient_contact}
+                                {fetchedPatientsByGOMetric.filter(function(v) {
+                                return v.id == patient.patient_id;
+                            })[0].patient_contact}
                             </TableCell>
-                            <TableCell align="right">{patient.diagnosis}</TableCell>
-                            <TableCell align="right">{patient.go_tag_ids}</TableCell>
-                            <TableCell align="right">{patient.hpo_tag_names}</TableCell>
-                            <TableCell align="right">{goMetricResults.filter(function(v) {
-                                return v.patient_id == patient.id;
-                            })[0].similarity}</TableCell>
-                            </TableRow>
+                            <TableCell align="right">{fetchedPatientsByGOMetric.filter(function(v) {
+                                return v.id == patient.patient_id;
+                            })[0].name}</TableCell>
+                            <TableCell align="right">{fetchedPatientsByGOMetric.filter(function(v) {
+                                return v.id == patient.patient_id;
+                            })[0].diagnosis}</TableCell>
+
+                            <TableCell align="right">{patient.similarity}</TableCell>
+                            </TableRow>:<div></div>
                         ))}
                         </TableBody>
                     </Table>

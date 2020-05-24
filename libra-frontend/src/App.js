@@ -5,7 +5,8 @@ import BuildQuery from './components/BuildQuery';
 import VCFUpload from './components/VCFUpload';
 import ButtonAppBar from "./components/ButtonAppBar"
 // Components
-import editPatient from './pages/editPatient';
+//import editPatient from './pages/editPatient';
+import editPatient from './components/EditPatient';
 import Login from './components/Login'
 import SignUp from './components/SignUp'
 import Forgot from './components/Forgot'
@@ -22,9 +23,9 @@ import DZUploader from './components/DZUploader';
 import PatientProfiles from './components/PatientProfiles';
 import HPO from './components/HPO';
 import Upload from './components/upload/Upload';
-import MatchMaker from './components/MatchMaker';
+import MatchMaker from './components/MatchMaker'
+import PatientDetail from './components/PatientDetail'
 import UpdateForm from './pages/userSettings';
-
 class App extends React.Component{
 
   
@@ -125,7 +126,7 @@ class App extends React.Component{
             {/*<Route path="/" component={}/>*/}
             
             <Route exact path="/drop" component={Upload} />
-            <Route exact path="/editPatient" component={editPatient} />
+            <Route exact path="/editPatient/:id" component={editPatient} />
             <Route exact path="/matchmaker/:id" component={MatchMaker} />
             <Route exact path="/buildquery" component={BuildQuery} />
             <Route exact path="/vcfupload" component={VCFUpload} />
@@ -134,6 +135,7 @@ class App extends React.Component{
             <Route exact path="/forgot" component={Forgot} />
             <Route exact path="/createPatientProfile" component={CreatePatientProfile} />
             <Route exact path="/patients" component={PatientProfiles} />
+            <Route exact path="/patients/:id" component={PatientDetail} />
             <Route exact path="/projects" component={Projects} />
             <Route exact path="/projects/:id" component={ProjectDetail} />
             <Route exact path="/HPO/:id" component={HPO} />

@@ -17,10 +17,16 @@ import json
 import vcf
 import fastsemsim
 import time
+from flask_mail import Message
+from threading import Thread
 import pandas as pd
 import io
+from .mail_template import *
 
 PREFIX = 'Bearer'
+ss = 0
+ac = 0
+ss_hpo, ac_hpo = 0, 0
 
 def token_required(f):
   @wraps(f)
@@ -553,13 +559,10 @@ def create_patient(current_user):
 @token_required
 def edit_patient(current_user, patient_id):
   db.session.query(HPOTag).filter(HPOTag.patient_id == patient_id).delete()
-  db.session.query(Patient).filter(Patient.id == patient_id).delete()
   db.session.commit()
 
   name = request.json['name']
   diagnosis = request.json['diagnosis']
-  patient_contact = current_user.email
-  user_id = current_user.id
   hpo_tag_ids = request.json['hpo_tag_ids']
   hpo_tag_names = request.json['hpo_tag_names']
   hpo_tag_names_str = ""
@@ -571,17 +574,18 @@ def edit_patient(current_user, patient_id):
       hpo_tag_names_str = hpo_tag_names_str +", "
       hpo_tag_ids_str = hpo_tag_ids_str +", " 
  
-  patient = Patient(name=name, diagnosis=diagnosis, patient_contact=patient_contact,
-                    user_id=user_id, hpo_tag_names=hpo_tag_names_str, hpo_tag_ids=hpo_tag_ids_str, resolve_state=False)
-
-  db.session.add(patient)
-  db.session.commit()
-
-  for i in range(len(hpo_tag_ids)):
-    hpo_tag = HPOTag(hpo_tag_id=hpo_tag_ids[i], hpo_tag_name=hpo_tag_names[i], patient_id=patient.id, resolve_state=False)
-    db.session.add(hpo_tag)
-    db.session.commit()
+  db.session.query(Patient).filter(Patient.id == patient_id).\
+                            update({"name":name, 
+                                    "diagnosis":diagnosis, 
+                                    "hpo_tag_names":hpo_tag_names_str, 
+                                    "hpo_tag_ids":hpo_tag_ids_str})
   
+  for i in range(len(hpo_tag_ids)):
+    hpo_tag = HPOTag(hpo_tag_id=hpo_tag_ids[i], hpo_tag_name=hpo_tag_names[i], patient_id=patient_id, resolve_state=False)
+    db.session.add(hpo_tag)
+    
+  db.session.commit()
+  patient = Patient.query.filter_by(id=patient_id).first()
   return patient_schema.jsonify(patient)
 
 @app.route('/patientprofile', methods=['GET'])
@@ -633,18 +637,35 @@ def query_db(query, args=(), one=False):
 @app.route('/matchmakerhpo/<patient_id>', methods=['GET'])
 @token_required
 def get_matchmaker_hpo(current_user, patient_id):
-  patient_file = open('patient', 'w')
+  sorted_results = []
+  if ss != 0:
+    result = []
+    for patient in ac.obj_set:
+      if patient != patient_id:
+        similarity = ss_hpo.SemSim(patient_id, patient)
+        if similarity is not None:
+          patient_element = {"patient_id": str(patient), 
+                            "similarity": ss_hpo.SemSim(patient_id, patient)}
+          result.append(patient_element)
+    sorted_results = sorted(result, key=lambda k: k['similarity'], reverse=True)
+    print(sorted_results)
+  return jsonify(sorted_results)
+
+def hpoAlgorithm():
+  patient_file = open('./metricFiles/hpopatient', 'w')
+  global ss_hpo, ac_hpo
   for patient in db_engine.execute('select id, hpo_tag_ids from patient'):
     patient_to_write = str(patient)
     patient_to_write = (patient_to_write[1:len(patient_to_write)-1]).replace('\'', '').replace('\'', '')
     patient_file.write(patient_to_write+'\n')
   patient_file.close()
+
   ac_params = {}
   ac_params['filter'] = {}
   ac_params['multiple'] = True
   ac_params['term first'] = False
   ac_params['separator'] = ", "
-  ac = fastsemsim.load_ac(ontology=hpo, source_file='patient', file_type='plain',params=ac_params)
+  ac_hpo = fastsemsim.load_ac(ontology=hpo, source_file='./metricFiles/hpopatient', file_type='plain',params=ac_params)
 
   # Parameters for the SS
   semsim_type='obj'
@@ -652,14 +673,206 @@ def get_matchmaker_hpo(current_user, patient_id):
   mixing_strategy='BMA'
 
   # Initializing semantic similarity
-  ss = fastsemsim.init_semsim(ontology = hpo, ac = ac, semsim_type = semsim_type, semsim_measure = semsim_measure, mixing_strategy = mixing_strategy)
-  result = []
-  for patient in ac.obj_set:
-    if patient != patient_id:
-      patient_element = {"patient_id": str(patient), 
-                        "similarity": ss.SemSim(patient_id, patient)}
-      result.append(patient_element)
-      print(ss.SemSim(patient_id, patient))
-  sorted_results = sorted(result, key=lambda k: k['similarity'], reverse=True)
-  return jsonify(sorted_results)
+  ss_hpo = fastsemsim.init_semsim(ontology = hpo, ac = ac_hpo, semsim_type = semsim_type, semsim_measure = semsim_measure, mixing_strategy = mixing_strategy)
   
+  print("HPO-Runs")
+
+@app.route('/matchmakergo/<patient_id>', methods=['GET'])
+@token_required
+def get_matchmaker_go(current_user, patient_id):
+  sorted_results = []
+  global ss
+  if ss != 0:
+    result = []
+    for patient in ac.obj_set:
+      if patient != patient_id:
+        similarity = ss.SemSim(patient_id, patient)
+        if similarity is not None:
+          patient_element = {"patient_id": str(patient), 
+                            "similarity": similarity}
+          result.append(patient_element)
+    sorted_results = sorted(result, key=lambda k: k['similarity'], reverse=True)
+    print(sorted_results)
+  return jsonify(sorted_results)
+
+def goAlgortihm():
+  patient_file = open('./metricFiles/gopatient', 'w')
+  
+  for patient in db_engine.execute('select id from patient'):
+    patient_id = patient[0]
+    patient_to_write = str(patient_id) 
+    for gene_id in db_engine.execute('select gene_id from patient_gene_ids where patient_id =' + str(patient_id)):
+      patient_to_write = patient_to_write + ", " + gene_id[0]
+    patient_file.write(patient_to_write+'\n')
+
+  patient_file.close()
+  ac_params = {}
+  ac_params['filter'] = {}
+  ac_params['multiple'] = True
+  ac_params['term first'] = False
+  ac_params['separator'] = ", "
+  global ac
+  ac = fastsemsim.load_ac(ontology=go, source_file='./metricFiles/gopatient', file_type='plain',params=ac_params)
+
+  # Parameters for the SS
+  semsim_type='obj'
+  semsim_measure='Cosine'
+  mixing_strategy='BMA'
+
+  # Initializing semantic similarity
+  start_time = time.time()
+  global ss
+  ss = fastsemsim.init_semsim(ontology = go, ac = ac, semsim_type = semsim_type, semsim_measure = semsim_measure, mixing_strategy = mixing_strategy)
+  
+  print("GO Runs")
+
+def send_async_email(msg):
+    with app.app_context():
+        mail.send(msg)
+
+def notificationChecker():
+  patient_ids = list(ac.obj_set)
+  
+  for i in range(0, len(patient_ids) - 1):
+    for j in range(i+1, len(patient_ids)):
+      pair_1 = str(patient_ids[i])+ "." + str(patient_ids[j])
+      pair_2 = str(patient_ids[j])+ "." + str(patient_ids[i])
+
+      pair = db.session.query(Similarity).filter(or_(Similarity.patient_pair==pair_1,
+                                                    Similarity.patient_pair==pair_2)).first()
+
+      hpo_sim = ss_hpo.SemSim(patient_ids[i], patient_ids[j])
+      go_sim = ss.SemSim(patient_ids[i], patient_ids[j])
+      if not hpo_sim:
+        hpo_sim = 0
+      if not go_sim:
+        go_sim = 0
+      
+      if (not pair):
+        print("new",pair)
+        similarity = Similarity(patient_pair= pair_1, hpo_similarity=hpo_sim, go_similarity= go_sim)
+        sendEmail((patient_ids[i], patient_ids[j]), hpo_sim, go_sim)
+        db.session.add(similarity)
+        db.session.commit() 
+  
+      else:
+        if(pair.hpo_similarity != hpo_sim or pair.go_similarity != go_sim):  
+          print("old",pair)                
+          db.session.query(Similarity).filter(or_(Similarity.patient_pair==str(patient_ids[i])+ "." + str(patient_ids[j]),
+                                                    Similarity.patient_pair==str(patient_ids[j])+ "." + str(patient_ids[i]))).\
+                        update({"hpo_similarity":hpo_sim, 
+                                "go_similarity":go_sim })
+          sendEmail((patient_ids[i], patient_ids[j]), hpo_sim, go_sim)
+          db.session.commit() 
+       
+        
+def sendEmail(patient_ids, hpo_sim, go_sim):
+  mail_info = []
+  for patient_id in patient_ids:
+    for user_id in db_engine.execute('select user_id from patient where id='+str(patient_id)):
+      
+      user = db.session.query(User).filter(User.id == int(user_id[0]))
+      for row in user:
+        if(row.gn_thrs <= go_sim and row.ph_thrs <= hpo_sim):
+          mail_info.append([patient_id, row.email, True])
+        else:
+          mail_info.append([patient_id, row.email, False])
+  
+  if mail_info[0][2]:
+    msg = Message('Similarity Notification for '+ mail_info[0][0], sender = 'projectlibra.similarity@gmail.com', recipients = [mail_info[0][1]])
+    msg.html = get_mail_template(mail_info[0][0], mail_info[1][0], mail_info[1][1], 100*go_sim, 100*hpo_sim)
+    thr = Thread(target=send_async_email, args=[msg])
+    thr.start()
+  if mail_info[1][2]:
+    msg = Message('Similarity Notification for '+ mail_info[1][0], sender = 'projectlibra.similarity@gmail.com', recipients = [mail_info[1][1]])
+    msg.html = get_mail_template(mail_info[1][0], mail_info[0][0], mail_info[0][1], 100*go_sim, 100*hpo_sim)
+    thr = Thread(target=send_async_email, args=[msg])
+    thr.start()
+
+def matchmakerAlgorithms():
+  goAlgortihm()
+  hpoAlgorithm()
+  notificationChecker()
+
+
+"""
+def sendNotifications():
+  patient_ids = list(ac.obj_set)
+
+  for i in range(0, len(patient_ids) - 1):
+    for j in range(i+1, len(patient_ids)):
+      pair_1 = str(patient_ids[i])+ "." + str(patient_ids[j])
+      found_pair_1 = db.session.query(GoSimilarity).filter_by(patient_pair=pair_1).first()
+      pair_2 = str(patient_ids[j])+ "." + str(patient_ids[i])
+      found_pair_2 = db.session.query(GoSimilarity).filter_by(patient_pair=pair_2).first()
+
+      if not found_pair_1 and not found_pair_2:
+        similarity = ss.SemSim(patient_ids[i], patient_ids[j])
+        if similarity is not None:
+          print(pair_1)
+          goSimilarity = GoSimilarity(patient_pair=pair_1, similarity = similarity)
+          patients = []
+
+          for info in db_engine.execute('select patient_contact, name from patient where id='+str(patient_ids[i])+' or id='+str(patient_ids[j])):
+            for key, value in info.items():
+              patients.append(value)
+          #recipient should be patient[0] if there is valid emails in the system
+          msg = Message('Similarity Notification for '+ patients[1], sender = 'projectlibra.similarity@gmail.com', recipients = ['halil.sahiner@ug.bilkent.edu.tr'])
+          #msg.body = "Your patient  "+ patients[1] + " is matched with Name: " + patients[3] + " with the similarity: "+ str(similarity) + " Contact: " + patients[2]
+          msg.html = get_mail_template(patients[1], patients[3], patients[2], 100*similarity, 100*similarity)
+          thr = Thread(target=send_async_email, args=[msg])
+          thr.start()
+          
+          #recipient should be patient[2] if there is valid emails in the system
+          msg = Message('Gene Ontology Similarity Notification for '+ patients[3], sender = 'projectlibra.similarity@gmail.com', recipients = ['sami.aydin@ug.bilkent.edu.tr'])
+          msg.body = "Your patient  "+ patients[3] + " is matched with Name: " + patients[1] + " with the similarity: "+ str(similarity) + " Contact: " + patients[0]
+          
+          thr = Thread(target=send_async_email, args=[msg])
+          thr.start()
+          
+          db.session.add(goSimilarity)
+
+  db.session.commit() 
+
+
+
+
+   
+def sendNotificationsHpo():
+  patient_ids = list(ac_hpo.obj_set)
+
+  for i in range(0, len(patient_ids) - 1):
+    for j in range(i+1, len(patient_ids)):
+      pair_1 = str(patient_ids[i])+ "." + str(patient_ids[j])
+      found_pair_1 = db.session.query(HpoSimilarity).filter_by(patient_pair=pair_1).first()
+      pair_2 = str(patient_ids[j])+ "." + str(patient_ids[i])
+      found_pair_2 = db.session.query(HpoSimilarity).filter_by(patient_pair=pair_2).first()
+
+      if not found_pair_1 and not found_pair_2:
+        similarity = ss_hpo.SemSim(patient_ids[i], patient_ids[j])
+        if similarity is not None:
+          print(pair_1)
+          hpoSimilarity = HpoSimilarity(patient_pair=pair_1, similarity = similarity)
+          patients = []
+
+          for info in db_engine.execute('select patient_contact, name from patient where id='+str(patient_ids[i])+' or id='+str(patient_ids[j])):
+            for key, value in info.items():
+              patients.append(value)
+          #recipient should be patient[0] if there is valid emails in the system
+          msg = Message('HPO Similarity Notification for '+ patients[1], sender = 'projectlibra.similarity@gmail.com', recipients = ['halil.sahiner@ug.bilkent.edu.tr'])
+          msg.body = "Your patient  "+ patients[1] + " is matched with Name: " + patients[3] + " with the similarity: "+ str(similarity) + " Contact: " + patients[2]
+          
+          thr = Thread(target=send_async_email, args=[msg])
+          thr.start()
+
+          #recipient should be patient[2] if there is valid emails in the system
+          msg = Message('HPO Similarity Notification for '+ patients[3], sender = 'projectlibra.similarity@gmail.com', recipients = ['sami.aydin@ug.bilkent.edu.tr'])
+          msg.body = "Your patient  "+ patients[3] + " is matched with Name: " + patients[1] + " with the similarity: "+ str(similarity) + " Contact: " + patients[0]
+          
+          thr = Thread(target=send_async_email, args=[msg])
+          thr.start()
+          
+          db.session.add(hpoSimilarity)
+
+  db.session.commit() 
+"""
