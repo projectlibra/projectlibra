@@ -37,7 +37,7 @@ class Sider extends React.Component {
                 <Menu.Item key="1">Summary</Menu.Item>
                 <Menu.Item key="2">Upload Files</Menu.Item>
                 <Menu.Item key="3">Notes</Menu.Item>
-            
+                <Menu.Item key="4">Patients</Menu.Item>
             
             </SubMenu>
         </Menu>

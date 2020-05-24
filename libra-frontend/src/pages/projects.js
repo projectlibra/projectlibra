@@ -21,7 +21,8 @@ class Projects extends Component{
     super(props);
     this.state = {
       open: false,
-      projects: []  
+      projects: [],
+      disease: ""
     }
   }
 
@@ -66,7 +67,8 @@ class Projects extends Component{
   submitDialog = () => {
     axios.post(host + '/project',{
       name: this.state.name,
-      desc: this.state.desc
+      desc: this.state.desc,
+      disease: this.state.disease
     },{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
       .then(res => {
         console.log("Here:");
@@ -95,7 +97,7 @@ class Projects extends Component{
       projects.map(project => {
         return (
           <div key={project.id}>
-            <Project name={project.name} desc={project.desc} id={project.id} project={project}/>
+            <Project name={project.name} desc={project.desc} disease={project.disease} id={project.id} project={project}/>
           </div>
         )
       })
@@ -135,6 +137,13 @@ class Projects extends Component{
               label="Project Description"
               fullWidth
               multiline
+              onChange={this.handleChange}
+            />
+            <TextField
+              margin="dense"
+              id="disease"
+              label="Associated Disease (optional)"
+              fullWidth
               onChange={this.handleChange}
             />
           </DialogContent>
