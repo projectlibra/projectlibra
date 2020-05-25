@@ -35,11 +35,10 @@ class PatientDetail extends Component{
         super(props);
         this.state = {
             patient: [],
-            go_names: {},
             hpo_tags:[],
             hpo_tag_names: [],
             phenotype_list : [],
-            genotype_list : [],
+            genotype_list : []
             // Data that will be rendered in the autocomplete
             // As it is asynchronous, it is initially empty
             
@@ -57,8 +56,6 @@ class PatientDetail extends Component{
     fetchPatient = (id) => {
         axios.get(host + `/patientprofile/${id}`,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
         .then(res => {
-            console.log(res.data)
-            
             const hpo_tags = res.data.hpo_tag_names === null ? []: res.data.hpo_tag_names.split(',');
             const hpo_tag_ids = res.data.hpo_tag_ids === null ? []: res.data.hpo_tag_ids.split(',');
             var tmp_arr = this.state.phenotype_list
@@ -68,7 +65,6 @@ class PatientDetail extends Component{
                     <ListItemText  primary={hpo_tags[i]} />
                 </ListItemLink>	);
             }
-            console.log(this.state.phenotype_list)
             this.setState({
                 phenotype_list : tmp_arr,
                 patient: res.data
@@ -88,17 +84,8 @@ class PatientDetail extends Component{
     fetchGONames = (patient_id) => {
         axios.get(host + `/getgonames/${patient_id}`,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
         .then(res => {
-            var tmp_arr = this.state.genotype_list;
-            res.data.forEach(element => {
-                var link = "https://www.ncbi.nlm.nih.gov/gene/?term=" + element.gene_name;
-                tmp_arr.push(<ListItemLink href={link} >
-                    <ListItemText  primary={element.gene_name} />
-                </ListItemLink>);
-            
-            });
-            console.log(tmp_arr)
             this.setState({
-                genotype_list : tmp_arr
+                genotype_list : res.data
             })
         })
         .catch(err =>  {
@@ -130,10 +117,14 @@ class PatientDetail extends Component{
                 {patient.diagnosis}
             </p>
             <List  component="nav" >
-            <h2>Phenotypes</h2>
+            <h2>Disease Related Phenotypes</h2>
             {phenotype_list.length ? phenotype_list : <h1>Loading Phenotypes</h1>}
-            <h2>Genotypes</h2>
-            {genotype_list.length ? genotype_list : <h1>Loading Genotypes</h1>}
+            <h2>Affected Gene Names</h2>
+            {genotype_list.map(function(element, idx){
+                return (<ListItemLink key={idx} href={"https://www.ncbi.nlm.nih.gov/gene/?term=" + element.gene_name} >
+                            <ListItemText  key={idx} primary={element.gene_name} />
+                        </ListItemLink>)
+            })}
             </List >
             </Card>
             

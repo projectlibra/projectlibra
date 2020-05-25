@@ -169,6 +169,13 @@ class PatientGeneName(db.Model):
   patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'))
   gene_name = db.Column(db.Text(), db.ForeignKey('gene_name.name'))
 
+class PatientGeneNameSchema(ma.Schema):
+  class Meta:
+    fields = ('patient_id', 'gene_name')
+
+PatientGeneName_schema = PatientGeneNameSchema()
+PatientGeneNames_schema = PatientGeneNameSchema(many=True)
+
 class PatientGeneID(db.Model):
   __tablename__ = "patient_gene_ids"
   id = db.Column(db.Integer, primary_key=True)
@@ -180,17 +187,3 @@ class PatientProject(db.Model):
   patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), primary_key=True)
   project_id = db.Column(db.Integer, db.ForeignKey('project.id'), primary_key=True)
   has_disease = db.Column(db.Boolean)
-
-"""
-class Gogene(db.Model):
-  id = db.Column(db.Integer, primary_key=True)
-  gogene_name = db.Column(db.String(50))
-  gogene_id = db.Column(db.String(50))
-
-class GogeneSchema(ma.Schema):
-  class Meta:
-    fields = ('id','gogene_name','gogene_id')
-
-gogene_schema = gogeneSchema()
-gogenes_schema = gogeneSchema(many=True)
-"""

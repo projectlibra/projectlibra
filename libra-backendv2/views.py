@@ -617,6 +617,12 @@ def get_hpo_tags(current_user, patient_id):
   result = HPOs_schema.dump(hpo_tags)
   return jsonify(result)
 
+@app.route('/getgonames/<patient_id>', methods=['GET'])
+@token_required
+def get_go_names(current_user, patient_id):
+  gene_names = PatientGeneName.query.filter(PatientGeneName.patient_id == patient_id)
+  result = PatientGeneNames_schema.dump(gene_names)
+  return jsonify(result)
 
 @app.route('/matchmakerresults/<cur_hpo_id>', methods=['GET'])
 @token_required
