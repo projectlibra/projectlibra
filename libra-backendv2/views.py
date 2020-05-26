@@ -596,10 +596,50 @@ def get_vcf_table_with_filters(current_user, id):
 
   if(len(query) > 0):
     query = query[3:]
-    execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND ('+ query +') LIMIT 1000'
+    if (frequencyInput['filterDbsnp'] == "yes"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND dominant=true AND ('+ query +') LIMIT 1000'
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND recessive=true AND ('+ query +') LIMIT 1000'
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND ('+ query +') LIMIT 1000'
+    elif (frequencyInput['filterDbsnp'] == "no"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND dominant=true AND ('+ query +') LIMIT 1000'
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND recessive=true AND ('+ query +') LIMIT 1000'
+      else:
+         execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND ('+ query +') LIMIT 1000'       
+    else:
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND dominant=true AND ('+ query +') LIMIT 1000'
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND recessive=true AND ('+ query +') LIMIT 1000'
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND ('+ query +') LIMIT 1000'   
   else:
-    execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' LIMIT 1000'
-
+    if (frequencyInput['filterDbsnp'] == "yes"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND dominant=true LIMIT 1000'
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND recessive=true LIMIT 1000'
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL LIMIT 1000'        
+    elif (frequencyInput['filterDbsnp'] == "no"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND dominant=true LIMIT 1000'
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND recessive=true LIMIT 1000'
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL LIMIT 1000'       
+    else:
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND dominant=true LIMIT 1000'
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND recessive=true LIMIT 1000'
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' LIMIT 1000'
+        
   print(execquery)
 
   result = db.session.execute(execquery)
@@ -621,7 +661,7 @@ def get_vcf_table_with_filters(current_user, id):
       or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "yes" and ("VT" in vcf[12]))
       or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "no" and ("VT" not in vcf[12]))
       )
-      and ((scenarioInput == "none")
+      and ((scenarioInput == "none" or scenarioInput == "")
         or (scenarioInput == "dominant" and vcf[20] == True)
         or ((scenarioInput == "recessive" and vcf[21] == True)
           )
@@ -694,12 +734,57 @@ def get_vcf_table_with_filters_index(current_user, id, index):
   for type in impactInput['lowImpactArray']:
     query = query + ' OR annotation=\'' + type + '\''
 
+  #if(len(query) > 0):
+  #  query = query[3:]
+  #  execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+  #else:
+  #  execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+
   if(len(query) > 0):
     query = query[3:]
-    execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+    if (frequencyInput['filterDbsnp'] == "yes"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND dominant=true AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND recessive=true AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+    elif (frequencyInput['filterDbsnp'] == "no"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND dominant=true AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND recessive=true AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      else:
+         execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+    else:
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND dominant=true AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND recessive=true AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
   else:
-    execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
-
+    if (frequencyInput['filterDbsnp'] == "yes"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND dominant=true OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND recessive=true OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+    elif (frequencyInput['filterDbsnp'] == "no"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND dominant=true OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND recessive=true OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+    else:
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND dominant=true OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND recessive=true OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
   print(execquery)
 
   result = db.session.execute(execquery)
@@ -719,7 +804,7 @@ def get_vcf_table_with_filters_index(current_user, id, index):
       or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "yes" and ("VT" in vcf[12]))
       or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "no" and ("VT" not in vcf[12]))
       )
-      and ((scenarioInput == "none")
+      and ((scenarioInput == "none" or scenarioInput == "")
         or (scenarioInput == "dominant" and vcf[20] == True)
         or ((scenarioInput == "recessive" and vcf[21] == True)
           )

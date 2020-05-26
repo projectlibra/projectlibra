@@ -210,7 +210,8 @@ class Projects extends Component{
             columns: res.data.columns,
             table_data: res.data.table_data,
             pie_data: res.data.pie_data,
-            pie1k_data: res.data.pie1k_data
+            pie1k_data: res.data.pie1k_data,
+            load_index: 0
         }, () => {
             console.log("Finished")
             console.log(res.data.table_data)
