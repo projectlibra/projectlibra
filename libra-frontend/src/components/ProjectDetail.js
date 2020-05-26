@@ -65,7 +65,8 @@ class Projects extends Component{
       scenarioInput: "none", 
       frequencyInput: {filterDbsnp: "any", filter1k: "any", filter1kfrequency: "1"}, 
       impactInput: {highImpactArray: [], medImpactArray: [], lowImpactArray: [], modifierImpactArray: []},
-      pathogenicityInput: {polyphenArray: [], siftArray: [], polyphenScore: "0", siftScore: "1"}
+      pathogenicityInput: {polyphenArray: [], siftArray: [], polyphenScore: "0", siftScore: "1"},
+      projectName: "ALS2020 - Research"
     }
     this.onInputChange = this.onInputChange.bind(this);
     this.test = this.test.bind(this);
@@ -375,8 +376,6 @@ class Projects extends Component{
       {name: "ref"},
       {name: "alt"},
       {name: "qual"},
-      {name: "info"},
-      {name: "alelle"},
       {name: "annotation"},
       {name: "impact"},
       {name: "gene_name"},
@@ -534,6 +533,11 @@ class Projects extends Component{
     const vcfTable = columns.length  ? (
           <div>
           <div id="wrapper">
+          <table class="columns">
+      <tr>
+        <td>
+        
+      
           <Chart
           width={'500px'}
           height={'300px'}
@@ -547,6 +551,8 @@ class Projects extends Component{
           chartEvents={this.chartEvents}
           
         />
+        </td>
+        <td>
         <Chart
           width={'500px'}
           height={'300px'}
@@ -560,6 +566,9 @@ class Projects extends Component{
           chartEvents={this.chartEvents}
           
         />
+        </td>
+        </tr>
+    </table>
         <br />
         </div>
         <LoadingOverlay

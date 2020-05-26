@@ -472,8 +472,8 @@ def get_vcf_table(current_user, id):
     # row_data.append(vcf[0].filter)
     if "VT" in vcf[0].info:
       cnt_1k+=1
-    row_data.append(vcf[0].info)
-    row_data.append(vcf[0].alelle)
+    # row_data.append(vcf[0].info)
+    # row_data.append(vcf[0].alelle)
     row_data.append(vcf[0].annotation)
     row_data.append(vcf[0].annotation_impact)
     row_data.append(vcf[0].gene_name)
@@ -551,8 +551,8 @@ def get_vcf_table_index(current_user, id, index):
     # row_data.append(vcf[0].filter)
     if "VT" in vcf[0].info:
       cnt_1k+=1
-    row_data.append(vcf[0].info)
-    row_data.append(vcf[0].alelle)
+    # row_data.append(vcf[0].info)
+    # row_data.append(vcf[0].alelle)
     row_data.append(vcf[0].annotation)
     row_data.append(vcf[0].annotation_impact)
     row_data.append(vcf[0].gene_name)
@@ -684,8 +684,8 @@ def get_vcf_table_with_filters(current_user, id):
       # row_data.append(vcf[11]) #filter
       if "VT" in vcf[12]: #info
         cnt_1k+=1
-      row_data.append(vcf[12]) #info 
-      row_data.append(vcf[13]) #allele
+      # row_data.append(vcf[12]) #info 
+      # row_data.append(vcf[13]) #allele
       row_data.append(vcf[14]) #annotation
       row_data.append(vcf[15]) #annotation_impact
       row_data.append(vcf[16]) #gene_name
@@ -826,8 +826,8 @@ def get_vcf_table_with_filters_index(current_user, id, index):
       # row_data.append(vcf[11]) #filter
       if "VT" in vcf[12]: #info
         cnt_1k+=1
-      row_data.append(vcf[12]) #info 
-      row_data.append(vcf[13]) #allele
+      # row_data.append(vcf[12]) #info 
+      # row_data.append(vcf[13]) #allele
       row_data.append(vcf[14]) #annotation
       row_data.append(vcf[15]) #annotation_impact
       row_data.append(vcf[16]) #gene_name
