@@ -73,6 +73,8 @@ class Vcf(db.Model):
   gene_id = db.Column(db.Text())
   feature_type = db.Column(db.Text())
   feature_id = db.Column(db.Text())
+  dominant = db.Column(db.Boolean)
+  recessive = db.Column(db.Boolean)
 
 class VcfSchema(ma.Schema):
   class Meta:
