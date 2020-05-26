@@ -374,7 +374,6 @@ class Projects extends Component{
       {name: "ref"},
       {name: "alt"},
       {name: "qual"},
-      {name: "filter"},
       {name: "info"},
       {name: "alelle"},
       {name: "annotation"},

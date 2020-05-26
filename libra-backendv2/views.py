@@ -469,7 +469,7 @@ def get_vcf_table(current_user, id):
     row_data.append(vcf[0].ref)
     row_data.append(vcf[0].alt)
     row_data.append(vcf[0].qual)
-    row_data.append(vcf[0].filter)
+    # row_data.append(vcf[0].filter)
     if "VT" in vcf[0].info:
       cnt_1k+=1
     row_data.append(vcf[0].info)
@@ -548,7 +548,7 @@ def get_vcf_table_index(current_user, id, index):
     row_data.append(vcf[0].ref)
     row_data.append(vcf[0].alt)
     row_data.append(vcf[0].qual)
-    row_data.append(vcf[0].filter)
+    # row_data.append(vcf[0].filter)
     if "VT" in vcf[0].info:
       cnt_1k+=1
     row_data.append(vcf[0].info)
@@ -641,7 +641,7 @@ def get_vcf_table_with_filters(current_user, id):
       row_data.append(vcf[8]) #ref
       row_data.append(vcf[9]) #alt
       row_data.append(vcf[10]) #qual
-      row_data.append(vcf[11]) #filter
+      # row_data.append(vcf[11]) #filter
       if "VT" in vcf[12]: #info
         cnt_1k+=1
       row_data.append(vcf[12]) #info 
@@ -738,7 +738,7 @@ def get_vcf_table_with_filters_index(current_user, id, index):
       row_data.append(vcf[8]) #ref
       row_data.append(vcf[9]) #alt
       row_data.append(vcf[10]) #qual
-      row_data.append(vcf[11]) #filter
+      # row_data.append(vcf[11]) #filter
       if "VT" in vcf[12]: #info
         cnt_1k+=1
       row_data.append(vcf[12]) #info 
