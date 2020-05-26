@@ -225,7 +225,7 @@ class Projects extends Component{
         }
       })
   }
-  
+
   fetchPatients = () => {
     axios.get(`${host}/patientprofile` ,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
       .then(res => {
@@ -499,7 +499,7 @@ class Projects extends Component{
         Select a patient: 
       </Dropdown.Button>
       <p>Patient: {this.state.patient_name} will be added to the project.</p>
-      <p>Does {this.state.patient_name} has the disease? {project.disease} <Checkbox color="blue" value="disease" onClick={this.handleDiseaseClick} /></p>
+      <p>Does {this.state.patient_name} have the disease? {project.disease} <Checkbox color="blue" value="disease" onClick={this.handleDiseaseClick} /></p>
       <Upload project_id={project_id} patient_id={selected_patient} has_disease={this.state.hasDisease} />
     </div>
     }
@@ -518,7 +518,7 @@ class Projects extends Component{
           Select a patient: 
         </Dropdown.Button>
         <p>Patient: {this.state.patient_name} will be added to the project.</p>
-        <p>{this.state.patient_name} has the disease: {project.disease}</p>
+        <p>{this.state.patient_name} have the disease: {project.disease}</p>
         <Checkbox value="disease" />
         <Upload project_id={project_id} patient_id={selected_patient} />
       </div>
@@ -531,13 +531,7 @@ class Projects extends Component{
 
     const vcfTable = columns.length  ? (
           <div>
-          <Container component="main" maxWidth="xs">
-                    <FilterPanel filterType="frequency" onInputChange={this.onInputChange}/>
-                    <FilterPanel filterType="impact" onInputChange={this.onInputChange}/>
-                    <Grid item xs>
-                        <Button onClick={() => {this.fetchFiles(project_id); this.fetchVCFTableFilters(project_id);}}>Apply Filter</Button>
-                    </Grid>                    
-                </Container>
+          <div id="wrapper">
           <Chart
           width={'500px'}
           height={'300px'}
@@ -549,7 +543,7 @@ class Projects extends Component{
           }}
           rootProps={{ 'data-testid': '1' }}
           chartEvents={this.chartEvents}
-          style = {{float: 'left'}}
+          
         />
         <Chart
           width={'500px'}
@@ -562,14 +556,24 @@ class Projects extends Component{
           }}
           rootProps={{ 'data-testid': '1' }}
           chartEvents={this.chartEvents}
-          style = {{float: 'right'}}
+          
         />
+        <br />
+        </div>
         <LoadingOverlay
           active={this.state.isActive}
           spinner
           text='Loading more variants...'
           >
-          <div style={{display: 'table', tableLayout:'fixed', width:'100%'}}>
+          <div style={{display: 'table', tableLayout:'fixed', width:'25%', float: 'right'}}>
+                    <FilterPanel filterType="frequency" onInputChange={this.onInputChange}/>
+                    <FilterPanel filterType="impact" onInputChange={this.onInputChange}/>
+                    <Grid item xs>
+                        <Button onClick={() => {this.fetchFiles(project_id); this.fetchVCFTableFilters(project_id);}}>Apply Filter</Button>
+                    </Grid>                    
+                </div>
+          <div style={{display: 'table', tableLayout:'fixed', width:'73%', float: 'left'}}>
+          
                     <MUIDataTable
                     title={"VCF Table"}
                     data={table_data}
@@ -620,7 +624,7 @@ class Projects extends Component{
         <Sider updateParent={this.updateState} />
         <div style ={{paddingLeft: "15px"}}>
             <Divider orientation="left" style={{ color: '#333', fontWeight: 'bold', fontSize: '20px' }}>
-            Autism Project
+            ALS2020 - Research
             <Button style={{marginLeft: "10px"}} onClick={() => {this.fetchFiles(project_id); this.fetchVCFTable(project_id);}}>Refresh</Button>
             </Divider>
             
