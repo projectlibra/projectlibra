@@ -203,7 +203,7 @@ class Projects extends Component{
       .then(res => {
         console.log("Here:");
         console.log(res.data);
-        
+
         this.setState({
             columns: res.data.columns,
             table_data: res.data.table_data,
@@ -214,6 +214,18 @@ class Projects extends Component{
             console.log(res.data.table_data)
         })
 
+      })
+      .catch(err =>  {
+        if(err.response) {
+          console.log(axios.defaults.headers.common)
+          console.log(err.response.data)
+          if(err.response.status == 401) {
+            this.props.history.push('/');
+          }
+        }
+      })
+  }
+  
   fetchPatients = () => {
     axios.get(`${host}/patientprofile` ,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
       .then(res => {
