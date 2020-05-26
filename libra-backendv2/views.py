@@ -131,6 +131,7 @@ def add_project(current_user):
 def test_filter(current_user):
   impactInput = request.json['impactInput']
   frequencyInput = request.json['frequencyInput']
+  scenarioInput = request.json['scenarioInput']
   if(len(impactInput['highImpactArray']) == 0):
     print("high impact is empty")
   else:
@@ -147,6 +148,7 @@ def test_filter(current_user):
   
   print(impactInput)
   print(frequencyInput)
+  print(scenarioInput)
 
   query = ''
   for type in impactInput['highImpactArray']:
@@ -252,7 +254,7 @@ def fileUpload(current_user):
           np = Patient(name=sample.sample, user_id=current_user.id)
           db.session.add(np)
           db.session.commit()
-          db.session.add(PatientProject(patient_id=np.id, project_id=project_id, has_disease=False))
+          db.session.add(PatientProject(patient_id=np.id, project_id=project_id, has_disease=True))
           db.session.commit()
           np_id_list.append(np.id)
         break
@@ -272,7 +274,18 @@ def fileUpload(current_user):
             print("Elapsed time for db flush: ", end2 - start2)
           
           anno = record.INFO['ANN'][0].split('|')
-          new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=np_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6])
+
+          # for now assuming every sample has the disease
+          dom = True
+          rec = True
+          for sample in record.samples:
+            if sample['GT'] != "1/1":
+              rec = False
+              if sample['GT'] != "0/1":
+                dom = False
+                break
+
+          new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=np_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6], dominant=dom, recessive=rec)
           db.session.add(new_vcf)
           #db.session.commit()
 
@@ -333,7 +346,7 @@ def fileUpload(current_user):
           print("Elapsed time for db flush: ", end2 - start2)
         
         anno = record.INFO['ANN'][0].split('|')
-        new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=patient_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6])
+        new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=patient_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6], dominant=False, recessive=False)
         db.session.add(new_vcf)
         #db.session.commit()
 
@@ -572,6 +585,7 @@ def get_vcf_table_with_filters(current_user, id):
   
   impactInput = request.json['impactInput']
   frequencyInput = request.json['frequencyInput']
+  scenarioInput = request.json['scenarioInput']
   query = ''
   for type in impactInput['highImpactArray']:
     query = query + ' OR annotation=\'' + type + '\''
@@ -594,40 +608,50 @@ def get_vcf_table_with_filters(current_user, id):
   cnt_dbsnp = 0
   cnt_all = 0
   cnt_1k = 0
+  print("scenario input is: ")
+  print(scenarioInput)
   for vcf in result:
-    if((frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "any") 
-      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "yes" and (vcf[6] is not None) and ("VT" in vcf[11]))
-      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "no" and (vcf[6] is None) and ("VT" not in vcf[11]))
-      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "no" and (vcf[6] is not None) and ("VT" not in vcf[11]))
-      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "yes" and (vcf[6] is None) and ("VT" in vcf[11]))
-      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "any" and (vcf[6] is not None))
-      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "any" and (vcf[6] is None))
-      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "yes" and ("VT" in vcf[11]))
-      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "no" and ("VT" not in vcf[11]))
-    ):
+    if(((frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "any") 
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "yes" and (vcf[7] is not None) and ("VT" in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "no" and (vcf[7] is None) and ("VT" not in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "no" and (vcf[7] is not None) and ("VT" not in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "yes" and (vcf[7] is None) and ("VT" in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "any" and (vcf[7] is not None))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "any" and (vcf[7] is None))
+      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "yes" and ("VT" in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "no" and ("VT" not in vcf[12]))
+      )
+      and ((scenarioInput == "none")
+        or (scenarioInput == "dominant" and vcf[20] == True)
+        or ((scenarioInput == "recessive" and vcf[21] == True)
+          )
+        )
+      ):
       row_data = []
-      row_data.append(vcf[4]) #chrom
-      row_data.append(vcf[5]) #pos
+      row_data.append(vcf[5]) #chrom
+      row_data.append(vcf[6]) #pos
       cnt_all+=1
-      if vcf[6] is None:
-        row_data.append(vcf[6]) #variant_id
+      if vcf[7] is None:
+        row_data.append(vcf[7]) #variant_id
       else:
         cnt_dbsnp +=1
-        row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[6] + '" target="_blank">' + vcf[6] +  '</a>')
-      row_data.append(vcf[7]) #ref
-      row_data.append(vcf[8]) #alt
-      row_data.append(vcf[9]) #qual
-      row_data.append(vcf[10]) #filter
-      if "VT" in vcf[11]: #info
+        #row_data.append('<a href={`https://www.ncbi.nlm.nih.gov/snp/$'+vcf[7]+'`} target="_blank">'+vcf[7]+'</a>')
+        row_data.append(vcf[7])
+        #row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[7] + '" target="_blank">' + vcf[7] +  '</a>')
+      row_data.append(vcf[8]) #ref
+      row_data.append(vcf[9]) #alt
+      row_data.append(vcf[10]) #qual
+      row_data.append(vcf[11]) #filter
+      if "VT" in vcf[12]: #info
         cnt_1k+=1
-      row_data.append(vcf[11]) #info 
-      row_data.append(vcf[12]) #allele
-      row_data.append(vcf[13]) #annotation
-      row_data.append(vcf[14]) #annotation_impact
-      row_data.append(vcf[15]) #gene_name
-      row_data.append(vcf[16]) #gene_id
-      row_data.append(vcf[17]) #feature_type
-      row_data.append(vcf[18]) #feature_id
+      row_data.append(vcf[12]) #info 
+      row_data.append(vcf[13]) #allele
+      row_data.append(vcf[14]) #annotation
+      row_data.append(vcf[15]) #annotation_impact
+      row_data.append(vcf[16]) #gene_name
+      row_data.append(vcf[17]) #gene_id
+      row_data.append(vcf[18]) #feature_type
+      row_data.append(vcf[19]) #feature_id
 
       table_data.append(row_data)
 
@@ -661,6 +685,7 @@ def get_vcf_table_with_filters_index(current_user, id, index):
 
   impactInput = request.json['impactInput']
   frequencyInput = request.json['frequencyInput']
+  scenarioInput = request.json['scenarioInput']
   query = ''
   for type in impactInput['highImpactArray']:
     query = query + ' OR annotation=\'' + type + '\''
@@ -684,39 +709,46 @@ def get_vcf_table_with_filters_index(current_user, id, index):
   cnt_all = 0
   cnt_1k = 0
   for vcf in result:
-    if((frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "any") 
-      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "yes" and (vcf[6] is not None) and ("VT" in vcf[11]))
-      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "no" and (vcf[6] is None) and ("VT" not in vcf[11]))
-      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "no" and (vcf[6] is not None) and ("VT" not in vcf[11]))
-      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "yes" and (vcf[6] is None) and ("VT" in vcf[11]))
-      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "any" and (vcf[6] is not None))
-      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "any" and (vcf[6] is None))
-      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "yes" and ("VT" in vcf[11]))
-      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "no" and ("VT" not in vcf[11]))
-    ):
+    if(((frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "any") 
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "yes" and (vcf[7] is not None) and ("VT" in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "no" and (vcf[7] is None) and ("VT" not in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "no" and (vcf[7] is not None) and ("VT" not in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "yes" and (vcf[7] is None) and ("VT" in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "any" and (vcf[7] is not None))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "any" and (vcf[7] is None))
+      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "yes" and ("VT" in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "no" and ("VT" not in vcf[12]))
+      )
+      and ((scenarioInput == "none")
+        or (scenarioInput == "dominant" and vcf[20] == True)
+        or ((scenarioInput == "recessive" and vcf[21] == True)
+          )
+        )
+      ):
       row_data = []
-      row_data.append(vcf[4]) #chrom
-      row_data.append(vcf[5]) #pos
+      row_data.append(vcf[5]) #chrom
+      row_data.append(vcf[6]) #pos
       cnt_all+=1
-      if vcf[6] is None:
-        row_data.append(vcf[6]) #variant_id
+      if vcf[7] is None:
+        row_data.append(vcf[7]) #variant_id
       else:
         cnt_dbsnp +=1
-        row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[6] + '" target="_blank">' + vcf[6] +  '</a>')
-      row_data.append(vcf[7]) #ref
-      row_data.append(vcf[8]) #alt
-      row_data.append(vcf[9]) #qual
-      row_data.append(vcf[10]) #filter
-      if "VT" in vcf[11]: #info
+        row_data.append(vcf[7])
+        #row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[7] + '" target="_blank">' + vcf[7] +  '</a>')
+      row_data.append(vcf[8]) #ref
+      row_data.append(vcf[9]) #alt
+      row_data.append(vcf[10]) #qual
+      row_data.append(vcf[11]) #filter
+      if "VT" in vcf[12]: #info
         cnt_1k+=1
-      row_data.append(vcf[11]) #info 
-      row_data.append(vcf[12]) #allele
-      row_data.append(vcf[13]) #annotation
-      row_data.append(vcf[14]) #annotation_impact
-      row_data.append(vcf[15]) #gene_name
-      row_data.append(vcf[16]) #gene_id
-      row_data.append(vcf[17]) #feature_type
-      row_data.append(vcf[18]) #feature_id
+      row_data.append(vcf[12]) #info 
+      row_data.append(vcf[13]) #allele
+      row_data.append(vcf[14]) #annotation
+      row_data.append(vcf[15]) #annotation_impact
+      row_data.append(vcf[16]) #gene_name
+      row_data.append(vcf[17]) #gene_id
+      row_data.append(vcf[18]) #feature_type
+      row_data.append(vcf[19]) #feature_id
 
       table_data.append(row_data)
 
