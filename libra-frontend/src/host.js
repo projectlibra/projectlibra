@@ -1,3 +1,3 @@
-var host = "http://localhost:5000";
+var host = "*";
 
 export default host 

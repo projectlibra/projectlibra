@@ -5,14 +5,17 @@ class User(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   public_id = db.Column(db.String(50), unique=True)
   username = db.Column(db.String(50))
+  name = db.Column(db.String(80))
   email = db.Column(db.String(80))
   password = db.Column(db.String(80))
   admin = db.Column(db.Boolean)
+  ph_thrs = db.Column(db.Float())
+  gn_thrs = db.Column(db.Float())
   projects = db.relationship('Project', backref='user')
 
 class UserSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'username', 'email', 'admin')
+    fields = ('id', 'username', 'name', 'email', 'ph_thrs', 'gn_thrs')
 
 user_schema = UserSchema()
 
@@ -20,12 +23,14 @@ class Project(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.String(50))
   desc = db.Column(db.Text())
+  disease = db.Column(db.Text())
   user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
   files = db.relationship('File', backref='project')
+  patients = db.relationship("Patient", secondary="patient_project")
 
 class ProjectSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'name', 'desc')
+    fields = ('id', 'name', 'desc', 'disease')
 
 project_schema = ProjectSchema()
 projects_schema = ProjectSchema(many=True)
@@ -48,6 +53,7 @@ class Vcf(db.Model):
   filename = db.Column(db.String(50))
   project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
   user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+  patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'))
   chrom = db.Column(db.String(5))
   pos = db.Column(db.Integer)
   # need to fix the following column types into more appropriate ones
@@ -112,6 +118,7 @@ class Patient(db.Model):
   resolve_state = db.Column(db.Boolean, default=False, nullable=False)
   gene_names = db.relationship("GeneName", secondary="patient_gene_names")
   gene_ids = db.relationship("GeneId", secondary="patient_gene_ids")
+  projects = db.relationship("Project", secondary="patient_project")
 
 class PatientSchema(ma.Schema):
   class Meta:
@@ -134,16 +141,17 @@ class HPOSchema(ma.Schema):
 HPO_schema = HPOSchema()
 HPOs_schema = HPOSchema(many=True)
 
-class GoSimilarity(db.Model):
+class Similarity(db.Model):
   patient_pair = db.Column(db.String(50), primary_key=True)
-  similarity = db.Column(db.Float)
+  hpo_similarity = db.Column(db.Float)
+  go_similarity = db.Column(db.Float)
 
-class GoSimilaritySchema(ma.Schema):
+class SimilaritySchema(ma.Schema):
   class Meta:
-    fields = ('patient_pair', 'similarity')
+    fields = ('patient_pair', 'hpo_similarity', 'go_similiarity')
 
-GoSimilarity_schema = GoSimilaritySchema()
-GoSimilarities_schema = GoSimilaritySchema(many=True)
+Similarity_schema = SimilaritySchema()
+Similarities_schema = SimilaritySchema(many=True)
 
 class GeneName(db.Model):
   __tablename__ = "gene_name"
@@ -163,11 +171,10 @@ class PatientGeneName(db.Model):
 
 class PatientGeneNameSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'patient_id', 'gene_name')
+    fields = ('patient_id', 'gene_name')
 
 PatientGeneName_schema = PatientGeneNameSchema()
 PatientGeneNames_schema = PatientGeneNameSchema(many=True)
-
 
 class PatientGeneID(db.Model):
   __tablename__ = "patient_gene_ids"
@@ -175,3 +182,8 @@ class PatientGeneID(db.Model):
   patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'))
   gene_id = db.Column(db.Text(), db.ForeignKey('gene_id.gene_id'))
 
+class PatientProject(db.Model):
+  __tablename__ = "patient_project"
+  patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), primary_key=True)
+  project_id = db.Column(db.Integer, db.ForeignKey('project.id'), primary_key=True)
+  has_disease = db.Column(db.Boolean)

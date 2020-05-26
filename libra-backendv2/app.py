@@ -9,7 +9,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import os
 import uuid
 import fastsemsim
-
+from flask_mail import Mail
 import datetime
 import pickle
 
@@ -19,8 +19,8 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 # DB
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db2.sqlite')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:1@localhost:5432/libra' #Actual configuration
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'secret' #Actual configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://postgres:1@localhost:5432/libra' 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config['SECRET_KEY'] = "mysecret"
@@ -52,11 +52,21 @@ go =  fastsemsim.load_ontology( ontology_type='GeneOntology')
 CORS(app, expose_headers='Authorization')
 #app.config['CORS_HEADERS'] = 'Content-Type'
 
+
+app.config['MAIL_SERVER']='smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'projectlibra.similarity@gmail.com'
+app.config['MAIL_PASSWORD'] = '*'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+mail = Mail(app)
+
 from .views import *
 
-#scheduler = BackgroundScheduler()
-#job = scheduler.add_job(goFileCreate, 'interval', minutes=0.1, next_run_time = datetime.datetime.now())
-#scheduler.start()
+scheduler = BackgroundScheduler()
+job = scheduler.add_job(matchmakerAlgorithms, 'interval', minutes=0.5)
+
+scheduler.start()
 
 # Run server
 if __name__ == '__main__':

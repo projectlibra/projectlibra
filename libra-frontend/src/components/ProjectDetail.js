@@ -37,6 +37,9 @@ import ListItem from '@material-ui/core/ListItem';
 import * as filterConstants from "./filters/FilterConstants";
 import _ from 'lodash';
 
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+
 const style = {display: 'flex', flexWrap: 'wrap'}
 
 class Projects extends Component{
@@ -50,9 +53,14 @@ class Projects extends Component{
       table_data: [],
       pie_data: [],
       selected_key: 1,
+      selected_patient: 0,
       load_index: 0,
       editorState: EditorState.createEmpty(),
       isActive: false,
+      hasDisease: false,
+      project_patients: [],
+      patient_name: "",
+      patients: [],
       patient_name: "",
       scenarioInput: "", 
       frequencyInput: {filterDbsnp: "any", filter1k: "any", filter1kfrequency: "1"}, 
@@ -126,10 +134,12 @@ class Projects extends Component{
     console.log(this.props.location)
     this.setState({
         project_id: id,
-        project: this.props.location.project
     });
     this.fetchFiles(id);
+    this.fetchPatients();
     this.fetchVCFTable(id);
+    this.fetchProjectPatients(id);
+    
   }
 
   fetchFiles = (id) => {
@@ -169,7 +179,8 @@ class Projects extends Component{
             columns: res.data.columns,
             table_data: res.data.table_data,
             pie_data: res.data.pie_data,
-            pie1k_data: res.data.pie1k_data
+            pie1k_data: res.data.pie1k_data,
+            project: res.data.project
         }, () => {
             console.log("Finished")
             console.log(res.data.table_data)
@@ -203,6 +214,34 @@ class Projects extends Component{
             console.log(res.data.table_data)
         })
 
+  fetchPatients = () => {
+    axios.get(`${host}/patientprofile` ,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+      .then(res => {
+        console.log("Here:");
+        console.log(res.data);
+        this.setState({
+          patients: res.data,
+        });
+      })
+      .catch(err =>  {
+        if(err.response) {
+          console.log(axios.defaults.headers.common)
+          console.log(err.response.data)
+          if(err.response.status == 401) {
+            this.props.history.push('/');
+          }
+        }
+      })
+  }
+
+  fetchProjectPatients = (id) => {
+    axios.get(`${host}/projectpatients/${id}` ,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+      .then(res => {
+        console.log("Here:");
+        console.log(res.data);
+        this.setState({
+          project_patients: res.data,
+        });
       })
       .catch(err =>  {
         if(err.response) {
@@ -284,22 +323,53 @@ class Projects extends Component{
 
   handleMenuClick = (e) => {
     message.info('Click on menu item.');
-    this.setState({patient_name: e.key})
     console.log('click', e);
+    if(e.key != 0 && e.key != -1) {
+      var patient = this.state.patients.find(obj => {return obj.id == e.key});
+      this.setState({patient_name: patient.name})
+    }
+    this.setState({selected_patient: e.key})
+    
   }
 
   updateState = (nextState) => {
     this.setState(nextState);
   }
+
+  handleDiseaseClick = (e) => {
+    this.setState({hasDisease: e.target.checked})
+  }
   
   render() {
-    const {files, no_files, open, project_id, columns, table_data, pie_data, pie1k_data} = this.state;
+    const {files, no_files, open, project, project_id, project_patients, table_data, pie_data, pie1k_data, patients, selected_patient} = this.state;
     console.log("Render:")
-    console.log(columns)
+    
     console.log(table_data)
     /*
     const columns = ["Name", "Company", "City", "State", "Name2", "Company2", "City2", "State2",  "Name3", "Company3", "City3", "State3"];
     */
+    const columns = [
+      {name: "chrom"},
+      {name: "pos"},
+      {name: "id",
+       options: {
+         customBodyRender: (value, tableMeta, updateValue) => (
+           <a href={`https://www.ncbi.nlm.nih.gov/snp/${value}`} target="_blank">{value}</a>
+         )
+       }},
+      {name: "ref"},
+      {name: "alt"},
+      {name: "qual"},
+      {name: "filter"},
+      {name: "info"},
+      {name: "alelle"},
+      {name: "annotation"},
+      {name: "impact"},
+      {name: "gene_name"},
+      {name: "gene_id"},
+      {name: "feature_type"},
+      {name: "feature_id"},
+    ];
     const data = [
     ["Joe James", "Test Corp", "Yonkers", "NY", "Joe James", "Test Corp", "Yonkers", "NY", "Joe James", "Test Corp", "Yonkers", "NY"],
     ["John Walsh", "Test Corp", "Hartford", "CT", "John Walsh", "Test Corp", "Hartford", "CT", "Joe James", "Test Corp", "Yonkers", "NY"],
@@ -359,32 +429,88 @@ class Projects extends Component{
     ) : (
         <div></div>
     )*/
+
+    const patientList = patients.length ? (
+      patients.map(patient => {
+      return (
+        <Menu.Item key={patient.id} icon={<UserOutlined />}>
+          <li>{patient.name}</li>
+        </Menu.Item>
+      )
+    })
+  ) : (null)
+    const other = (<Menu.Item key="5" icon={<UserOutlined />}>
+    Patient3
+  </Menu.Item>)
     const menu = (
       <Menu onClick={this.handleMenuClick}>
-        <Menu.Item key="1" icon={<UserOutlined />}>
+        <Menu.Item key="0" icon={<UserOutlined />}>
          <StopOutlined/> None
         </Menu.Item>
-        <Menu.Item key="2" icon={<UserOutlined />}>
-          <PlusOutlined /> New Patient
+        <Menu.Item key="-1" icon={<UserOutlined />}>
+         <PlusOutlined/> Batch Upload
         </Menu.Item>
-        <Menu.Item key="3" icon={<UserOutlined />}>
-          Patient1
-        </Menu.Item>
-        <Menu.Item key="4" icon={<UserOutlined />}>
-          Patient2
-        </Menu.Item>
+        {patientList}
       </Menu>
     );
 
-    const fileUploader = (
+    let fileUploader;
+    if(selected_patient == 0) {
+      fileUploader = <div>
+      <Dropdown.Button overlay={menu} icon={<UserOutlined />}>
+        Select a patient: 
+      </Dropdown.Button>
+      <Upload project_id={project_id} patient_id={selected_patient} />
+    </div>
+    }
+    else if(selected_patient == -1) {
+      fileUploader = <div>
+      <Dropdown.Button overlay={menu} icon={<UserOutlined />}>
+        Select a patient: 
+      </Dropdown.Button>
+      <p>Samples in the VCF file will be created as patients.</p>
+      <Upload project_id={project_id} patient_id={selected_patient} />
+    </div>
+    }
+    else if(project.disease == "") {
+      fileUploader = <div>
+      <Dropdown.Button overlay={menu} icon={<UserOutlined />}>
+        Select a patient: 
+      </Dropdown.Button>
+      <p>Patient: {this.state.patient_name} will be added to the project.</p>
+      <Upload project_id={project_id} patient_id={selected_patient} />
+    </div>
+    }
+    else {
+      fileUploader = <div>
+      <Dropdown.Button overlay={menu} icon={<UserOutlined />}>
+        Select a patient: 
+      </Dropdown.Button>
+      <p>Patient: {this.state.patient_name} will be added to the project.</p>
+      <p>Does {this.state.patient_name} has the disease? {project.disease} <Checkbox color="blue" value="disease" onClick={this.handleDiseaseClick} /></p>
+      <Upload project_id={project_id} patient_id={selected_patient} has_disease={this.state.hasDisease} />
+    </div>
+    }
+    /*
+    const fileUploader = "" == "" ? (
       <div>
         <Dropdown.Button overlay={menu} icon={<UserOutlined />}>
           Select a patient: 
         </Dropdown.Button>
-        <p>{this.state.patient_name}</p>
-        <Upload project_id={project_id} />
+        <p>Patient: {this.state.patient_name} will be added to the project.</p>
+        <Upload project_id={project_id} patient_id={selected_patient} />
       </div>
-    );
+    ) : (
+      <div>
+        <Dropdown.Button overlay={menu} icon={<UserOutlined />}>
+          Select a patient: 
+        </Dropdown.Button>
+        <p>Patient: {this.state.patient_name} will be added to the project.</p>
+        <p>{this.state.patient_name} has the disease: {project.disease}</p>
+        <Checkbox value="disease" />
+        <Upload project_id={project_id} patient_id={selected_patient} />
+      </div>
+    );*/
     
     const fileUploadButton = open ? (
         <Button onClick={this.toggleDialog}>Close File Uploader</Button>
@@ -446,6 +572,22 @@ class Projects extends Component{
         <div><h3>Loading Table...</h3></div>
     )
 
+
+
+    const patientCheckList = project_patients.length ? (
+      project_patients.map(patient => {
+      return (
+        <div key={patient.id}>
+          <FormControlLabel
+            control={<Checkbox name="gilad" value={patient.id} />}
+            label={patient.name}
+          />
+        </div>
+        
+      )
+    })
+  ) : (<p>No patients!</p>)
+
     let final_render;
     if(this.state.selected_key == 1) {
         final_render = vcfTable;
@@ -457,6 +599,9 @@ class Projects extends Component{
         final_render = (
             <EditorConvertToHTML/>    
         );
+    }
+    else if(this.state.selected_key == 4) {
+      final_render = patientCheckList;
     }
     return (
       <div style= {{display: "flex", flexDirection: "row"}}>

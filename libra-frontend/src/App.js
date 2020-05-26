@@ -5,7 +5,8 @@ import BuildQuery from './components/BuildQuery';
 import VCFUpload from './components/VCFUpload';
 import ButtonAppBar from "./components/ButtonAppBar"
 // Components
-import editPatient from './pages/editPatient';
+//import editPatient from './pages/editPatient';
+import editPatient from './components/EditPatient';
 import Login from './components/Login'
 import SignUp from './components/SignUp'
 import Forgot from './components/Forgot'
@@ -24,8 +25,8 @@ import HPO from './components/HPO';
 import Upload from './components/upload/Upload';
 import MatchMaker from './components/MatchMaker';
 import FilterList from './components/filters/FilterList';
-
-
+import PatientDetail from './components/PatientDetail'
+import UpdateForm from './pages/userSettings';
 class App extends React.Component{
 
   
@@ -126,7 +127,7 @@ class App extends React.Component{
             {/*<Route path="/" component={}/>*/}
             <Route exact path="/test" component={FilterList}/> {/*delete later*/}
             <Route exact path="/drop" component={Upload} />
-            <Route exact path="/editPatient" component={editPatient} />
+            <Route exact path="/editPatient/:id" component={editPatient} />
             <Route exact path="/matchmaker/:id" component={MatchMaker} />
             <Route exact path="/buildquery" component={BuildQuery} />
             <Route exact path="/vcfupload" component={VCFUpload} />
@@ -135,11 +136,13 @@ class App extends React.Component{
             <Route exact path="/forgot" component={Forgot} />
             <Route exact path="/createPatientProfile" component={CreatePatientProfile} />
             <Route exact path="/patients" component={PatientProfiles} />
+            <Route exact path="/patients/:id" component={PatientDetail} />
             <Route exact path="/projects" component={Projects} />
             <Route exact path="/projects/:id" component={ProjectDetail} />
             <Route exact path="/HPO/:id" component={HPO} />
             <Route exact path="/" component={Homepage} />
             <Route exact path="/hpo/:id" component={HPO} />
+            <Route exact path="/userSettings" component={UpdateForm} />
             {/*correct way to Route with props*/ }
             <Route exact path="/list-files" 
             render={ (props) =><VcfFiles {...props} ws={this.state.ws} ws_data={this.state.ws_data}  />} />

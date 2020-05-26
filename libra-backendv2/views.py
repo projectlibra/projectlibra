@@ -1,4 +1,4 @@
-from .app import app, db, ma, bcrypt, basedir, db_engine, hpo, go
+from .app import app, db, ma, bcrypt, basedir, db_engine, hpo, go, mail
 from flask import Flask, request, jsonify, make_response, flash, redirect, url_for, session
 from werkzeug.utils import secure_filename
 from flask_cors import cross_origin
@@ -17,13 +17,16 @@ import json
 import vcf
 import fastsemsim
 import time
-
+from flask_mail import Message
+from threading import Thread
 import pandas as pd
 import io
+from .mail_template import *
 
 PREFIX = 'Bearer'
 ss = 0
 ac = 0
+ss_hpo, ac_hpo = 0, 0
 
 def token_required(f):
   @wraps(f)
@@ -60,7 +63,7 @@ def register_user():
   
   pw_hash = bcrypt.generate_password_hash(data['password1'])
   pw_hash = pw_hash.decode('utf-8')
-  new_user = User(public_id = str(uuid.uuid4()), username=data['username'], email=data['email'], password=pw_hash, admin=False)
+  new_user = User(public_id = str(uuid.uuid4()), username=data['username'], name=data['name'], email=data['email'], password=pw_hash, admin=False, ph_thrs=0.5, gn_thrs=0.5)
   db.session.add(new_user)
   db.session.commit()
   
@@ -92,13 +95,32 @@ def login():
   
   return make_response('Could not verify!', 401, {"WWW-Authenticate": "Basic realm='Login Required!' "})
 
+
+@app.route('/user', methods=['GET'])
+@token_required
+def get_user(current_user):
+  return user_schema.jsonify(current_user)
+
+@app.route('/user_update', methods=['POST'])
+@token_required
+def update_user(current_user):
+  current_user.username = request.json['username']
+  current_user.name = request.json['name']
+  current_user.email = request.json['email']
+  current_user.ph_thrs = request.json['ph_thrs']
+  current_user.gn_thrs = request.json['gn_thrs']
+
+  db.session.commit()
+  return user_schema.jsonify(current_user)
+
 @app.route('/project', methods=['POST'])
 @token_required
 def add_project(current_user):
   name = request.json['name']
   desc = request.json['desc']
+  disease = request.json['disease']
   user_id = current_user.id
-  project = Project(name=name, desc=desc, user_id=user_id)
+  project = Project(name=name, desc=desc, disease=disease, user_id=user_id)
   db.session.add(project)
   db.session.commit()
 
@@ -168,6 +190,12 @@ def delete_project(current_user, id):
 def fileUpload(current_user):
     #save file to file system
     project_id = int(request.form['project_id'])
+    patient_id = int(request.form['patient_id'])
+    has_disease = request.form['has_disease']
+    if has_disease == 'true':
+      has_disease = True
+    else:
+      has_disease = False
     
     #target=os.path.join(app.config['UPLOAD_FOLDER'],'test_vcfs')
     dir_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id), str(project_id))
@@ -179,6 +207,7 @@ def fileUpload(current_user):
     filename = secure_filename(file.filename)
     file_path = os.path.join(dir_path, filename)
     file.save(file_path)
+    
     """
     # ANNOTATE DBSNP ID
     file_path2 = file_path[:-4] + "_dbsnp.vcf"
@@ -206,51 +235,125 @@ def fileUpload(current_user):
     db.session.commit()
     """
     #parse vcf using pyvcf and upload to database
+    #vcf_reader = vcf.Reader(open(file_path, 'r'))
     vcf_reader = vcf.Reader(filename=file_path)
-    #vcf_reader = vcf.Reader(filename=file_path4)
     user_id = current_user.id
     print("FILE OPEN")
     cnt= 0
     variant_list = []
+    np_id_list = []
     start = time.time()
-    new_patient = Patient(name="RandPatient", diagnosis="rand_diag", patient_contact="rand@gmail.com", user_id=current_user.id, hpo_tag_names="", hpo_tag_ids="")
-    db.session.add(new_patient)
+    #new_patient = Patient(name="RandPatient", diagnosis="rand_diag", patient_contact="rand@gmail.com", user_id=current_user.id, hpo_tag_names="", hpo_tag_ids="", go_tag_ids="")
+    if patient_id != 0 and patient_id != -1:
+      db.session.add(PatientProject(patient_id=patient_id, project_id=project_id, has_disease=has_disease))
+    elif patient_id == -1: # batch upload
+      for record in vcf_reader:
+        for sample in record.samples:
+          np = Patient(name=sample.sample, user_id=current_user.id)
+          db.session.add(np)
+          db.session.commit()
+          db.session.add(PatientProject(patient_id=np.id, project_id=project_id, has_disease=False))
+          db.session.commit()
+          np_id_list.append(np.id)
+        break
+
     db.session.commit()
+    go_list = []
+    if patient_id == -1: # batch upload
+      for np_id in np_id_list:
+        for record in vcf_reader:
+          if cnt % 10000 == 0:
+            print(cnt)
+          cnt+=1
+          if cnt % 1000 == 0:
+            start2 = time.time()
+            db.session.flush()
+            end2 = time.time()
+            print("Elapsed time for db flush: ", end2 - start2)
+          
+          anno = record.INFO['ANN'][0].split('|')
+          new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=np_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6])
+          db.session.add(new_vcf)
+          #db.session.commit()
 
-    for record in vcf_reader:
-        # print (record)
-      
-      if cnt % 10000 == 0:
-        print(cnt)
-      cnt+=1
-      if cnt % 1000 == 0:
-        start2 = time.time()
-        db.session.flush()
-        end2 = time.time()
-        print("Elapsed time for db flush: ", end2 - start2)
-      
-      anno = record.INFO['ANN'][0].split('|')
-      new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6])
-      db.session.add(new_vcf)
-      #db.session.commit()
-
-      if new_vcf.annotation_impact == "HIGH":
-        print("Inside HIGH")
-        if new_vcf.gene_name in app.config['GENE_DICT']:
-          db_gene_name = GeneName(name=new_vcf.gene_name)
-          db.session.merge(db_gene_name)
-          for go_id in app.config['GENE_DICT'][new_vcf.gene_name]:
-            db_gene_id = GeneId(gene_id=go_id)
-            db.session.merge(db_gene_id)
-          db.session.commit()
-          db.session.merge(PatientGeneName(patient_id=new_patient.id, gene_name=new_vcf.gene_name))
-          for go_id in app.config['GENE_DICT'][new_vcf.gene_name]:
-            db.session.merge(PatientGeneID(patient_id=new_patient.id, gene_id=go_id))
-          db.session.commit()
+          if new_vcf.annotation_impact == "HIGH":
+            print("Inside HIGH")
+            if new_vcf.gene_name in app.config['GENE_DICT']:
+              db_gene_name = GeneName(name=new_vcf.gene_name)
+              db.session.merge(db_gene_name)
+              for go_id in app.config['GENE_DICT'][new_vcf.gene_name]:
+                go_list.append(go_id)
+                db_gene_id = GeneId(gene_id=go_id)
+                db.session.merge(db_gene_id)
+              db.session.commit()
+              db.session.merge(PatientGeneName(patient_id=np_id, gene_name=new_vcf.gene_name))
+              for go_id in app.config['GENE_DICT'][new_vcf.gene_name]:
+                db.session.merge(PatientGeneID(patient_id=np_id, gene_id=go_id))
+              db.session.commit()
+            
+          """
+          #variant_list.append(new_vcf)
+          for sample in record.samples:
+              # print (sample)
+              # sample_data = str(sample.data)[9:-1] because pyvcf has "CallData()" wrapping it
+              # new_vcf = VCFs(filename=filename, project_id=project_id, user_id=user_id, chrom=str(record.CHROM),
+              #  pos=record.POS, variant_id=record.ID, ref=record.REF, alt=str(record.ALT), qual=record.QUAL,
+              #  filter=str(record.FILTER), info=str(record.INFO), sample_id = str(sample.sample),
+              #  sample_data = str(sample.data)[9:-1])
+              # db.session.add(new_vcf)
+              # db.session.commit()
+              new_sample = Sample(sample_id = str(sample.sample), vcf_id = (new_vcf.id), sample_data = str(sample.data)[9:-1])
+              db.session.add(new_sample)
+              db.session.commit()
+              """
+        end = time.time()
+        print("Elapsed time for processing: ", end - start)
+        #start = time.time()
+        #db.session.add_all(variant_list)
+        #end = time.time()
+        #print("Elapsed time for db add: ", end - start)
+        start = time.time()
+        db.session.commit()
+        end = time.time()
+        new_patient = Patient.query.get(np_id)
+        new_patient.go_ids = ','.join(list(set(go_list)))
+        db.session.commit()
+        print("Elapsed time for db commit: ", end - start)
+    else:
+      for record in vcf_reader:
+          # print (record)
         
+        if cnt % 10000 == 0:
+          print(cnt)
+        cnt+=1
+        if cnt % 1000 == 0:
+          start2 = time.time()
+          db.session.flush()
+          end2 = time.time()
+          print("Elapsed time for db flush: ", end2 - start2)
+        
+        anno = record.INFO['ANN'][0].split('|')
+        new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=patient_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6])
+        db.session.add(new_vcf)
+        #db.session.commit()
 
-      #variant_list.append(new_vcf)
+        if new_vcf.annotation_impact == "HIGH":
+          print("Inside HIGH")
+          if new_vcf.gene_name in app.config['GENE_DICT']:
+            db_gene_name = GeneName(name=new_vcf.gene_name)
+            db.session.merge(db_gene_name)
+            for go_id in app.config['GENE_DICT'][new_vcf.gene_name]:
+              go_list.append(go_id)
+              db_gene_id = GeneId(gene_id=go_id)
+              db.session.merge(db_gene_id)
+            db.session.commit()
+            db.session.merge(PatientGeneName(patient_id=patient_id, gene_name=new_vcf.gene_name))
+            for go_id in app.config['GENE_DICT'][new_vcf.gene_name]:
+              db.session.merge(PatientGeneID(patient_id=patient_id, gene_id=go_id))
+            db.session.commit()
+        
       """
+      #variant_list.append(new_vcf)
       for sample in record.samples:
           # print (sample)
           # sample_data = str(sample.data)[9:-1] because pyvcf has "CallData()" wrapping it
@@ -263,7 +366,7 @@ def fileUpload(current_user):
           new_sample = Sample(sample_id = str(sample.sample), vcf_id = (new_vcf.id), sample_data = str(sample.data)[9:-1])
           db.session.add(new_sample)
           db.session.commit()
-        """
+          """
     end = time.time()
     print("Elapsed time for processing: ", end - start)
     #start = time.time()
@@ -273,17 +376,12 @@ def fileUpload(current_user):
     start = time.time()
     db.session.commit()
     end = time.time()
+    new_patient = Patient.query.get(patient_id)
+    new_patient.go_ids = ','.join(list(set(go_list)))
+    db.session.commit()
     print("Elapsed time for db commit: ", end - start)
     
-    """
-    with open(path, 'r') as f:
-        lines = [l for l in f if not l.startswith('##')]
-    df = pd.read_csv(
-        io.StringIO(''.join(lines)),
-        dtype={'#CHROM': str, 'POS': int, 'ID': str, 'REF': str, 'ALT': str,
-               'QUAL': str, 'FILTER': str, 'INFO': str},
-        sep='\t'
-    ).rename(columns={'#CHROM': 'CHROM'})"""
+    
     return make_response('File Upload Successful!', 200)
 
 @app.route('/upload/<id>', methods=['POST'])
@@ -326,10 +424,10 @@ def get_vcf_table(current_user, id):
     #if column.key not in columns
     #  columns.append(column.key)
   print(columns)
-  
-  #result = Vcf.query.filter_by(user_id=current_user.id, project_id=id).options(load_only(*columns[4:])).all()
-  #result = db.session.query(Vcf, Sample).outerjoin(Sample, Vcf.vcf_id == Sample.vcf_id).all()
-  #result = db.session.query(Vcf, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, Vcf.vcf_id == Sample.vcf_id).all()
+  project = Project.query.get(id)
+  #result = VCFs.query.filter_by(user_id=current_user.id, project_id=id).options(load_only(*columns[4:])).all()
+  #result = db.session.query(VCFs, Sample).outerjoin(Sample, VCFs.vcf_id == Sample.vcf_id).all()
+  #result = db.session.query(VCFs, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, VCFs.vcf_id == Sample.vcf_id).all()
   result = db.session.query(Vcf, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, Vcf.id == Sample.vcf_id).limit(1000).all()
   #print(result)
   print(result)
@@ -353,7 +451,8 @@ def get_vcf_table(current_user, id):
       row_data.append(vcf[0].variant_id)
     else:
       cnt_dbsnp +=1
-      row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[0].variant_id + '" target="_blank">' + vcf[0].variant_id +  '</a>')
+      #row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[0].variant_id + '" target="_blank">' + vcf[0].variant_id +  '</a>')
+      row_data.append(vcf[0].variant_id)
     row_data.append(vcf[0].ref)
     row_data.append(vcf[0].alt)
     row_data.append(vcf[0].qual)
@@ -383,7 +482,8 @@ def get_vcf_table(current_user, id):
     'columns': columns[4:len(columns)-2],
     'table_data': table_data,
     'pie_data' : [['db', 'count'], ['dbSNP', cnt_dbsnp], ['Novel', cnt_all - cnt_dbsnp]],
-    'pie1k_data' : [['db', 'count'], ['1KG', cnt_1k], ['Novel', cnt_all - cnt_1k]] 
+    'pie1k_data' : [['db', 'count'], ['1KG', cnt_1k], ['Novel', cnt_all - cnt_1k]],
+    'project' : project_schema.dump(project)
   }
 
   return resp, 200
@@ -430,7 +530,8 @@ def get_vcf_table_index(current_user, id, index):
       row_data.append(vcf[0].variant_id)
     else:
       cnt_dbsnp +=1
-      row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[0].variant_id + '" target="_blank">' + vcf[0].variant_id +  '</a>')
+      #row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[0].variant_id + '" target="_blank">' + vcf[0].variant_id +  '</a>')
+      row_data.append(vcf[0].variant_id)
     row_data.append(vcf[0].ref)
     row_data.append(vcf[0].alt)
     row_data.append(vcf[0].qual)
@@ -652,7 +753,7 @@ def create_patient(current_user):
       hpo_tag_ids_str = hpo_tag_ids_str +", " 
  
   patient = Patient(name=name, diagnosis=diagnosis, patient_contact=patient_contact,
-                    user_id=user_id, hpo_tag_names=hpo_tag_names_str, hpo_tag_ids=hpo_tag_ids_str, go_tag_ids="", resolve_state=False)
+                    user_id=user_id, hpo_tag_names=hpo_tag_names_str, hpo_tag_ids=hpo_tag_ids_str, resolve_state=False)
 
   db.session.add(patient)
   db.session.commit()
@@ -672,8 +773,6 @@ def edit_patient(current_user, patient_id):
 
   name = request.json['name']
   diagnosis = request.json['diagnosis']
-  patient_contact = current_user.email
-  user_id = current_user.id
   hpo_tag_ids = request.json['hpo_tag_ids']
   hpo_tag_names = request.json['hpo_tag_names']
   hpo_tag_names_str = ""
@@ -688,8 +787,6 @@ def edit_patient(current_user, patient_id):
   db.session.query(Patient).filter(Patient.id == patient_id).\
                             update({"name":name, 
                                     "diagnosis":diagnosis, 
-                                    "patient_contact":patient_contact,
-                                    "user_id":user_id, 
                                     "hpo_tag_names":hpo_tag_names_str, 
                                     "hpo_tag_ids":hpo_tag_ids_str})
   
@@ -715,6 +812,14 @@ def get_patient_by_id(current_user, patient_id):
   result = patient_schema.dump(patient)
   return jsonify(result)
 
+@app.route('/projectpatients/<id>', methods=['GET'])
+@token_required
+def get_project_patients(current_user, id):
+  patients = Project.query.get(id).patients
+  print(patients)
+
+  return patients_schema.jsonify(patients)
+
 @app.route('/gethpotags/<patient_id>', methods=['GET'])
 @token_required
 def get_hpo_tags(current_user, patient_id):
@@ -732,6 +837,7 @@ def get_go_names(current_user, patient_id):
 @app.route('/matchmakerresults/<cur_hpo_id>', methods=['GET'])
 @token_required
 def get_matchmaker_results(current_user, cur_hpo_id):
+  
   matched_patitents = Patient.query.join(HPOTag)\
                                   .add_columns(Patient.id, Patient.patient_contact, Patient.diagnosis, Patient.hpo_tag_names)\
                                   .filter(HPOTag.hpo_tag_id == cur_hpo_id)
@@ -747,19 +853,35 @@ def query_db(query, args=(), one=False):
 @app.route('/matchmakerhpo/<patient_id>', methods=['GET'])
 @token_required
 def get_matchmaker_hpo(current_user, patient_id):
-  patient_file = open('./metricFiles/hpopatient'+str(current_user.id), 'w')
-  for patient in db_engine.execute('select id, hpo_tag_ids from patient where hpo_tag_ids is not null'):
+  sorted_results = []
+  if ss != 0:
+    result = []
+    for patient in ac.obj_set:
+      if patient != patient_id:
+        similarity = ss_hpo.SemSim(patient_id, patient)
+        if similarity is not None:
+          patient_element = {"patient_id": str(patient), 
+                            "similarity": ss_hpo.SemSim(patient_id, patient)}
+          result.append(patient_element)
+    sorted_results = sorted(result, key=lambda k: k['similarity'], reverse=True)
+    print(sorted_results)
+  return jsonify(sorted_results)
+
+def hpoAlgorithm():
+  patient_file = open('./metricFiles/hpopatient', 'w')
+  global ss_hpo, ac_hpo
+  for patient in db_engine.execute('select id, hpo_tag_ids from patient'):
     patient_to_write = str(patient)
-    print(patient_to_write)
     patient_to_write = (patient_to_write[1:len(patient_to_write)-1]).replace('\'', '').replace('\'', '')
     patient_file.write(patient_to_write+'\n')
   patient_file.close()
+
   ac_params = {}
   ac_params['filter'] = {}
   ac_params['multiple'] = True
   ac_params['term first'] = False
   ac_params['separator'] = ", "
-  ac = fastsemsim.load_ac(ontology=hpo, source_file='./metricFiles/hpopatient'+str(current_user.id), file_type='plain',params=ac_params)
+  ac_hpo = fastsemsim.load_ac(ontology=hpo, source_file='./metricFiles/hpopatient', file_type='plain',params=ac_params)
 
   # Parameters for the SS
   semsim_type='obj'
@@ -767,16 +889,9 @@ def get_matchmaker_hpo(current_user, patient_id):
   mixing_strategy='BMA'
 
   # Initializing semantic similarity
-  ss = fastsemsim.init_semsim(ontology = hpo, ac = ac, semsim_type = semsim_type, semsim_measure = semsim_measure, mixing_strategy = mixing_strategy)
-  result = []
-  for patient in ac.obj_set:
-    if patient != patient_id:
-      patient_element = {"patient_id": str(patient), 
-                        "similarity": ss.SemSim(patient_id, patient)}
-      result.append(patient_element)
-      print(ss.SemSim(patient_id, patient))
-  sorted_results = sorted(result, key=lambda k: k['similarity'], reverse=True)
-  return jsonify(sorted_results)
+  ss_hpo = fastsemsim.init_semsim(ontology = hpo, ac = ac_hpo, semsim_type = semsim_type, semsim_measure = semsim_measure, mixing_strategy = mixing_strategy)
+  
+  print("HPO-Runs")
 
 @app.route('/matchmakergo/<patient_id>', methods=['GET'])
 @token_required
@@ -793,9 +908,10 @@ def get_matchmaker_go(current_user, patient_id):
                             "similarity": similarity}
           result.append(patient_element)
     sorted_results = sorted(result, key=lambda k: k['similarity'], reverse=True)
+    print(sorted_results)
   return jsonify(sorted_results)
 
-def goFileCreate():
+def goAlgortihm():
   patient_file = open('./metricFiles/gopatient', 'w')
   
   for patient in db_engine.execute('select id from patient'):
@@ -823,31 +939,74 @@ def goFileCreate():
   start_time = time.time()
   global ss
   ss = fastsemsim.init_semsim(ontology = go, ac = ac, semsim_type = semsim_type, semsim_measure = semsim_measure, mixing_strategy = mixing_strategy)
-  sendNotifications()
-  print("--- %s seconds 1---" % (time.time() - start_time))
+  
+  print("GO Runs")
 
-def sendNotifications():
+def send_async_email(msg):
+    with app.app_context():
+        mail.send(msg)
+
+def notificationChecker():
   patient_ids = list(ac.obj_set)
-
+  
   for i in range(0, len(patient_ids) - 1):
     for j in range(i+1, len(patient_ids)):
-      pair = str(patient_ids[i])+ "." + str(patient_ids[j])
-      found_pair = db.session.query(GoSimilarity).filter_by(patient_pair=pair).first()
+      pair_1 = str(patient_ids[i])+ "." + str(patient_ids[j])
+      pair_2 = str(patient_ids[j])+ "." + str(patient_ids[i])
 
-      if not found_pair:
-        similarity = ss.SemSim(patient_ids[i], patient_ids[j])
-        if similarity is not None:
-          print(pair)
-          goSimilarity = GoSimilarity(patient_pair=pair, similarity = similarity)
-          patients = []
+      pair = db.session.query(Similarity).filter(or_(Similarity.patient_pair==pair_1,
+                                                    Similarity.patient_pair==pair_2)).first()
 
-          for info in db_engine.execute('select patient_contact, name from patient where id='+str(patient_ids[i])+'or id='+str(patient_ids[j])):
-            for key, value in info.items():
-              patients.append(value)
-          
-          print("To: " + patients[0] + " Your patient  "+ patients[1] +" is matched with Name: " + patients[3] + " Contact: " + patients[2])
-          print("To: " + patients[2] + " Your patient  "+ patients[3] +" is matched with Name: " + patients[1] + " Contact: " + patients[0])
-          
-          db.session.add(goSimilarity)
+      hpo_sim = ss_hpo.SemSim(patient_ids[i], patient_ids[j])
+      go_sim = ss.SemSim(patient_ids[i], patient_ids[j])
+      if not hpo_sim:
+        hpo_sim = 0
+      if not go_sim:
+        go_sim = 0
+      
+      if (not pair):
+        print("new",pair)
+        similarity = Similarity(patient_pair= pair_1, hpo_similarity=hpo_sim, go_similarity= go_sim)
+        sendEmail((patient_ids[i], patient_ids[j]), hpo_sim, go_sim)
+        db.session.add(similarity)
+        db.session.commit() 
+  
+      else:
+        if(pair.hpo_similarity != hpo_sim or pair.go_similarity != go_sim):  
+          print("old",pair)                
+          db.session.query(Similarity).filter(or_(Similarity.patient_pair==str(patient_ids[i])+ "." + str(patient_ids[j]),
+                                                    Similarity.patient_pair==str(patient_ids[j])+ "." + str(patient_ids[i]))).\
+                        update({"hpo_similarity":hpo_sim, 
+                                "go_similarity":go_sim })
+          sendEmail((patient_ids[i], patient_ids[j]), hpo_sim, go_sim)
+          db.session.commit() 
+       
+        
+def sendEmail(patient_ids, hpo_sim, go_sim):
+  mail_info = []
+  for patient_id in patient_ids:
+    for user_id in db_engine.execute('select user_id from patient where id='+str(patient_id)):
+      
+      user = db.session.query(User).filter(User.id == int(user_id[0]))
+      for row in user:
+        if(row.gn_thrs <= go_sim and row.ph_thrs <= hpo_sim):
+          mail_info.append([patient_id, row.email, True])
+        else:
+          mail_info.append([patient_id, row.email, False])
+  
+  if mail_info[0][2]:
+    msg = Message('Similarity Notification for '+ mail_info[0][0], sender = 'projectlibra.similarity@gmail.com', recipients = [mail_info[0][1]])
+    msg.html = get_mail_template(mail_info[0][0], mail_info[1][0], mail_info[1][1], 100*go_sim, 100*hpo_sim)
+    thr = Thread(target=send_async_email, args=[msg])
+    thr.start()
+  if mail_info[1][2]:
+    msg = Message('Similarity Notification for '+ mail_info[1][0], sender = 'projectlibra.similarity@gmail.com', recipients = [mail_info[1][1]])
+    msg.html = get_mail_template(mail_info[1][0], mail_info[0][0], mail_info[0][1], 100*go_sim, 100*hpo_sim)
+    thr = Thread(target=send_async_email, args=[msg])
+    thr.start()
 
-  db.session.commit() 
+def matchmakerAlgorithms():
+  goAlgortihm()
+  hpoAlgorithm()
+  notificationChecker()
+

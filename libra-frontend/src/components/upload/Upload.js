@@ -4,6 +4,7 @@ import "./Upload.css";
 import Progress from "../progress/Progress";
 import host from '../../host';
 import LoadingOverlay from 'react-loading-overlay';
+import {message} from 'antd';
 
 class Upload extends Component {
   constructor(props) {
@@ -78,12 +79,15 @@ class Upload extends Component {
         if (req.readyState === 4 && req.status === 200){
           console.log("ok, response :", this.response);
           that.setState({isActive: false});
+          message.info('Upload & Annotation Complete!');
         }
       }
 
       const formData = new FormData();
       formData.append("file", file, file.name);
       formData.append('project_id', this.props.project_id);
+      formData.append('patient_id', this.props.patient_id);
+      formData.append('has_disease', this.props.has_disease);
       //req.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`);
       req.open("POST", `${host}/vcf_upload`);
       req.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`);

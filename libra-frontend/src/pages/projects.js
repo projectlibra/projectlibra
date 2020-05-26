@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Button, Row, Col, Divider } from 'antd';
+import {Row, Col, Divider } from 'antd';
 import Project from '../components/Project';
 
+import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -20,7 +21,8 @@ class Projects extends Component{
     super(props);
     this.state = {
       open: false,
-      projects: []  
+      projects: [],
+      disease: ""
     }
   }
 
@@ -65,7 +67,8 @@ class Projects extends Component{
   submitDialog = () => {
     axios.post(host + '/project',{
       name: this.state.name,
-      desc: this.state.desc
+      desc: this.state.desc,
+      disease: this.state.disease
     },{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
       .then(res => {
         console.log("Here:");
@@ -94,7 +97,7 @@ class Projects extends Component{
       projects.map(project => {
         return (
           <div key={project.id}>
-            <Project name={project.name} desc={project.desc} id={project.id} project={project}/>
+            <Project name={project.name} desc={project.desc} disease={project.disease} id={project.id} project={project}/>
           </div>
         )
       })
@@ -105,9 +108,9 @@ class Projects extends Component{
     )
     return (
       <div>
-        <Button onClick={this.openDialog}>Create New Project</Button>
+        <Button onClick={this.openDialog} variant="contained" >Create New Project</Button>
         <Divider orientation="left" style={{ color: '#333', fontWeight: 'normal' }}>
-          Your Projects
+          <h2>Your Projects</h2>
         </Divider>
         
         <div style={style}>
@@ -134,6 +137,13 @@ class Projects extends Component{
               label="Project Description"
               fullWidth
               multiline
+              onChange={this.handleChange}
+            />
+            <TextField
+              margin="dense"
+              id="disease"
+              label="Associated Disease (optional)"
+              fullWidth
               onChange={this.handleChange}
             />
           </DialogContent>

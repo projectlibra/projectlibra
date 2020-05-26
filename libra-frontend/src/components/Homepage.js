@@ -15,11 +15,21 @@
 
 import React from 'react';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
+//import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
+import CardActionArea from '@material-ui/core/CardActionArea';
+import CardActions from '@material-ui/core/CardActions';
 import CardMedia from '@material-ui/core/CardMedia';
+import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import logo from './images/libra_logo.jpg'
+import { Card } from 'antd';
+import { Provider, Heading, Subhead, Flex, Small, NavLink } from 'rebass'
+import {
+  Hero, CallToAction, ScrollDownIndicator, Checklist, Section, Feature
+} from 'react-landing-page'
+
+const {Meta}= Card;
 
 const useStyles = makeStyles(theme => ({
     card: {
@@ -53,6 +63,7 @@ export default function HomePage() {
     const theme = useTheme();
 
     return (
+        /*
         <Card className={classes.card}>
             <div className={classes.details}>
                 <CardContent className={classes.content}>
@@ -73,6 +84,70 @@ export default function HomePage() {
                 image={logo}
                 title="LIBRA's logo"
             />
-        </Card>
+        </Card>*/
+        <Provider>
+            <Hero
+            color="black"
+            bg="black"
+            bgOpacity={0.6}
+            backgroundImage="/dna-3539309_1920.jpg"
+            backgroundRepear="y-repeat"
+            boxShadow= "10px 10px"
+            >
+                <Heading color="white" fontSize="70px">LIBRA</Heading>
+                <Subhead color="white" fontSize="50px">Your Personal Variant Query System</Subhead>
+                <CallToAction href="/signup" mt={3}>Get Started</CallToAction>
+                <ScrollDownIndicator/>
+                
+                
+                    
+                    <Section backgroundImage="/dna-3539309_1920.jpg">
+            <Heading color="white">Why use Libra?</Heading>
+                <Checklist color="white" children={[
+                    'Automatic annotation of VCF Files',
+                    'Organization of your VCF Files via Projects',
+                    'HPO and GO based Matchmaking System for Diagnosis'
+                ]}/>
+            </Section>
+            {/*
+            <Heading color="white" textAlign="center">What is inside?</Heading>
+            <Subhead color="white" >Built in rich text editor for note taking</Subhead>
+            
+            
+            <img src="/texteditor.png"></img>
+
+            
+            <Card
+                style={{ width: 400 }}
+                cover={
+                <img
+                    alt="example"
+                    src="/texteditor.png"
+                />
+                }
+                hovarable={true}
+            >
+                <Meta
+                title="Built in rich text editor"
+                description="For taking quick notes."
+                />
+            </Card>
+            
+            */
+            }
+            <Flex color="white" is="footer" alignItems="center" fontSize="20px" p={5}>
+                <NavLink children="Github" href="https://github.com/projectlibra/projectlibra" target="_blank"/>
+                <NavLink children="Contact" href="mailto:projectlibra.info@gmail.com"/>
+                <Small color="grey" ml="auto">Libra, 2020</Small>
+            </Flex>
+                
+            </Hero>
+            
+            
+            
+
+            
+        </Provider>
     );
 }
+
