@@ -62,7 +62,7 @@ class Projects extends Component{
       patient_name: "",
       patients: [],
       patient_name: "",
-      scenarioInput: "", 
+      scenarioInput: "none", 
       frequencyInput: {filterDbsnp: "any", filter1k: "any", filter1kfrequency: "1"}, 
       impactInput: {highImpactArray: [], medImpactArray: [], lowImpactArray: [], modifierImpactArray: []},
       pathogenicityInput: {polyphenArray: [], siftArray: [], polyphenScore: "0", siftScore: "1"}
@@ -94,7 +94,8 @@ class Projects extends Component{
   test = () => {
     axios.post(host + '/testfilter',{
       impactInput: this.state.impactInput,
-      frequencyInput: this.state.frequencyInput
+      frequencyInput: this.state.frequencyInput,
+      frequencyInput: this.state.scenarioInput
     },{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
       .then(res => {
         console.log("Here:");
@@ -148,7 +149,8 @@ class Projects extends Component{
     
     axios.post(`${host}/files/${id}`,{
       impactInput: this.state.impactInput,
-      frequencyInput: this.state.frequencyInput
+      frequencyInput: this.state.frequencyInput,
+      scenarioInput: this.state.scenarioInput
     },{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
       .then(res => {
         console.log("Here:");
@@ -199,7 +201,7 @@ class Projects extends Component{
   }
 
   fetchVCFTableFilters = (id) => {
-    axios.post(`${host}/vcf_table_filters/${id}`, {impactInput: this.state.impactInput,frequencyInput: this.state.frequencyInput}, {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
+    axios.post(`${host}/vcf_table_filters/${id}`, {impactInput: this.state.impactInput,frequencyInput: this.state.frequencyInput, scenarioInput: this.state.scenarioInput}, {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
       .then(res => {
         console.log("Here:");
         console.log(res.data);
@@ -272,7 +274,7 @@ class Projects extends Component{
     })
     console.log("Load more called!")
     //axios.get(`${host}/vcf_table/${this.state.project_id}/${this.state.load_index + 1}` ,{headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})
-    axios.post(`${host}/vcf_table_filters/${this.state.project_id}/${this.state.load_index + 1}`, {impactInput: this.state.impactInput,frequencyInput: this.state.frequencyInput}, {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})  
+    axios.post(`${host}/vcf_table_filters/${this.state.project_id}/${this.state.load_index + 1}`, {impactInput: this.state.impactInput,frequencyInput: this.state.frequencyInput, scenarioInput: this.state.scenarioInput}, {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}})  
       .then(res => {
         console.log("Here:");
         console.log(res.data);
@@ -552,7 +554,7 @@ class Projects extends Component{
           loader={<div>Loading Chart</div>}
           data={pie1k_data}
           options={{
-            title: '1KG Variant Distribution',
+            title: '1KG Variant Distribution (not found in the annotation)',
           }}
           rootProps={{ 'data-testid': '1' }}
           chartEvents={this.chartEvents}
@@ -568,6 +570,7 @@ class Projects extends Component{
           <div style={{display: 'table', tableLayout:'fixed', width:'25%', float: 'right'}}>
                     <FilterPanel filterType="frequency" onInputChange={this.onInputChange}/>
                     <FilterPanel filterType="impact" onInputChange={this.onInputChange}/>
+                    <FilterPanel filterType="scenario" onInputChange={this.onInputChange}/>
                     <Grid item xs>
                         <Button onClick={() => {this.fetchFiles(project_id); this.fetchVCFTableFilters(project_id);}}>Apply Filter</Button>
                     </Grid>                    
