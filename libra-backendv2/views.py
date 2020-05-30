@@ -63,7 +63,7 @@ def register_user():
   
   pw_hash = bcrypt.generate_password_hash(data['password1'])
   pw_hash = pw_hash.decode('utf-8')
-  new_user = User(public_id = str(uuid.uuid4()), username=data['username'], name=data['name'], email=data['email'], password=pw_hash, admin=False, ph_thrs=0.5, gn_thrs=0.5)
+  new_user = User(public_id = str(uuid.uuid4()), username=data['username'], name=data['name'], email=data['email'], password=pw_hash, admin=False, ph_thrs=50.0, gn_thrs=50.0)
   db.session.add(new_user)
   db.session.commit()
   
@@ -644,9 +644,9 @@ def query_db(query, args=(), one=False):
 @token_required
 def get_matchmaker_hpo(current_user, patient_id):
   sorted_results = []
-  if ss != 0:
+  if ss_hpo != 0:
     result = []
-    for patient in ac.obj_set:
+    for patient in ac_hpo.obj_set:
       if patient != patient_id:
         similarity = ss_hpo.SemSim(patient_id, patient)
         if similarity is not None:
@@ -773,6 +773,8 @@ def notificationChecker():
        
         
 def sendEmail(patient_ids, hpo_sim, go_sim):
+  hpo_sim = 100* hpo_sim, 
+  go_sim = 100*go_sim
   mail_info = []
   for patient_id in patient_ids:
     for user_id in db_engine.execute('select user_id from patient where id='+str(patient_id)):
@@ -786,12 +788,12 @@ def sendEmail(patient_ids, hpo_sim, go_sim):
   
   if mail_info[0][2]:
     msg = Message('Similarity Notification for '+ mail_info[0][0], sender = 'projectlibra.similarity@gmail.com', recipients = [mail_info[0][1]])
-    msg.html = get_mail_template(mail_info[0][0], mail_info[1][0], mail_info[1][1], 100*go_sim, 100*hpo_sim)
+    msg.html = get_mail_template(mail_info[0][0], mail_info[1][0], mail_info[1][1], go_sim, hpo_sim)
     thr = Thread(target=send_async_email, args=[msg])
     thr.start()
   if mail_info[1][2]:
     msg = Message('Similarity Notification for '+ mail_info[1][0], sender = 'projectlibra.similarity@gmail.com', recipients = [mail_info[1][1]])
-    msg.html = get_mail_template(mail_info[1][0], mail_info[0][0], mail_info[0][1], 100*go_sim, 100*hpo_sim)
+    msg.html = get_mail_template(mail_info[1][0], mail_info[0][0], mail_info[0][1], go_sim, hpo_sim)
     thr = Thread(target=send_async_email, args=[msg])
     thr.start()
 

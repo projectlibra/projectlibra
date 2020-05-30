@@ -84,11 +84,7 @@ class HPOTermViewer extends React.Component {
 					}</ul>
 			</p>
 			
-			
-			
-			<p>
-			As game {this.state.hpoid}
-			</p>
+		
 			
 		</div>
 	);

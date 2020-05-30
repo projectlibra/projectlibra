@@ -1,19 +1,11 @@
 import React, { Component } from 'react';
 import { useHistory } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
-import { Button, Divider, List, Checkbox, Typography } from 'antd';
+import { Button, Divider, List, Checkbox, Typography, Row, Col } from 'antd';
 import axios from 'axios';
 import Autocomplete from 'react-autocomplete';
-import { Input,Col, Row } from 'antd';
+import { Input} from 'antd';
 import host from '../host';
-import TextField from '@material-ui/core/TextField';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
 
 const menuStyle = {
 	borderRadius: '3px',
@@ -323,7 +315,9 @@ class EditPatient extends Component{
                 <Divider orientation="left" style={{ color: '#333', fontWeight: 'normal' }}></Divider>
                 
                <div style={{width: "100%", overflow: "hidden"}}>
-                    <div style={{width: "600px", height: "250px", float: "left"}}> 
+                    <Row>
+                    <Col span={12}>
+                        <p><b>Select Phenotypes for the Patient:</b></p>
                     <Autocomplete
 							multiple
 							getItemValue={this.getItemValue}
@@ -334,19 +328,19 @@ class EditPatient extends Component{
 							onSelect={this.onSelect}
                             inputProps={{ style: menuStyle },{ placeholder: 'HPO Tags' }}
 	                /> 
-                    </div>
-                    <div style={{marginLeft: "620px"}}>
-                         
-                        <List  itemLayout="horizontal"
-                            header={<div>Select Phenotypes to Edit Phenotype List of Patient:</div>}
-                            dataSource={buttonList}
-                            renderItem={item=> (
-                                <List.Item>
-                                    {item}
-                                </List.Item>
-                            )}
-                        />
-                    </div>
+                    </Col>
+                    <Col span={12}>
+                    <List  itemLayout="horizontal"
+                        header={<div><b>Select Phenotypes to Edit Phenotype List of Patient:</b></div>}
+                        dataSource={buttonList}
+                        renderItem={item=> (
+                            <List.Item>
+                                {item}
+                            </List.Item>
+                        )}
+                    />
+                    </Col>
+                    </Row>
                 </div>
                 <Button onClick={this.editDialog} color="primary">
                 Edit

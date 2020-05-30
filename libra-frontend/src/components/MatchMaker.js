@@ -400,13 +400,14 @@ class MatchMaker extends Component{
                 <Button type="primary" onClick={this.onManualMatchMakerClicked}>Run Manual MatchMaker</Button>
                 
                 <Divider orientation="left" style={{ color: '#333', fontWeight: 'normal' }}>
-                    Manual MatchMaker Results
+                    Manual HPO MatchMaker Results
                 </Divider>
                 <TableContainer component={Paper}>
                     <Table className={classes.table} size="small" aria-label="a dense table">
                         <TableHead>
                         <TableRow>
                             <TableCell>Patient Contact</TableCell>
+                            <TableCell align="right">Patient ID</TableCell>
                             <TableCell align="right">Diagnosis</TableCell>
                             <TableCell align="right">Phenotypes</TableCell>
                         </TableRow>
@@ -417,6 +418,7 @@ class MatchMaker extends Component{
                             <TableCell component="th" scope="row">
                                 {patient.patient_contact}
                             </TableCell>
+                            <TableCell align="right">{patient.id}</TableCell>
                             <TableCell align="right">{patient.diagnosis}</TableCell>
                             <TableCell align="right">{patient.hpo_tag_names}</TableCell>
                             </TableRow>
@@ -437,9 +439,9 @@ class MatchMaker extends Component{
                         <TableHead>
                         <TableRow>
                             <TableCell>Patient Contact</TableCell>
-                            <TableCell align="right">Patient Name</TableCell>
+                            <TableCell align="right">Patient ID</TableCell>
                             <TableCell align="right">Diagnosis</TableCell>
-                            <TableCell align="right">HPO Similarty Percentage</TableCell>
+                            <TableCell align="right">HPO Similarty(Between 0 and 1)</TableCell>
                         </TableRow>
                         </TableHead>
                         <TableBody>
@@ -448,7 +450,7 @@ class MatchMaker extends Component{
                             <TableCell component="th" scope="row">
                                 {patient.patient_contact}
                             </TableCell>
-                            <TableCell align="right">{patient.name}</TableCell>
+                            <TableCell align="right">{patient.id}</TableCell>
                             <TableCell align="right">{patient.diagnosis}</TableCell>
                             <TableCell align="right">{hpoMetricResults.filter(function(v) {
                                 return v.patient_id == patient.id;
@@ -472,9 +474,9 @@ class MatchMaker extends Component{
                         <TableHead>
                         <TableRow>
                             <TableCell>Patient Contact</TableCell>
-                            <TableCell align="right">Patient Name</TableCell>
+                            <TableCell align="right">Patient ID</TableCell>
                             <TableCell align="right">Diagnosis</TableCell>
-                            <TableCell align="right">GO Similarty Percentage</TableCell>
+                            <TableCell align="right">GO Similarty(Between 0 and 1)</TableCell>
                         </TableRow>
                         </TableHead>
                         <TableBody>
@@ -491,7 +493,7 @@ class MatchMaker extends Component{
                             </TableCell>
                             <TableCell align="right">{fetchedPatientsByGOMetric.filter(function(v) {
                                 return v.id == patient.patient_id;
-                            })[0].name}</TableCell>
+                            })[0].id}</TableCell>
                             <TableCell align="right">{fetchedPatientsByGOMetric.filter(function(v) {
                                 return v.id == patient.patient_id;
                             })[0].diagnosis}</TableCell>

@@ -30,7 +30,7 @@ const tailFormItemLayout = {
 
 
 function validatePrimeNumber(number) {
-    if (number <= 1.0 && number >= 0) {
+    if (number <= 100.0 && number >= 0) {
       return {
         validateStatus: 'success',
         errorMsg: null,
@@ -38,7 +38,7 @@ function validatePrimeNumber(number) {
     }
     return {
       validateStatus: 'error',
-      errorMsg: 'The threshold must be between 0 and 1!',
+      errorMsg: 'The threshold must be between 0 and 100!',
     };
 }
 const UpdateForm = (props) =>  {
@@ -167,7 +167,7 @@ const UpdateForm = (props) =>  {
         validateStatus={number1.validateStatus}
         help={number1.errorMsg}
       >
-        <InputNumber min={0} max={1} value={number1.value} onChange={onNumberChange1} />
+        <InputNumber min={0} max={100} value={number1.value} onChange={onNumberChange1} />
       </Form.Item>
 
       <Form.Item
@@ -177,7 +177,7 @@ const UpdateForm = (props) =>  {
         validateStatus={number2.validateStatus}
         help={number2.errorMsg}
       >
-        <InputNumber min={0} max={1} value={number2.value} onChange={onNumberChange2} />
+        <InputNumber min={0} max={100} value={number2.value} onChange={onNumberChange2} />
       </Form.Item>
 
         <Form.Item  {...tailFormItemLayout}> 

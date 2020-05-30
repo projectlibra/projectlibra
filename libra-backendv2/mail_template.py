@@ -1,7 +1,7 @@
 
 
 
-def get_mail_template(patient_1, patient_2, mail_to_contact, phenotype_sim, genotype_sim):
+def get_mail_template(patient_1, patient_2, mail_to_contact,  genotype_sim, phenotype_sim):
     
     phenotype_text = ""
     if phenotype_sim == 0:
@@ -9,7 +9,7 @@ def get_mail_template(patient_1, patient_2, mail_to_contact, phenotype_sim, geno
         phenotype_text = "Phenotype similiarty couldn't be calculated"
     else:
         phenotype_sim = "{:0.2f}".format(phenotype_sim)
-        phenotype_text = "This similiarty is higher than the threshold that you set"
+        phenotype_text = "According to threshold that you set for the matchmaking system."
     
     genotype_text = ""
     if genotype_sim == 0:
@@ -17,7 +17,7 @@ def get_mail_template(patient_1, patient_2, mail_to_contact, phenotype_sim, geno
         genotype_text = "Genotype similiarty couldn't be calculated"
     else:
         genotype_sim = "{:0.2f}".format(genotype_sim)
-        genotype_text = "This similiarty is higher than the threshold that you set"
+        genotype_text = "According to threshold that you set for the matchmaking system."
     
     return """
     <!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'>
@@ -50,8 +50,8 @@ def get_mail_template(patient_1, patient_2, mail_to_contact, phenotype_sim, geno
                                             <h3>Your Patient ID: {}</h3>
                                             <h3>Matched Patient ID: {}</h3>
                                             <a href='mailto:{}' target='_blank' style='display: inline-block; color: #ffffff; background-color: #3498db; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-transform: capitalize; border-color: #3498db;'>Contact Doctor</a>
+                                            According to our matchmaking system, you have a new match. You can cotact with the respective doctor using the button above.
                                             
-                                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. In tempus adipiscing felis, sit amet blandit ipsum volutpat sed. Morbi porttitor, eget accumsan dictum, nisi libero ultricies ipsum, in posuere mauris neque at erat.</p>
                                         </td>
                                     </tr>
                                     <tr>
@@ -63,7 +63,7 @@ def get_mail_template(patient_1, patient_2, mail_to_contact, phenotype_sim, geno
 
                                                             <tr>
                                                                 <td style='padding: 25px 0 0 0; color: #153643; font-family: Arial, sans-serif; font-size: 16px; line-height: 20px;'>
-                                                                    <h4>Genotype Similarity: %{}</h4>
+                                                                    <h4>Genotype Similarity: {}%</h4>
                                                                     {}
                                                                 </td>
                                                             </tr>
@@ -76,7 +76,7 @@ def get_mail_template(patient_1, patient_2, mail_to_contact, phenotype_sim, geno
                                                         <table border='0' cellpadding='0' cellspacing='0' width='100%'>
                                                             <tr>
                                                                 <td style='padding: 25px 0 0 0; color: #153643; font-family: Arial, sans-serif; font-size: 16px; line-height: 20px;'>
-                                                                    <h4>Phenotype Similarity: %{}</h4>
+                                                                    <h4>Phenotype Similarity: {}%</h4>
                                                                     {}
                                                                 </td>
                                                             </tr>

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { Button, Divider } from 'antd';
+import { Divider } from 'antd';
 import PatientProfile from './PatientProfile';
-
+import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -323,7 +323,7 @@ class PatientProfiles extends Component{
         )
         return (
         <div>
-            <Button onClick={this.openCreateDialog}>Create New Patient</Button>
+            <Button variant="contained" onClick={this.openCreateDialog}>Create New Patient</Button>
             <Divider orientation="left" style={{ color: '#333', fontWeight: 'normal' }}>
             Your Patients
             </Divider>
@@ -376,77 +376,18 @@ class PatientProfiles extends Component{
                 
             </DialogContent>
             <DialogActions>
-                <Button onClick={this.cleanTags} color="primary">
+                <Button variant="contained" onClick={this.cleanTags} >
                 Clean Tags
                 </Button>
-                <Button onClick={this.closeCreateDialog} color="primary">
+                <Button variant="contained" onClick={this.closeCreateDialog} >
                 Cancel
                 </Button>
-                <Button onClick={this.submitDialog} color="primary">
+                <Button variant="contained" onClick={this.submitDialog} >
                 Create
                 </Button>
             </DialogActions>
             </Dialog>
-            <Dialog open={this.state.edit_open}  fullWidth={true} aria-labelledby="form-dialog-title">
-            <DialogTitle id="form-dialog-title">Edit Patient</DialogTitle>
-            <DialogContent>
-                <DialogContentText>
-                    Please fill the following content related to the patient:
-                </DialogContentText>
-                <TextField
-                autoFocus
-                margin="dense"
-                id="name"
-                label={this.state.edit_patient.name}
-                fullWidth
-                onChange={this.handleChange}
-                />
-                <TextField
-                margin="dense"
-                id="diagnosis"
-                label={this.state.edit_patient.diagnosis}
-                fullWidth
-                multiline
-                onChange={this.handleChange}
-                />
-                
-                <List  component="nav" >
-                    Previous Phenotypes:
-                    <ListItem  >
-                        {this.state.edit_patient.hpo_tag_names}
-                    </ListItem>	
-                    Selected Phenotypes:
-                    {this.state.currentValues.map( value => 
-                    <ListItem  >
-                        {value}
-                    </ListItem>																			               
-                )}
-                </List >
-                <Autocomplete
-							multiple
-							getItemValue={this.getItemValue}
-							items={this.state.autocompleteData}
-							renderItem={this.renderItem}
-							value={this.state.value}
-							onChange={this.onChange}
-							onSelect={this.onSelect}
-							inputProps={{ style: menuStyle },{ placeholder: 'HPO Tags' }}
-							
-                />
-                
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={this.cleanTags} color="primary">
-                Clean Tags
-                </Button>
-                <Button onClick={this.closeEditDialog} color="primary">
-                Cancel
-                </Button>
-                <Button onClick={this.editDialog} color="primary">
-                Edit
-                </Button>
-            </DialogActions>
-            </Dialog>
+            
             
         </div>
         )
