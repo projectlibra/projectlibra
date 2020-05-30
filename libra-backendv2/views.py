@@ -126,6 +126,45 @@ def add_project(current_user):
 
   return project_schema.jsonify(project)
 
+@app.route('/testfilter', methods=['POST'])
+@token_required
+def test_filter(current_user):
+  impactInput = request.json['impactInput']
+  frequencyInput = request.json['frequencyInput']
+  scenarioInput = request.json['scenarioInput']
+  if(len(impactInput['highImpactArray']) == 0):
+    print("high impact is empty")
+  else:
+    print("high impact is not empty")
+
+  if(len(impactInput['medImpactArray']) == 0):
+    print("medImpactArray is empty")
+  else:
+    print("medImpactArray is not empty")
+
+  print("high impact types")
+  for type in impactInput['highImpactArray']:
+    print(type)
+  
+  print(impactInput)
+  print(frequencyInput)
+  print(scenarioInput)
+
+  query = ''
+  for type in impactInput['highImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+  for type in impactInput['medImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+  for type in impactInput['lowImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+
+  query = query[3:]
+  print(query)
+  execquery = 'select * from vcf WHERE ' + query
+  print(execquery)
+
+  return make_response('Testing filters', 200)
+
 @app.route('/project', methods=['GET'])
 @token_required
 def get_projects(current_user):
@@ -215,7 +254,7 @@ def fileUpload(current_user):
           np = Patient(name=sample.sample, user_id=current_user.id)
           db.session.add(np)
           db.session.commit()
-          db.session.add(PatientProject(patient_id=np.id, project_id=project_id, has_disease=False))
+          db.session.add(PatientProject(patient_id=np.id, project_id=project_id, has_disease=True))
           db.session.commit()
           np_id_list.append(np.id)
         break
@@ -235,7 +274,18 @@ def fileUpload(current_user):
             print("Elapsed time for db flush: ", end2 - start2)
           
           anno = record.INFO['ANN'][0].split('|')
-          new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=np_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6])
+
+          # for now assuming every sample has the disease
+          dom = True
+          rec = True
+          for sample in record.samples:
+            if sample['GT'] != "1/1":
+              rec = False
+              if sample['GT'] != "0/1":
+                dom = False
+                break
+
+          new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=np_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6], dominant=dom, recessive=rec)
           db.session.add(new_vcf)
           #db.session.commit()
 
@@ -296,7 +346,7 @@ def fileUpload(current_user):
           print("Elapsed time for db flush: ", end2 - start2)
         
         anno = record.INFO['ANN'][0].split('|')
-        new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=patient_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6])
+        new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=patient_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6], dominant=False, recessive=False)
         db.session.add(new_vcf)
         #db.session.commit()
 
@@ -320,7 +370,7 @@ def fileUpload(current_user):
       for sample in record.samples:
           # print (sample)
           # sample_data = str(sample.data)[9:-1] because pyvcf has "CallData()" wrapping it
-          # new_vcf = VCFs(filename=filename, project_id=project_id, user_id=user_id, chrom=str(record.CHROM),
+          # new_vcf = Vcf(filename=filename, project_id=project_id, user_id=user_id, chrom=str(record.CHROM),
           #  pos=record.POS, variant_id=record.ID, ref=record.REF, alt=str(record.ALT), qual=record.QUAL,
           #  filter=str(record.FILTER), info=str(record.INFO), sample_id = str(sample.sample),
           #  sample_data = str(sample.data)[9:-1])
@@ -383,7 +433,7 @@ def get_vcf_table(current_user, id):
   columns = [column.key for column in Vcf.__table__.columns]
   columns2 = [column.key for column in Sample.__table__.columns]
   columns = columns + list(set(columns2) - set(columns))
-  #for column in VCFs.__table__.columns
+  #for column in Vcf.__table__.columns
     #if column.key not in columns
     #  columns.append(column.key)
   print(columns)
@@ -393,7 +443,7 @@ def get_vcf_table(current_user, id):
   #result = db.session.query(VCFs, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, VCFs.vcf_id == Sample.vcf_id).all()
   result = db.session.query(Vcf, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, Vcf.id == Sample.vcf_id).limit(1000).all()
   #print(result)
-  print(len(result))
+  print(result)
   '''table_data = []
   for vcf in result:
     row_data = []
@@ -419,11 +469,11 @@ def get_vcf_table(current_user, id):
     row_data.append(vcf[0].ref)
     row_data.append(vcf[0].alt)
     row_data.append(vcf[0].qual)
-    row_data.append(vcf[0].filter)
+    # row_data.append(vcf[0].filter)
     if "VT" in vcf[0].info:
       cnt_1k+=1
-    row_data.append(vcf[0].info)
-    row_data.append(vcf[0].alelle)
+    # row_data.append(vcf[0].info)
+    # row_data.append(vcf[0].alelle)
     row_data.append(vcf[0].annotation)
     row_data.append(vcf[0].annotation_impact)
     row_data.append(vcf[0].gene_name)
@@ -432,6 +482,7 @@ def get_vcf_table(current_user, id):
     row_data.append(vcf[0].feature_id)
     #row_data.append(vcf[1].sample_id)
     #row_data.append(vcf[1].sample_data)
+
     table_data.append(row_data)
 
   #print(table_data)
@@ -456,19 +507,19 @@ def get_vcf_table_index(current_user, id, index):
   columns = [column.key for column in Vcf.__table__.columns]
   columns2 = [column.key for column in Sample.__table__.columns]
   columns = columns + list(set(columns2) - set(columns))
-  #for column in VCFs.__table__.columns
+  #for column in Vcf.__table__.columns
     #if column.key not in columns
     #  columns.append(column.key)
   print(columns)
   total_cnt = db.session.query(Vcf, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, Vcf.id == Sample.vcf_id).count()
-  #result = VCFs.query.filter_by(user_id=current_user.id, project_id=id).options(load_only(*columns[4:])).all()
-  #result = db.session.query(VCFs, Sample).outerjoin(Sample, VCFs.vcf_id == Sample.vcf_id).all()
-  #result = db.session.query(VCFs, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, VCFs.vcf_id == Sample.vcf_id).all()
+  #result = Vcf.query.filter_by(user_id=current_user.id, project_id=id).options(load_only(*columns[4:])).all()
+  #result = db.session.query(Vcf, Sample).outerjoin(Sample, Vcf.vcf_id == Sample.vcf_id).all()
+  #result = db.session.query(Vcf, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, Vcf.vcf_id == Sample.vcf_id).all()
   off = 1000
   lim = 1000
   if off*int(index) + lim > total_cnt:
     lim = total_cnt % off 
-  result = db.session.query(VCFs, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, VCFs.id == Sample.vcf_id).offset(int(index)*off).limit(lim).all()
+  result = db.session.query(Vcf, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, Vcf.id == Sample.vcf_id).offset(int(index)*off).limit(lim).all()
   #print(result)
   print(len(result))
   '''table_data = []
@@ -483,6 +534,7 @@ def get_vcf_table_index(current_user, id, index):
   cnt_all = 0
   cnt_1k = 0
   for vcf in result:
+    print(vcf[0])
     row_data = []
     row_data.append(vcf[0].chrom)
     row_data.append(vcf[0].pos)
@@ -496,11 +548,11 @@ def get_vcf_table_index(current_user, id, index):
     row_data.append(vcf[0].ref)
     row_data.append(vcf[0].alt)
     row_data.append(vcf[0].qual)
-    row_data.append(vcf[0].filter)
+    # row_data.append(vcf[0].filter)
     if "VT" in vcf[0].info:
       cnt_1k+=1
-    row_data.append(vcf[0].info)
-    row_data.append(vcf[0].alelle)
+    # row_data.append(vcf[0].info)
+    # row_data.append(vcf[0].alelle)
     row_data.append(vcf[0].annotation)
     row_data.append(vcf[0].annotation_impact)
     row_data.append(vcf[0].gene_name)
@@ -519,6 +571,281 @@ def get_vcf_table_index(current_user, id, index):
 
   resp = {
     'table_data': table_data,
+  }
+
+  return resp, 200
+
+@app.route('/vcf_table_filters/<id>', methods=['POST'])
+@token_required
+def get_vcf_table_with_filters(current_user, id):
+  columns = [column.key for column in Vcf.__table__.columns]
+  columns2 = [column.key for column in Sample.__table__.columns]
+  columns = columns + list(set(columns2) - set(columns))
+  print(columns)
+  
+  impactInput = request.json['impactInput']
+  frequencyInput = request.json['frequencyInput']
+  scenarioInput = request.json['scenarioInput']
+  query = ''
+  for type in impactInput['highImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+  for type in impactInput['medImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+  for type in impactInput['lowImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+
+  if(len(query) > 0):
+    query = query[3:]
+    if (frequencyInput['filterDbsnp'] == "yes"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND dominant=true AND ('+ query +') LIMIT 1000'
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND recessive=true AND ('+ query +') LIMIT 1000'
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND ('+ query +') LIMIT 1000'
+    elif (frequencyInput['filterDbsnp'] == "no"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND dominant=true AND ('+ query +') LIMIT 1000'
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND recessive=true AND ('+ query +') LIMIT 1000'
+      else:
+         execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND ('+ query +') LIMIT 1000'       
+    else:
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND dominant=true AND ('+ query +') LIMIT 1000'
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND recessive=true AND ('+ query +') LIMIT 1000'
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND ('+ query +') LIMIT 1000'   
+  else:
+    if (frequencyInput['filterDbsnp'] == "yes"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND dominant=true LIMIT 1000'
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND recessive=true LIMIT 1000'
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL LIMIT 1000'        
+    elif (frequencyInput['filterDbsnp'] == "no"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND dominant=true LIMIT 1000'
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND recessive=true LIMIT 1000'
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL LIMIT 1000'       
+    else:
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND dominant=true LIMIT 1000'
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND recessive=true LIMIT 1000'
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' LIMIT 1000'
+        
+  print(execquery)
+
+  result = db.session.execute(execquery)
+
+  table_data = []
+  cnt_dbsnp = 0
+  cnt_all = 0
+  cnt_1k = 0
+  print("scenario input is: ")
+  print(scenarioInput)
+  for vcf in result:
+    if(((frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "any") 
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "yes" and (vcf[7] is not None) and ("VT" in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "no" and (vcf[7] is None) and ("VT" not in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "no" and (vcf[7] is not None) and ("VT" not in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "yes" and (vcf[7] is None) and ("VT" in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "any" and (vcf[7] is not None))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "any" and (vcf[7] is None))
+      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "yes" and ("VT" in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "no" and ("VT" not in vcf[12]))
+      )
+      and ((scenarioInput == "none" or scenarioInput == "")
+        or (scenarioInput == "dominant" and vcf[20] == True)
+        or ((scenarioInput == "recessive" and vcf[21] == True)
+          )
+        )
+      ):
+      row_data = []
+      row_data.append(vcf[5]) #chrom
+      row_data.append(vcf[6]) #pos
+      cnt_all+=1
+      if vcf[7] is None:
+        row_data.append(vcf[7]) #variant_id
+      else:
+        cnt_dbsnp +=1
+        #row_data.append('<a href={`https://www.ncbi.nlm.nih.gov/snp/$'+vcf[7]+'`} target="_blank">'+vcf[7]+'</a>')
+        row_data.append(vcf[7])
+        #row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[7] + '" target="_blank">' + vcf[7] +  '</a>')
+      row_data.append(vcf[8]) #ref
+      row_data.append(vcf[9]) #alt
+      row_data.append(vcf[10]) #qual
+      # row_data.append(vcf[11]) #filter
+      if "VT" in vcf[12]: #info
+        cnt_1k+=1
+      # row_data.append(vcf[12]) #info 
+      # row_data.append(vcf[13]) #allele
+      row_data.append(vcf[14]) #annotation
+      row_data.append(vcf[15]) #annotation_impact
+      row_data.append(vcf[16]) #gene_name
+      row_data.append(vcf[17]) #gene_id
+      row_data.append(vcf[18]) #feature_type
+      row_data.append(vcf[19]) #feature_id
+
+      table_data.append(row_data)
+
+  print(len(table_data))
+    
+  print("Columns:", columns[4:len(columns)-2])
+
+  resp = {
+    'columns': columns[4:len(columns)-2],
+    'table_data': table_data,
+    'pie_data' : [['db', 'count'], ['dbSNP', cnt_dbsnp], ['Novel', cnt_all - cnt_dbsnp]],
+    'pie1k_data' : [['db', 'count'], ['1KG', cnt_1k], ['Novel', cnt_all - cnt_1k]] 
+  }
+
+  return resp, 200
+
+@app.route('/vcf_table_filters/<id>/<index>', methods=['POST'])
+@token_required
+def get_vcf_table_with_filters_index(current_user, id, index):
+  columns = [column.key for column in Vcf.__table__.columns]
+  columns2 = [column.key for column in Sample.__table__.columns]
+  columns = columns + list(set(columns2) - set(columns))
+  
+  print(columns)
+  #total_cnt = db.session.query(Vcf, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, Vcf.id == Sample.vcf_id).count()
+  off = 1000
+  lim = 1000
+  #if off*int(index) + lim > total_cnt:
+  #  lim = total_cnt % off 
+  # result = db.session.query(Vcf, Sample).filter_by(user_id=current_user.id, project_id=id).outerjoin(Sample, Vcf.id == Sample.vcf_id).offset(int(index)*off).limit(lim).all()
+
+  impactInput = request.json['impactInput']
+  frequencyInput = request.json['frequencyInput']
+  scenarioInput = request.json['scenarioInput']
+  query = ''
+  for type in impactInput['highImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+  for type in impactInput['medImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+  for type in impactInput['lowImpactArray']:
+    query = query + ' OR annotation=\'' + type + '\''
+
+  #if(len(query) > 0):
+  #  query = query[3:]
+  #  execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+  #else:
+  #  execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+
+  if(len(query) > 0):
+    query = query[3:]
+    if (frequencyInput['filterDbsnp'] == "yes"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND dominant=true AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND recessive=true AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+    elif (frequencyInput['filterDbsnp'] == "no"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND dominant=true AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND recessive=true AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      else:
+         execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+    else:
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND dominant=true AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND recessive=true AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND ('+ query +') OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+  else:
+    if (frequencyInput['filterDbsnp'] == "yes"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND dominant=true OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL AND recessive=true OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NOT NULL OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+    elif (frequencyInput['filterDbsnp'] == "no"):
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND dominant=true OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL AND recessive=true OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND variant_id IS NULL OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+    else:
+      if (scenarioInput == "dominant"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND dominant=true OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      elif (scenarioInput == "recessive"):
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' AND recessive=true OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+      else:
+        execquery = 'select * from vcf WHERE user_id=' + str(current_user.id) + ' AND project_id=' + str(id) + ' OFFSET '+str((int(index)*off)) + ' LIMIT '+str(lim)
+  print(execquery)
+
+  result = db.session.execute(execquery)
+
+  table_data = []
+  cnt_dbsnp = 0
+  cnt_all = 0
+  cnt_1k = 0
+  for vcf in result:
+    if(((frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "any") 
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "yes" and (vcf[7] is not None) and ("VT" in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "no" and (vcf[7] is None) and ("VT" not in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "no" and (vcf[7] is not None) and ("VT" not in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "yes" and (vcf[7] is None) and ("VT" in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "yes" and frequencyInput['filter1k'] == "any" and (vcf[7] is not None))
+      or (frequencyInput['filterDbsnp'] == "no" and frequencyInput['filter1k'] == "any" and (vcf[7] is None))
+      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "yes" and ("VT" in vcf[12]))
+      or (frequencyInput['filterDbsnp'] == "any" and frequencyInput['filter1k'] == "no" and ("VT" not in vcf[12]))
+      )
+      and ((scenarioInput == "none" or scenarioInput == "")
+        or (scenarioInput == "dominant" and vcf[20] == True)
+        or ((scenarioInput == "recessive" and vcf[21] == True)
+          )
+        )
+      ):
+      row_data = []
+      row_data.append(vcf[5]) #chrom
+      row_data.append(vcf[6]) #pos
+      cnt_all+=1
+      if vcf[7] is None:
+        row_data.append(vcf[7]) #variant_id
+      else:
+        cnt_dbsnp +=1
+        row_data.append(vcf[7])
+        #row_data.append('<a href="https://www.ncbi.nlm.nih.gov/snp/' + vcf[7] + '" target="_blank">' + vcf[7] +  '</a>')
+      row_data.append(vcf[8]) #ref
+      row_data.append(vcf[9]) #alt
+      row_data.append(vcf[10]) #qual
+      # row_data.append(vcf[11]) #filter
+      if "VT" in vcf[12]: #info
+        cnt_1k+=1
+      # row_data.append(vcf[12]) #info 
+      # row_data.append(vcf[13]) #allele
+      row_data.append(vcf[14]) #annotation
+      row_data.append(vcf[15]) #annotation_impact
+      row_data.append(vcf[16]) #gene_name
+      row_data.append(vcf[17]) #gene_id
+      row_data.append(vcf[18]) #feature_type
+      row_data.append(vcf[19]) #feature_id
+
+      table_data.append(row_data)
+
+  print(len(table_data))
+    
+  print("Columns:", columns[4:len(columns)-2])
+
+  resp = {
+    'columns': columns[4:len(columns)-2],
+    'table_data': table_data,
+    'pie_data' : [['db', 'count'], ['dbSNP', cnt_dbsnp], ['Novel', cnt_all - cnt_dbsnp]],
+    'pie1k_data' : [['db', 'count'], ['1KG', cnt_1k], ['Novel', cnt_all - cnt_1k]] 
   }
 
   return resp, 200
