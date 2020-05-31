@@ -481,6 +481,8 @@ class Projects extends Component{
         Select a patient: 
       </Dropdown.Button>
       <p>Samples in the VCF file will be created as patients.</p>
+      <p>Add the following line at the beginning of your VCF file: ##patient1 Y patient2 Y patient3 N ... patientN Y</p>
+      <p>where Y/N: the patient has/doesn't have the disease</p>
       <Upload project_id={project_id} patient_id={selected_patient} />
     </div>
     }

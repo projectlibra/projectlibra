@@ -209,7 +209,17 @@ def fileUpload(current_user):
     filename = secure_filename(file.filename)
     file_path = os.path.join(dir_path, filename)
     file.save(file_path)
+    with open(file_path) as f:
+      first_line = f.readline()
     
+    
+    first_line=first_line[2:]
+    first_line=first_line.split()
+    keys= first_line[::2]
+    values=first_line[1::2]
+    has_disease = dict(zip(keys, values))
+    
+
     """
     # ANNOTATE DBSNP ID
     file_path2 = file_path[:-4] + "_dbsnp.vcf"
@@ -254,7 +264,10 @@ def fileUpload(current_user):
           np = Patient(name=sample.sample, user_id=current_user.id)
           db.session.add(np)
           db.session.commit()
-          db.session.add(PatientProject(patient_id=np.id, project_id=project_id, has_disease=True))
+          has_dis = True
+          if has_disease[sample.sample] == 'N':
+            has_dis = False
+          db.session.add(PatientProject(patient_id=np.id, project_id=project_id, has_disease=has_dis))
           db.session.commit()
           np_id_list.append(np.id)
         break
@@ -275,15 +288,18 @@ def fileUpload(current_user):
           
           anno = record.INFO['ANN'][0].split('|')
 
-          # for now assuming every sample has the disease
+          # snippet to check whether the variant is dominant, recessive
           dom = True
           rec = True
           for sample in record.samples:
-            if sample['GT'] != "1/1":
+            if has_disease[sample.sample] == 'Y' and sample['GT'] != "1/1":
               rec = False
               if sample['GT'] != "0/1":
                 dom = False
                 break
+            if has_disease[sample.sample] == 'N' and sample['GT'] != "0/0":
+              rec = False
+              dom = False
 
           new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=np_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO), alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6], dominant=dom, recessive=rec)
           db.session.add(new_vcf)
@@ -946,7 +962,8 @@ def get_patient_by_id(current_user, patient_id):
 @app.route('/projectpatients/<id>', methods=['GET'])
 @token_required
 def get_project_patients(current_user, id):
-  patients = Project.query.get(id).patients
+  # patients = Project.query.get(id).patients
+  patients = db.session.query(PatientProject, Patient).filter_by(project_id=id).outerjoin(Patient, Patient.id == PatientProject.patient_id).all()
   print(patients)
 
   return patients_schema.jsonify(patients)
