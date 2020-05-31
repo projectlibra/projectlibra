@@ -209,15 +209,7 @@ def fileUpload(current_user):
     filename = secure_filename(file.filename)
     file_path = os.path.join(dir_path, filename)
     file.save(file_path)
-    with open(file_path) as f:
-      first_line = f.readline()
     
-    
-    first_line=first_line[2:]
-    first_line=first_line.split()
-    keys= first_line[::2]
-    values=first_line[1::2]
-    has_disease = dict(zip(keys, values))
     
 
     """
@@ -259,6 +251,15 @@ def fileUpload(current_user):
     if patient_id != 0 and patient_id != -1:
       db.session.add(PatientProject(patient_id=patient_id, project_id=project_id, has_disease=has_disease))
     elif patient_id == -1: # batch upload
+
+      with open(file_path) as f:
+          first_line = f.readline()
+      first_line=first_line[2:]
+      first_line=first_line.split()
+      keys= first_line[::2]
+      values=first_line[1::2]
+      has_disease = dict(zip(keys, values))
+
       for record in vcf_reader:
         for sample in record.samples:
           np = Patient(name=sample.sample, user_id=current_user.id)
@@ -275,6 +276,7 @@ def fileUpload(current_user):
     db.session.commit()
     go_list = []
     if patient_id == -1: # batch upload
+
       for np_id in np_id_list:
         for record in vcf_reader:
           if cnt % 10000 == 0:
