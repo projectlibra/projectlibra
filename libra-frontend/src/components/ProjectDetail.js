@@ -338,7 +338,6 @@ class Projects extends Component{
   }
 
   handleMenuClick = (e) => {
-    message.info('Click on menu item.');
     console.log('click', e);
     if(e.key != 0 && e.key != -1) {
       var patient = this.state.patients.find(obj => {return obj.id == e.key});

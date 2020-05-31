@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import {AnimationWrapper} from "react-hover-animation"
 const Project = (props) => {
 
-  if (props.disease == null) {
+  if (props.disease == null || props.disease == "") {
   return (
     <div>
       <Link to={`/projects/${props.id}`}>

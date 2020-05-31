@@ -303,7 +303,7 @@ def fileUpload(current_user):
               rec = False
               dom = False
 
-          new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=np_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6], dominant=dom, recessive=rec)
+          new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=np_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO), alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6], dominant=dom, recessive=rec)
           db.session.add(new_vcf)
           #db.session.commit()
 
@@ -350,8 +350,9 @@ def fileUpload(current_user):
         start = time.time()
         db.session.commit()
         end = time.time()
-        new_patient = Patient.query.get(np_id)
-        new_patient.go_ids = ','.join(list(set(go_list)))
+        #new_patient = Patient.query.get(np_id)
+        #new_patient.go_ids = ','.join(list(set(go_list)))
+        break
         db.session.commit()
         print("Elapsed time for db commit: ", end - start)
     else:
@@ -369,14 +370,13 @@ def fileUpload(current_user):
         
         anno = record.INFO['ANN'][0].split('|')
         if patient_id == 0:
-          new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6], dominant=False, recessive=False)
+          new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO), alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6], dominant=False, recessive=False)
         else:
-          new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=patient_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6], dominant=False, recessive=False)
+          new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=patient_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO), alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6], dominant=False, recessive=False)
         db.session.add(new_vcf)
         #db.session.commit()
         if patient_id != 0:
           if new_vcf.annotation_impact == "HIGH":
-            print("Inside HIGH")
             if new_vcf.gene_name in app.config['GENE_DICT']:
               db_gene_name = GeneName(name=new_vcf.gene_name)
               db.session.merge(db_gene_name)
@@ -518,7 +518,9 @@ def get_vcf_table(current_user, id):
   #print(table_data)
   print(len(table_data))
     
-
+  cnt_1k = db.session.query(Vcf).filter_by(user_id=current_user.id, project_id=id).filter(Vcf.info.like("%EAS_AF%")).count()
+  cnt_dbsnp = db.session.query(Vcf).filter_by(user_id=current_user.id, project_id=id).filter(Vcf.variant_id == None).count()
+  cnt_all = db.session.query(Vcf).filter_by(user_id=current_user.id, project_id=id).count()
   print("Columns:", columns[4:len(columns)-2])
 
   resp = {
