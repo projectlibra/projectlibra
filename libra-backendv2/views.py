@@ -299,7 +299,11 @@ def fileUpload(current_user):
                 db_gene_id = GeneId(gene_id=go_id)
                 db.session.merge(db_gene_id)
               db.session.commit()
-              db.session.merge(PatientGeneName(patient_id=np_id, gene_name=new_vcf.gene_name))
+              if '&' in anno[1]:
+                pat_anno = anno[1].split('&')[0]
+              else:
+                pat_anno = anno[1]
+              db.session.merge(PatientGeneName(patient_id=np_id, gene_name=new_vcf.gene_name, anno=pat_anno))
               for go_id in app.config['GENE_DICT'][new_vcf.gene_name]:
                 db.session.merge(PatientGeneID(patient_id=np_id, gene_id=go_id))
               db.session.commit()
@@ -346,24 +350,31 @@ def fileUpload(current_user):
           print("Elapsed time for db flush: ", end2 - start2)
         
         anno = record.INFO['ANN'][0].split('|')
-        new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=patient_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6], dominant=False, recessive=False)
+        if patient_id == 0:
+          new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6], dominant=False, recessive=False)
+        else:
+          new_vcf = Vcf(filename='file.filename', project_id=project_id, user_id=user_id, patient_id=patient_id, chrom=str(record.CHROM), pos=record.POS, variant_id=record.ID, ref=str(record.REF)[:20], alt=str(record.ALT)[:20], qual=record.QUAL, filter=str(record.FILTER), info=str(record.INFO)[:20], alelle=anno[0], annotation=anno[1], annotation_impact=anno[2], gene_name=anno[3], gene_id=anno[4], feature_type=anno[5], feature_id=anno[6], dominant=False, recessive=False)
         db.session.add(new_vcf)
         #db.session.commit()
-
-        if new_vcf.annotation_impact == "HIGH":
-          print("Inside HIGH")
-          if new_vcf.gene_name in app.config['GENE_DICT']:
-            db_gene_name = GeneName(name=new_vcf.gene_name)
-            db.session.merge(db_gene_name)
-            for go_id in app.config['GENE_DICT'][new_vcf.gene_name]:
-              go_list.append(go_id)
-              db_gene_id = GeneId(gene_id=go_id)
-              db.session.merge(db_gene_id)
-            db.session.commit()
-            db.session.merge(PatientGeneName(patient_id=patient_id, gene_name=new_vcf.gene_name))
-            for go_id in app.config['GENE_DICT'][new_vcf.gene_name]:
-              db.session.merge(PatientGeneID(patient_id=patient_id, gene_id=go_id))
-            db.session.commit()
+        if patient_id != 0:
+          if new_vcf.annotation_impact == "HIGH":
+            print("Inside HIGH")
+            if new_vcf.gene_name in app.config['GENE_DICT']:
+              db_gene_name = GeneName(name=new_vcf.gene_name)
+              db.session.merge(db_gene_name)
+              for go_id in app.config['GENE_DICT'][new_vcf.gene_name]:
+                go_list.append(go_id)
+                db_gene_id = GeneId(gene_id=go_id)
+                db.session.merge(db_gene_id)
+              db.session.commit()
+              if '&' in anno[1]:
+                pat_anno = anno[1].split('&')[0]
+              else:
+                pat_anno = anno[1]
+              db.session.merge(PatientGeneName(patient_id=patient_id, gene_name=new_vcf.gene_name, anno=pat_anno))
+              for go_id in app.config['GENE_DICT'][new_vcf.gene_name]:
+                db.session.merge(PatientGeneID(patient_id=patient_id, gene_id=go_id))
+              db.session.commit()
         
       """
       #variant_list.append(new_vcf)
@@ -389,8 +400,9 @@ def fileUpload(current_user):
     start = time.time()
     db.session.commit()
     end = time.time()
-    new_patient = Patient.query.get(patient_id)
-    new_patient.go_ids = ','.join(list(set(go_list)))
+    if patient_id != 0:
+      new_patient = Patient.query.get(patient_id)
+      new_patient.go_ids = ','.join(list(set(go_list)))
     db.session.commit()
     print("Elapsed time for db commit: ", end - start)
     

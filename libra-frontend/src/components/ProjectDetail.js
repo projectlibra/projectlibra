@@ -485,7 +485,7 @@ class Projects extends Component{
       <Upload project_id={project_id} patient_id={selected_patient} />
     </div>
     }
-    else if(project.disease == "") {
+    else if(project.disease == null || project.disease == ""){
       fileUploader = <div>
       <Dropdown.Button overlay={menu} icon={<UserOutlined />}>
         Select a patient: 
@@ -636,7 +636,7 @@ class Projects extends Component{
         <Sider updateParent={this.updateState} />
         <div style ={{paddingLeft: "15px"}}>
             <Divider orientation="left" style={{ color: '#333', fontWeight: 'bold', fontSize: '20px' }}>
-            ALS2020 - Research
+            {project == null ? (<p></p>) : (project.name) }
             <Button style={{marginLeft: "10px"}} onClick={() => {this.fetchFiles(project_id); this.fetchVCFTable(project_id);}}>Refresh</Button>
             </Divider>
             

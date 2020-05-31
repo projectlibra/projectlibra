@@ -167,13 +167,13 @@ class GeneId(db.Model):
 
 class PatientGeneName(db.Model):
   __tablename__ = "patient_gene_names"
-  id = db.Column(db.Integer, primary_key=True)
-  patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'))
-  gene_name = db.Column(db.Text(), db.ForeignKey('gene_name.name'))
+  patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), primary_key=True)
+  gene_name = db.Column(db.Text(), db.ForeignKey('gene_name.name'), primary_key=True)
+  anno = db.Column(db.String(100))
 
 class PatientGeneNameSchema(ma.Schema):
   class Meta:
-    fields = ('patient_id', 'gene_name')
+    fields = ('patient_id', 'gene_name', 'anno')
 
 PatientGeneName_schema = PatientGeneNameSchema()
 PatientGeneNames_schema = PatientGeneNameSchema(many=True)
