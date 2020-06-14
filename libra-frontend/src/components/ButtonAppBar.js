@@ -38,7 +38,7 @@ const ButtonAppBar = (props) => {
     return (<div className={classes.root}>
       <AppBar position="static" className={classes.root} >
         <Toolbar>
-          <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" component={Link} to="/">
+          <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" component={Link} to="/projects">
             <HomeIcon />
           </IconButton>
           <Typography color="inherit" variant="h6" className={classes.title}>
