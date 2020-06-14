@@ -441,7 +441,7 @@ class MatchMaker extends Component{
                             <TableCell>Patient Contact</TableCell>
                             <TableCell align="right">Patient ID</TableCell>
                             <TableCell align="right">Diagnosis</TableCell>
-                            <TableCell align="right">HPO Similarty(Between 0 and 1)</TableCell>
+                            <TableCell align="right">HPO Similarty (%)</TableCell>
                         </TableRow>
                         </TableHead>
                         <TableBody>
@@ -452,9 +452,9 @@ class MatchMaker extends Component{
                             </TableCell>
                             <TableCell align="right">{patient.id}</TableCell>
                             <TableCell align="right">{patient.diagnosis}</TableCell>
-                            <TableCell align="right">{hpoMetricResults.filter(function(v) {
+                            <TableCell align="right">{Math.round(hpoMetricResults.filter(function(v) {
                                 return v.patient_id == patient.id;
-                            })[0].similarity}</TableCell>
+                            })[0].similarity*10000)/100}</TableCell>
                             </TableRow>
                         ))}
                         </TableBody>
@@ -476,7 +476,7 @@ class MatchMaker extends Component{
                             <TableCell>Patient Contact</TableCell>
                             <TableCell align="right">Patient ID</TableCell>
                             <TableCell align="right">Diagnosis</TableCell>
-                            <TableCell align="right">GO Similarty(Between 0 and 1)</TableCell>
+                            <TableCell align="right">GO Similarty(%)</TableCell>
                         </TableRow>
                         </TableHead>
                         <TableBody>
@@ -498,7 +498,7 @@ class MatchMaker extends Component{
                                 return v.id == patient.patient_id;
                             })[0].diagnosis}</TableCell>
 
-                            <TableCell align="right">{patient.similarity}</TableCell>
+                            <TableCell align="right">{Math.round(patient.similarity*10000)/100}</TableCell>
                             </TableRow>:<div></div>
                         ))}
                         </TableBody>

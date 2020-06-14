@@ -15,7 +15,7 @@ const Project = (props) => {
         },
       }}>
           <Card title= {props.name} extra={<a href={props.id}>More</a>} style={{ width: 300, marginRight: '20px', marginBottom: '10px', boxShadow: '5px 5px' }}>
-            <strong>Descripion: </strong><p>{props.desc}</p>
+            <strong>Description: </strong><p>{props.desc}</p>
           </Card>
         </AnimationWrapper>
       </Link>

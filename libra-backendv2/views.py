@@ -1102,17 +1102,17 @@ def notificationChecker():
   
       else:
         if(pair.hpo_similarity != hpo_sim or pair.go_similarity != go_sim):  
-          print("old",pair)                
+          print("update",pair)  
           db.session.query(Similarity).filter(or_(Similarity.patient_pair==str(patient_ids[i])+ "." + str(patient_ids[j]),
                                                     Similarity.patient_pair==str(patient_ids[j])+ "." + str(patient_ids[i]))).\
                         update({"hpo_similarity":hpo_sim, 
                                 "go_similarity":go_sim })
           sendEmail((patient_ids[i], patient_ids[j]), hpo_sim, go_sim)
-          db.session.commit() 
+          db.session.commit()
        
         
 def sendEmail(patient_ids, hpo_sim, go_sim):
-  hpo_sim = 100* hpo_sim, 
+  hpo_sim = 100*hpo_sim 
   go_sim = 100*go_sim
   mail_info = []
   for patient_id in patient_ids:
@@ -1126,11 +1126,15 @@ def sendEmail(patient_ids, hpo_sim, go_sim):
           mail_info.append([patient_id, row.email, False])
   
   if mail_info[0][2]:
+    print("Mail 1: ", hpo_sim, go_sim)
+    print(mail_info)
     msg = Message('Similarity Notification for '+ mail_info[0][0], sender = 'projectlibra.similarity@gmail.com', recipients = [mail_info[0][1]])
     msg.html = get_mail_template(mail_info[0][0], mail_info[1][0], mail_info[1][1], go_sim, hpo_sim)
     thr = Thread(target=send_async_email, args=[msg])
     thr.start()
   if mail_info[1][2]:
+    print("Mail 2: ", hpo_sim, go_sim)
+    print(mail_info)
     msg = Message('Similarity Notification for '+ mail_info[1][0], sender = 'projectlibra.similarity@gmail.com', recipients = [mail_info[1][1]])
     msg.html = get_mail_template(mail_info[1][0], mail_info[0][0], mail_info[0][1], go_sim, hpo_sim)
     thr = Thread(target=send_async_email, args=[msg])

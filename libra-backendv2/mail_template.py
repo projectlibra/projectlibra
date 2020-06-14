@@ -50,7 +50,7 @@ def get_mail_template(patient_1, patient_2, mail_to_contact,  genotype_sim, phen
                                             <h3>Your Patient ID: {}</h3>
                                             <h3>Matched Patient ID: {}</h3>
                                             <a href='mailto:{}' target='_blank' style='display: inline-block; color: #ffffff; background-color: #3498db; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-transform: capitalize; border-color: #3498db;'>Contact Doctor</a>
-                                            According to our matchmaking system, you have a new match. You can cotact with the respective doctor using the button above.
+                                            <p>According to our matchmaking system, you have a new match. You can cotact with the respective doctor using the button above.</p>
                                             
                                         </td>
                                     </tr>

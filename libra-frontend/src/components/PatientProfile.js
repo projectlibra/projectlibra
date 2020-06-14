@@ -15,7 +15,7 @@ const PatientProfile= (props) => {
         
         <Card title={props.name} extra={<a href={`/patients/${props.patient_id}`}>Detail</a>} style={{ backgroundColor:"#FAFAFA", width: 300, marginRight: '20px', marginBottom: '10px', boxShadow: '5px 5px' }}>
             <p><b>Patient ID:</b> {props.patient_id}</p>
-            <p><b>Patient Diagnosis</b></p>
+            <p><b>Patient Diagnosis:</b></p>
             <p>{props.diagnosis}</p>
             
         </Card>
