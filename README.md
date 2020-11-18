@@ -18,7 +18,7 @@ laboratories and research centers in Turkey.
 
   * [Mahmud Sami Aydın](https://github.com/mahmudsami)
   * [Berke Egeli](https://github.com/begeli)
-  * [Naisila Puka](https://github.com/NaisilaPuka)
+  * [Naisila Puka](https://github.com/naisila)
   * [Halil Şahiner](https://github.com/halilsahiner)
   * [Abdullah Talayhan](https://github.com/bufferhe4d)
 
