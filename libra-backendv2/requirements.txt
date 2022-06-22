@@ -16,7 +16,7 @@ Mako==1.1.2
 MarkupSafe==1.1.1
 marshmallow==3.5.1
 marshmallow-sqlalchemy==0.22.3
-numpy==1.18.2
+numpy==1.22.0
 psycopg2-binary==2.8.4
 pycparser==2.20
 PyJWT==1.7.1
